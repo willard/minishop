@@ -304,3 +304,110 @@ Vue components must have a single root element.
 - IMPORTANT: Activate `developing-with-fortify` skill when working with Fortify authentication features.
 
 </laravel-boost-guidelines>
+
+# Minishop — Project Overview
+
+## What is Minishop?
+
+Minishop is a **headless ecommerce platform for small businesses**. The backend is a Laravel 12 API/web app; the frontend admin dashboard is built with Inertia.js v2 + Vue 3 + Tailwind CSS v4.
+
+## Admin Dashboard
+
+- The main admin dashboard lives at `/dashboard` (`resources/js/pages/Dashboard.vue`).
+- All store management (products, orders, customers, etc.) is done through this dashboard.
+- Use `AppSidebarLayout` for all admin pages to stay consistent with the existing layout.
+- Admin routes should be grouped under the `auth` middleware and optionally an `admin` role/gate.
+
+## Planned Features
+
+### Core Ecommerce
+- **Products** — CRUD with images, variants (size/color), stock tracking, SKU, categories, and tags
+- **Categories** — hierarchical categories with slugs
+- **Orders** — order lifecycle (pending → processing → shipped → delivered → cancelled/refunded)
+- **Customers** — customer profiles linked to `users`, purchase history, addresses
+- **Cart** — persistent server-side cart per session/user
+- **Checkout** — address collection, order summary, payment step
+
+### Inventory & Catalog
+- **Stock management** — low-stock alerts, out-of-stock handling
+- **Product variants** — multiple options per product (e.g. size + color matrix)
+- **Product images** — multiple images per product/variant
+
+### Payments & Finance
+- **Payment gateway integration** — Stripe (primary), PayMongo (for PH market)
+- **Invoices** — auto-generated PDF invoices per order
+- **Discount codes / Coupons** — percentage or fixed amount, expiry, usage limits
+
+### Storefront (Headless API)
+- **Public API** — RESTful API endpoints for storefront consumption (products, categories, cart, checkout)
+- **API versioning** — `/api/v1/` prefix
+- **Sanctum auth** — for storefront user sessions
+
+### Admin Dashboard Panels
+- **Dashboard overview** — sales summary, recent orders, low-stock alerts, revenue chart
+- **Order management** — list, filter, update status, view details
+- **Product management** — create/edit/delete products and variants
+- **Customer management** — view customer list, order history
+- **Coupon management** — create/manage discount codes
+- **Settings** — store name, currency, tax rate, shipping options
+
+### Supporting Features
+- **Shipping** — flat-rate and per-item shipping rules; integration-ready for courier APIs
+- **Tax** — configurable tax rate applied at checkout
+- **Search** — product search with filters (price range, category, availability)
+- **Activity log** — admin action history
+- **Notifications** — email notifications for new orders, shipped orders (queued jobs)
+
+## Naming & Route Conventions
+
+- Admin Inertia pages: `resources/js/pages/admin/` (e.g. `admin/Products/Index.vue`)
+- API routes: `routes/api.php` under `/api/v1/`
+- Admin web routes: `routes/web.php` grouped under `/dashboard`
+- Use resource controllers for all CRUD entities
+
+## Git & GitHub Workflow
+
+Every feature or task must follow this branching workflow — no exceptions:
+
+1. **Create a branch** from `main` using a descriptive name:
+   - `feature/product-crud` — new features
+   - `fix/order-status-bug` — bug fixes
+   - `chore/update-dependencies` — maintenance tasks
+2. **Commit** changes to that branch with clear, descriptive commit messages.
+3. **Push** the branch to GitHub: `git push -u origin <branch-name>`
+4. **Open a Pull Request** targeting `main` using `gh pr create`. The PR must include:
+   - A short, clear title (under 70 characters)
+   - A summary of what was changed and why
+   - A test plan checklist
+5. **Wait for review** — do not merge the PR. The user (willard) will review and merge on GitHub.
+6. **Never push directly to `main`** — all changes go through PRs.
+
+Branch naming conventions:
+- Use lowercase kebab-case: `feature/add-product-variants`, not `Feature/AddProductVariants`
+- Keep names short but descriptive
+
+## Frontend Testing (Vitest)
+
+Vue components must be tested with **Vitest** + **@vue/test-utils**.
+
+### Setup
+- Vitest is configured in `vite.config.ts` with `environment: 'jsdom'` and `globals: true`.
+- Test files live in `resources/js/tests/` mirroring the source structure:
+  - `resources/js/tests/components/` — component tests
+  - `resources/js/tests/composables/` — composable tests
+  - `resources/js/tests/pages/` — page-level tests
+
+### File naming
+- Test files must end in `.test.ts` (e.g. `AppLogo.test.ts`)
+
+### Running tests
+- `npm run test` — watch mode during development
+- `npm run test:run` — single run (CI / before PR)
+- `npm run test:coverage` — generate coverage report
+
+### Conventions
+- Every new Vue component or composable must have a corresponding test file.
+- Use `describe` + `it` blocks. Keep test descriptions readable as plain English.
+- Test what the component renders and how it behaves — avoid testing implementation details.
+- Mock Inertia's `usePage`, `router`, and `Link` where needed using `vi.mock('@inertiajs/vue3')`.
+- Run `npm run test:run` before opening a PR — all tests must pass.

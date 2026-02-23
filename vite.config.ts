@@ -24,4 +24,15 @@ export default defineConfig({
             },
         }),
     ],
+    test: {
+        environment: 'jsdom',
+        globals: true,
+        include: ['resources/js/**/*.{test,spec}.{ts,js}'],
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'html'],
+            include: ['resources/js/**/*.{ts,vue}'],
+            exclude: ['resources/js/types/**', 'resources/js/lib/**'],
+        },
+    },
 });
