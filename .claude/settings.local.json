@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init:*)",
+      "Bash(git -C /Users/willardmacay/Devs/ai/minishop add .)",
+      "Bash(git -C /Users/willardmacay/Devs/ai/minishop status --short)"
+    ]
+  }
+}
