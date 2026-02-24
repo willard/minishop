@@ -15,6 +15,7 @@ class Order extends Model
     protected $fillable = [
         'order_number',
         'customer_id',
+        'coupon_id',
         'status',
         'subtotal',
         'discount_amount',
@@ -55,6 +56,11 @@ class Order extends Model
     public function getRouteKeyName(): string
     {
         return 'order_number';
+    }
+
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class);
     }
 
     public function customer(): BelongsTo
