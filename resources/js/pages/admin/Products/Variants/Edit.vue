@@ -96,7 +96,7 @@ function submit(): void {
                         <div class="grid gap-1 flex-1">
                             <Input
                                 :id="`option-name-${idx}`"
-                                v-model="option.name"
+                                v-model="form.options[idx].name"
                                 placeholder="Name (e.g. Size)"
                             />
                             <InputError :message="(form.errors as Record<string, string>)[`options.${idx}.name`]" />
@@ -104,7 +104,7 @@ function submit(): void {
                         <div class="grid gap-1 flex-1">
                             <Input
                                 :id="`option-value-${idx}`"
-                                v-model="option.value"
+                                v-model="form.options[idx].value"
                                 placeholder="Value (e.g. M)"
                             />
                             <InputError :message="(form.errors as Record<string, string>)[`options.${idx}.value`]" />
