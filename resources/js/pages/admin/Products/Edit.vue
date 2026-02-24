@@ -130,7 +130,7 @@ const selectedCategoryIds = props.product.categories.map((c) => c.id);
                             <Checkbox
                                 :name="`category_ids[]`"
                                 :value="category.id"
-                                :default-checked="selectedCategoryIds.includes(category.id)"
+                                :default-value="selectedCategoryIds.includes(category.id)"
                             />
                             <span class="text-sm">{{ category.name }}</span>
                         </label>
@@ -140,7 +140,7 @@ const selectedCategoryIds = props.product.categories.map((c) => c.id);
 
                 <!-- Active Status -->
                 <div class="flex items-center gap-2">
-                    <Checkbox id="is_active" name="is_active" value="1" :default-checked="product.is_active" />
+                    <Checkbox id="is_active" name="is_active" value="1" :default-value="product.is_active" />
                     <Label for="is_active">Active (visible in store)</Label>
                 </div>
 

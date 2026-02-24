@@ -20,7 +20,13 @@
       "Bash(python3:*)",
       "Bash(php artisan make:migration:*)",
       "Bash(vendor/bin/pint:*)",
-      "Bash(php artisan test:*)"
+      "Bash(php artisan test:*)",
+      "Bash(php artisan migrate:*)",
+      "Bash(php artisan db:seed:*)",
+      "mcp__laravel-boost__browser-logs",
+      "Bash(find:*)",
+      "Bash(git stash:*)",
+      "Bash(git branch:*)"
     ]
   }
 }

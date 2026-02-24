@@ -110,7 +110,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                 <!-- Active Status -->
                 <div class="flex items-center gap-2">
-                    <Checkbox id="is_active" name="is_active" value="1" :default-checked="category.is_active" />
+                    <Checkbox id="is_active" name="is_active" value="1" :default-value="category.is_active" />
                     <Label for="is_active">Active</Label>
                 </div>
 
