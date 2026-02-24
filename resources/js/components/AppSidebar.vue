@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Package, Tag } from 'lucide-vue-next';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -16,12 +16,24 @@ import {
 import { type NavItem } from '@/types';
 import AppLogo from './AppLogo.vue';
 import { dashboard } from '@/routes';
+import { index as productsIndex } from '@/actions/App/Http/Controllers/Admin/ProductController';
+import { index as categoriesIndex } from '@/actions/App/Http/Controllers/Admin/CategoryController';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Products',
+        href: productsIndex().url,
+        icon: Package,
+    },
+    {
+        title: 'Categories',
+        href: categoriesIndex().url,
+        icon: Tag,
     },
 ];
 
