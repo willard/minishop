@@ -15,7 +15,7 @@ interface Category {
     name: string;
 }
 
-const props = defineProps<{
+defineProps<{
     categories: Category[];
 }>();
 

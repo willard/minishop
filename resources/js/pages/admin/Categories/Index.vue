@@ -25,7 +25,7 @@ interface Pagination {
     links: { url: string | null; label: string; active: boolean }[];
 }
 
-const props = defineProps<{
+defineProps<{
     categories: Pagination;
 }>();
 
@@ -126,8 +126,7 @@ function confirmDelete(category: Category): void {
                         :href="link.url"
                         class="px-3 py-1.5 rounded text-sm border border-sidebar-border hover:bg-muted/50 transition-colors"
                         :class="{ 'bg-primary text-primary-foreground border-primary': link.active }"
-                        v-html="link.label"
-                    />
+                    ><span v-html="link.label" /></Link>
                     <span
                         v-else
                         class="px-3 py-1.5 rounded text-sm border border-sidebar-border text-muted-foreground opacity-50"
