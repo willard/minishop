@@ -1,0 +1,69 @@
+<?php
+
+namespace App\Models;
+
+use App\Enums\OrderStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Order extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'order_number',
+        'customer_id',
+        'status',
+        'subtotal',
+        'discount_amount',
+        'shipping_amount',
+        'tax_amount',
+        'total_amount',
+        'shipping_name',
+        'shipping_address_line1',
+        'shipping_address_line2',
+        'shipping_city',
+        'shipping_state',
+        'shipping_postcode',
+        'shipping_country',
+        'notes',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'status' => OrderStatus::class,
+            'subtotal' => 'integer',
+            'discount_amount' => 'integer',
+            'shipping_amount' => 'integer',
+            'tax_amount' => 'integer',
+            'total_amount' => 'integer',
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (Order $order): void {
+            if (empty($order->order_number)) {
+                $order->update(['order_number' => 'ORD-'.str_pad((string) $order->id, 6, '0', STR_PAD_LEFT)]);
+            }
+        });
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'order_number';
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+}
