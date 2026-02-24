@@ -21,20 +21,17 @@ class UpdateProductVariantRequest extends FormRequest
             'price' => ['nullable', 'integer', 'min:0'],
             'stock_quantity' => ['required', 'integer', 'min:0'],
             'is_active' => ['boolean'],
-            'options' => ['required', 'array', 'min:1', 'max:3'],
-            'options.*.name' => ['required', 'string', 'max:100'],
-            'options.*.value' => ['required', 'string', 'max:100'],
+            'option_value_ids' => ['required', 'array', 'min:1'],
+            'option_value_ids.*' => ['required', 'integer', 'exists:product_option_values,id'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'options.required' => 'At least one option is required.',
-            'options.min' => 'At least one option is required.',
-            'options.max' => 'You may add up to 3 options.',
-            'options.*.name.required' => 'Option name is required.',
-            'options.*.value.required' => 'Option value is required.',
+            'option_value_ids.required' => 'Select a value for each option.',
+            'option_value_ids.min' => 'Select a value for each option.',
+            'option_value_ids.*.exists' => 'Invalid option value selected.',
         ];
     }
 }

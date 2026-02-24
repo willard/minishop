@@ -11,6 +11,10 @@ import {
     edit as editVariant,
     destroy as destroyVariant,
 } from '@/actions/App/Http/Controllers/Admin/ProductVariantController';
+import {
+    create as createOption,
+    destroy as destroyOption,
+} from '@/actions/App/Http/Controllers/Admin/ProductOptionController';
 
 interface Category {
     id: number;
@@ -23,13 +27,32 @@ interface ProductImage {
     alt_text: string | null;
 }
 
+interface ProductOptionValue {
+    id: number;
+    value: string;
+    position: number;
+}
+
+interface ProductOption {
+    id: number;
+    name: string;
+    position: number;
+    values: ProductOptionValue[];
+}
+
+interface OptionValue {
+    id: number;
+    value: string;
+    option: { id: number; name: string };
+}
+
 interface ProductVariant {
     id: number;
     sku: string | null;
     price: number | null;
     stock_quantity: number;
-    options: Record<string, string>;
     is_active: boolean;
+    option_values: OptionValue[];
 }
 
 interface Product {
@@ -44,6 +67,7 @@ interface Product {
     sku: string | null;
     categories: Category[];
     images: ProductImage[];
+    options: ProductOption[];
     variants: ProductVariant[];
 }
 
@@ -70,6 +94,12 @@ function confirmDelete(): void {
 function confirmDeleteVariant(variant: ProductVariant): void {
     if (confirm('Delete this variant? This cannot be undone.')) {
         router.delete(destroyVariant({ product: props.product, variant }).url);
+    }
+}
+
+function confirmDeleteOption(option: ProductOption): void {
+    if (confirm(`Delete option "${option.name}" and all its values? Variants using these values will also be affected.`)) {
+        router.delete(destroyOption({ product: props.product, option }).url);
     }
 }
 </script>
@@ -169,19 +199,71 @@ function confirmDeleteVariant(variant: ProductVariant): void {
                 </div>
             </div>
 
+            <!-- Options -->
+            <div class="rounded-lg border border-sidebar-border overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-sidebar-border bg-muted/50">
+                    <h2 class="font-semibold text-sm">Option Types</h2>
+                    <Link :href="createOption(product).url">
+                        <Button variant="outline" size="sm" class="text-xs h-7">
+                            <Plus class="mr-1 size-3" />
+                            Add Option Type
+                        </Button>
+                    </Link>
+                </div>
+
+                <div v-if="product.options.length === 0" class="px-4 py-6 text-center text-sm text-muted-foreground">
+                    No option types yet. Add one (e.g. Size, Color) before creating variants.
+                </div>
+
+                <div v-else class="divide-y divide-sidebar-border">
+                    <div
+                        v-for="option in product.options"
+                        :key="option.id"
+                        class="flex items-center justify-between px-4 py-3"
+                    >
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-medium w-20 shrink-0">{{ option.name }}</span>
+                            <div class="flex flex-wrap gap-1">
+                                <Badge
+                                    v-for="val in option.values"
+                                    :key="val.id"
+                                    variant="secondary"
+                                    class="text-xs font-normal"
+                                >
+                                    {{ val.value }}
+                                </Badge>
+                                <span v-if="option.values.length === 0" class="text-xs text-muted-foreground italic">No values</span>
+                            </div>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            class="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                            @click="confirmDeleteOption(option)"
+                        >
+                            <Trash2 class="size-3" />
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Variants -->
             <div class="rounded-lg border border-sidebar-border overflow-hidden">
                 <div class="flex items-center justify-between px-4 py-3 border-b border-sidebar-border bg-muted/50">
                     <h2 class="font-semibold text-sm">Variants</h2>
                     <Link :href="createVariant(product).url">
-                        <Button variant="outline" size="sm" class="text-xs h-7">
+                        <Button variant="outline" size="sm" class="text-xs h-7" :disabled="product.options.length === 0">
                             <Plus class="mr-1 size-3" />
                             Add Variant
                         </Button>
                     </Link>
                 </div>
 
-                <div v-if="product.variants.length === 0" class="px-4 py-8 text-center text-sm text-muted-foreground">
+                <div v-if="product.options.length === 0" class="px-4 py-6 text-center text-sm text-muted-foreground">
+                    Define option types above before adding variants.
+                </div>
+
+                <div v-else-if="product.variants.length === 0" class="px-4 py-8 text-center text-sm text-muted-foreground">
                     No variants yet. Add one to offer size, color, or other options.
                 </div>
 
@@ -205,13 +287,14 @@ function confirmDeleteVariant(variant: ProductVariant): void {
                             <td class="px-4 py-2.5">
                                 <div class="flex flex-wrap gap-1">
                                     <Badge
-                                        v-for="(value, key) in variant.options"
-                                        :key="key"
+                                        v-for="ov in variant.option_values"
+                                        :key="ov.id"
                                         variant="secondary"
                                         class="text-xs font-normal"
                                     >
-                                        {{ key }}: {{ value }}
+                                        {{ ov.option.name }}: {{ ov.value }}
                                     </Badge>
+                                    <span v-if="variant.option_values.length === 0" class="text-xs text-muted-foreground italic">No options</span>
                                 </div>
                             </td>
                             <td class="px-4 py-2.5 font-mono text-xs text-muted-foreground">

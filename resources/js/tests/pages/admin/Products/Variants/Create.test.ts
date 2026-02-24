@@ -4,13 +4,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a href="#"><slot /></a>', props: ['href'] },
-    useForm: vi.fn(() => ({
-        sku: '',
-        price: null,
-        stock_quantity: 0,
-        options: [{ name: '', value: '' }],
-        is_active: true,
+    Link: { name: 'Link', template: '<a :href="href"><slot /></a>', props: ['href'] },
+    useForm: vi.fn((initialData: Record<string, unknown>) => ({
+        ...initialData,
         processing: false,
         errors: {},
         post: vi.fn(),
@@ -51,18 +47,42 @@ vi.mock('@/actions/App/Http/Controllers/Admin/ProductVariantController', () => (
     store: vi.fn((product: { slug: string }) => ({ url: `/dashboard/products/${product.slug}/variants` })),
 }));
 
+vi.mock('@/actions/App/Http/Controllers/Admin/ProductOptionController', () => ({
+    create: vi.fn((product: { slug: string }) => ({ url: `/dashboard/products/${product.slug}/options/create` })),
+}));
+
 const baseProduct = {
     id: 1,
     name: 'Blue T-Shirt',
     slug: 'blue-t-shirt',
 };
 
+const baseOptionTypes = [
+    {
+        id: 1,
+        name: 'Size',
+        values: [
+            { id: 10, value: 'S', position: 0 },
+            { id: 11, value: 'M', position: 1 },
+            { id: 12, value: 'L', position: 2 },
+        ],
+    },
+    {
+        id: 2,
+        name: 'Color',
+        values: [
+            { id: 20, value: 'Red', position: 0 },
+            { id: 21, value: 'Blue', position: 1 },
+        ],
+    },
+];
+
 describe('admin/Products/Variants/Create', () => {
     let wrapper: ReturnType<typeof mount>;
 
     beforeEach(() => {
         wrapper = mount(CreateVariantPage, {
-            props: { product: baseProduct },
+            props: { product: baseProduct, optionTypes: baseOptionTypes },
         });
     });
 
@@ -78,8 +98,25 @@ describe('admin/Products/Variants/Create', () => {
         expect(wrapper.text()).toContain('Add Variant');
     });
 
-    it('renders the options section', () => {
-        expect(wrapper.text()).toContain('Options');
+    it('renders a select element per option type', () => {
+        const selects = wrapper.findAll('select');
+        expect(selects).toHaveLength(2);
+    });
+
+    it('renders the Size option type label', () => {
+        expect(wrapper.text()).toContain('Size');
+    });
+
+    it('renders the Color option type label', () => {
+        expect(wrapper.text()).toContain('Color');
+    });
+
+    it('renders the option values as select options', () => {
+        expect(wrapper.text()).toContain('S');
+        expect(wrapper.text()).toContain('M');
+        expect(wrapper.text()).toContain('L');
+        expect(wrapper.text()).toContain('Red');
+        expect(wrapper.text()).toContain('Blue');
     });
 
     it('renders the stock quantity field label', () => {
@@ -92,5 +129,19 @@ describe('admin/Products/Variants/Create', () => {
 
     it('renders the price override field label', () => {
         expect(wrapper.text()).toContain('Price Override');
+    });
+
+    it('shows no-options notice when optionTypes is empty', () => {
+        const emptyWrapper = mount(CreateVariantPage, {
+            props: { product: baseProduct, optionTypes: [] },
+        });
+        expect(emptyWrapper.text()).toContain('no option types defined');
+    });
+
+    it('hides the form when optionTypes is empty', () => {
+        const emptyWrapper = mount(CreateVariantPage, {
+            props: { product: baseProduct, optionTypes: [] },
+        });
+        expect(emptyWrapper.find('form').exists()).toBe(false);
     });
 });

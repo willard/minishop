@@ -3,6 +3,8 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\Product;
+use App\Models\ProductOption;
+use App\Models\ProductOptionValue;
 use App\Models\ProductVariant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -11,6 +13,21 @@ use Tests\TestCase;
 class ProductVariantTest extends TestCase
 {
     use RefreshDatabase;
+
+    /**
+     * Create a product with a Size option (S, M) and return all relevant models.
+     *
+     * @return array{product: Product, sizeOption: ProductOption, valueS: ProductOptionValue, valueM: ProductOptionValue}
+     */
+    private function productWithOptions(): array
+    {
+        $product = Product::factory()->create();
+        $sizeOption = $product->options()->create(['name' => 'Size', 'position' => 0]);
+        $valueS = $sizeOption->values()->create(['value' => 'S', 'position' => 0]);
+        $valueM = $sizeOption->values()->create(['value' => 'M', 'position' => 1]);
+
+        return compact('product', 'sizeOption', 'valueS', 'valueM');
+    }
 
     public function test_guests_are_redirected_from_create_form(): void
     {
@@ -40,7 +57,7 @@ class ProductVariantTest extends TestCase
     public function test_authenticated_users_can_view_create_variant_form(): void
     {
         $user = User::factory()->create();
-        $product = Product::factory()->create();
+        ['product' => $product] = $this->productWithOptions();
 
         $this->actingAs($user)
             ->get(route('admin.products.variants.create', $product))
@@ -48,14 +65,16 @@ class ProductVariantTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->component('admin/Products/Variants/Create')
                 ->has('product')
+                ->has('optionTypes')
             );
     }
 
     public function test_authenticated_users_can_view_edit_variant_form(): void
     {
         $user = User::factory()->create();
-        $product = Product::factory()->create();
+        ['product' => $product, 'valueS' => $valueS] = $this->productWithOptions();
         $variant = ProductVariant::factory()->for($product)->create();
+        $variant->optionValues()->sync([$valueS->id]);
 
         $this->actingAs($user)
             ->get(route('admin.products.variants.edit', [$product, $variant]))
@@ -64,19 +83,18 @@ class ProductVariantTest extends TestCase
                 ->component('admin/Products/Variants/Edit')
                 ->has('product')
                 ->has('variant')
+                ->has('optionTypes')
             );
     }
 
     public function test_authenticated_users_can_store_a_variant(): void
     {
         $user = User::factory()->create();
-        $product = Product::factory()->create();
+        ['product' => $product, 'valueM' => $valueM] = $this->productWithOptions();
 
         $this->actingAs($user)
             ->post(route('admin.products.variants.store', $product), [
-                'options' => [
-                    ['name' => 'Size', 'value' => 'M'],
-                ],
+                'option_value_ids' => [$valueM->id],
                 'stock_quantity' => 10,
                 'is_active' => true,
             ])
@@ -88,79 +106,77 @@ class ProductVariantTest extends TestCase
         ]);
 
         $variant = ProductVariant::query()->where('product_id', $product->id)->first();
-        $this->assertEquals(['Size' => 'M'], $variant->options);
+        $this->assertTrue($variant->optionValues->contains($valueM));
     }
 
-    public function test_store_transforms_options_into_keyed_object(): void
+    public function test_store_syncs_multiple_option_values(): void
     {
         $user = User::factory()->create();
         $product = Product::factory()->create();
+        $sizeOption = $product->options()->create(['name' => 'Size', 'position' => 0]);
+        $valueM = $sizeOption->values()->create(['value' => 'M', 'position' => 0]);
+        $colorOption = $product->options()->create(['name' => 'Color', 'position' => 1]);
+        $valueBlue = $colorOption->values()->create(['value' => 'Blue', 'position' => 0]);
 
         $this->actingAs($user)
             ->post(route('admin.products.variants.store', $product), [
-                'options' => [
-                    ['name' => 'Size', 'value' => 'L'],
-                    ['name' => 'Color', 'value' => 'Blue'],
-                ],
+                'option_value_ids' => [$valueM->id, $valueBlue->id],
                 'stock_quantity' => 5,
             ]);
 
         $variant = ProductVariant::query()->where('product_id', $product->id)->first();
-        $this->assertEquals(['Size' => 'L', 'Color' => 'Blue'], $variant->options);
+        $this->assertCount(2, $variant->optionValues);
+        $this->assertTrue($variant->optionValues->contains($valueM));
+        $this->assertTrue($variant->optionValues->contains($valueBlue));
     }
 
     public function test_store_requires_stock_quantity(): void
     {
         $user = User::factory()->create();
-        $product = Product::factory()->create();
+        ['product' => $product, 'valueS' => $valueS] = $this->productWithOptions();
 
         $this->actingAs($user)
             ->post(route('admin.products.variants.store', $product), [
-                'options' => [['name' => 'Size', 'value' => 'S']],
+                'option_value_ids' => [$valueS->id],
             ])
             ->assertSessionHasErrors('stock_quantity');
     }
 
-    public function test_store_requires_at_least_one_option(): void
+    public function test_store_requires_at_least_one_option_value_id(): void
     {
         $user = User::factory()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
             ->post(route('admin.products.variants.store', $product), [
-                'options' => [],
+                'option_value_ids' => [],
                 'stock_quantity' => 5,
             ])
-            ->assertSessionHasErrors('options');
+            ->assertSessionHasErrors('option_value_ids');
     }
 
-    public function test_store_rejects_more_than_three_options(): void
+    public function test_store_rejects_non_existent_option_value_id(): void
     {
         $user = User::factory()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
             ->post(route('admin.products.variants.store', $product), [
-                'options' => [
-                    ['name' => 'A', 'value' => '1'],
-                    ['name' => 'B', 'value' => '2'],
-                    ['name' => 'C', 'value' => '3'],
-                    ['name' => 'D', 'value' => '4'],
-                ],
+                'option_value_ids' => [99999],
                 'stock_quantity' => 5,
             ])
-            ->assertSessionHasErrors('options');
+            ->assertSessionHasErrors('option_value_ids.0');
     }
 
     public function test_store_rejects_duplicate_sku(): void
     {
         $user = User::factory()->create();
-        $product = Product::factory()->create();
+        ['product' => $product, 'valueS' => $valueS] = $this->productWithOptions();
         ProductVariant::factory()->for($product)->create(['sku' => 'UNIQUE-SKU']);
 
         $this->actingAs($user)
             ->post(route('admin.products.variants.store', $product), [
-                'options' => [['name' => 'Size', 'value' => 'M']],
+                'option_value_ids' => [$valueS->id],
                 'stock_quantity' => 5,
                 'sku' => 'UNIQUE-SKU',
             ])
@@ -170,15 +186,13 @@ class ProductVariantTest extends TestCase
     public function test_authenticated_users_can_update_a_variant(): void
     {
         $user = User::factory()->create();
-        $product = Product::factory()->create();
-        $variant = ProductVariant::factory()->for($product)->create([
-            'stock_quantity' => 5,
-            'options' => ['Size' => 'S'],
-        ]);
+        ['product' => $product, 'valueS' => $valueS, 'valueM' => $valueM] = $this->productWithOptions();
+        $variant = ProductVariant::factory()->for($product)->create(['stock_quantity' => 5]);
+        $variant->optionValues()->sync([$valueS->id]);
 
         $this->actingAs($user)
             ->put(route('admin.products.variants.update', [$product, $variant]), [
-                'options' => [['name' => 'Size', 'value' => 'L']],
+                'option_value_ids' => [$valueM->id],
                 'stock_quantity' => 20,
                 'is_active' => true,
             ])
@@ -190,18 +204,20 @@ class ProductVariantTest extends TestCase
         ]);
 
         $variant->refresh();
-        $this->assertEquals(['Size' => 'L'], $variant->options);
+        $variant->load('optionValues');
+        $this->assertTrue($variant->optionValues->contains($valueM));
+        $this->assertFalse($variant->optionValues->contains($valueS));
     }
 
     public function test_update_ignores_own_sku_uniqueness(): void
     {
         $user = User::factory()->create();
-        $product = Product::factory()->create();
+        ['product' => $product, 'valueM' => $valueM] = $this->productWithOptions();
         $variant = ProductVariant::factory()->for($product)->create(['sku' => 'MY-SKU']);
 
         $this->actingAs($user)
             ->put(route('admin.products.variants.update', [$product, $variant]), [
-                'options' => [['name' => 'Size', 'value' => 'M']],
+                'option_value_ids' => [$valueM->id],
                 'stock_quantity' => 5,
                 'sku' => 'MY-SKU',
             ])

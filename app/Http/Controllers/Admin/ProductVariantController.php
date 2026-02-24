@@ -17,14 +17,18 @@ class ProductVariantController extends Controller
     {
         return Inertia::render('admin/Products/Variants/Create', [
             'product' => $product,
+            'optionTypes' => $product->options()->with('values')->get(),
         ]);
     }
 
     public function store(StoreProductVariantRequest $request, Product $product): RedirectResponse
     {
         $data = $request->validated();
-        $data['options'] = $this->transformOptions($data['options']);
-        $product->variants()->create($data);
+        $optionValueIds = $data['option_value_ids'];
+        unset($data['option_value_ids']);
+
+        $variant = $product->variants()->create($data);
+        $variant->optionValues()->sync($optionValueIds);
 
         return redirect()->route('admin.products.show', $product)
             ->with('success', 'Variant added successfully.');
@@ -34,15 +38,19 @@ class ProductVariantController extends Controller
     {
         return Inertia::render('admin/Products/Variants/Edit', [
             'product' => $product,
-            'variant' => $variant,
+            'variant' => $variant->load('optionValues'),
+            'optionTypes' => $product->options()->with('values')->get(),
         ]);
     }
 
     public function update(UpdateProductVariantRequest $request, Product $product, ProductVariant $variant): RedirectResponse
     {
         $data = $request->validated();
-        $data['options'] = $this->transformOptions($data['options']);
+        $optionValueIds = $data['option_value_ids'];
+        unset($data['option_value_ids']);
+
         $variant->update($data);
+        $variant->optionValues()->sync($optionValueIds);
 
         return redirect()->route('admin.products.show', $product)
             ->with('success', 'Variant updated successfully.');
@@ -54,21 +62,5 @@ class ProductVariantController extends Controller
 
         return redirect()->route('admin.products.show', $product)
             ->with('success', 'Variant deleted successfully.');
-    }
-
-    /**
-     * Transform [{name: 'Size', value: 'M'}] → {"Size": "M"}
-     *
-     * @param  array<int, array{name: string, value: string}>  $options
-     * @return array<string, string>
-     */
-    private function transformOptions(array $options): array
-    {
-        $result = [];
-        foreach ($options as $option) {
-            $result[$option['name']] = $option['value'];
-        }
-
-        return $result;
     }
 }

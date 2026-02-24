@@ -58,6 +58,11 @@ class Product extends Model
         return $this->hasMany(ProductImage::class)->orderBy('sort_order');
     }
 
+    public function options(): HasMany
+    {
+        return $this->hasMany(ProductOption::class)->orderBy('position')->orderBy('id');
+    }
+
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class)->orderBy('id');

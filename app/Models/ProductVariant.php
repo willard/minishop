@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ProductVariant extends Model
 {
@@ -16,7 +17,6 @@ class ProductVariant extends Model
         'sku',
         'price',
         'stock_quantity',
-        'options',
         'is_active',
     ];
 
@@ -25,7 +25,6 @@ class ProductVariant extends Model
         return [
             'price' => 'integer',
             'stock_quantity' => 'integer',
-            'options' => 'array',
             'is_active' => 'boolean',
         ];
     }
@@ -33,5 +32,15 @@ class ProductVariant extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function optionValues(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            ProductOptionValue::class,
+            'product_variant_option_values',
+            'variant_id',
+            'product_option_value_id'
+        )->with('option');
     }
 }

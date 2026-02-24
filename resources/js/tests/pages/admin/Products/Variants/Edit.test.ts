@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a href="#"><slot /></a>', props: ['href'] },
+    Link: { name: 'Link', template: '<a :href="href"><slot /></a>', props: ['href'] },
     useForm: vi.fn((initialData: Record<string, unknown>) => ({
         ...initialData,
         processing: false,
@@ -55,13 +55,35 @@ const baseProduct = {
     slug: 'blue-t-shirt',
 };
 
+const baseOptionTypes = [
+    {
+        id: 1,
+        name: 'Size',
+        values: [
+            { id: 10, value: 'S', position: 0 },
+            { id: 11, value: 'M', position: 1 },
+        ],
+    },
+    {
+        id: 2,
+        name: 'Color',
+        values: [
+            { id: 20, value: 'Red', position: 0 },
+            { id: 21, value: 'Blue', position: 1 },
+        ],
+    },
+];
+
 const baseVariant = {
     id: 1,
     sku: 'TSH-M-BLU',
     price: 1999,
     stock_quantity: 25,
-    options: { Size: 'M', Color: 'Blue' },
     is_active: true,
+    option_values: [
+        { id: 11, value: 'M', option: { id: 1, name: 'Size' } },
+        { id: 21, value: 'Blue', option: { id: 2, name: 'Color' } },
+    ],
 };
 
 describe('admin/Products/Variants/Edit', () => {
@@ -69,7 +91,7 @@ describe('admin/Products/Variants/Edit', () => {
 
     beforeEach(() => {
         wrapper = mount(EditVariantPage, {
-            props: { product: baseProduct, variant: baseVariant },
+            props: { product: baseProduct, variant: baseVariant, optionTypes: baseOptionTypes },
         });
     });
 
@@ -87,6 +109,19 @@ describe('admin/Products/Variants/Edit', () => {
 
     it('displays Save Changes button', () => {
         expect(wrapper.text()).toContain('Save Changes');
+    });
+
+    it('renders a select element per option type', () => {
+        const selects = wrapper.findAll('select');
+        expect(selects).toHaveLength(2);
+    });
+
+    it('renders the Size option type label', () => {
+        expect(wrapper.text()).toContain('Size');
+    });
+
+    it('renders the Color option type label', () => {
+        expect(wrapper.text()).toContain('Color');
     });
 
     it('renders the stock quantity field label', () => {

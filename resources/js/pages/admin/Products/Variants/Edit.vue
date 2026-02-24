@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Minus, Plus } from 'lucide-vue-next';
+import { ArrowLeft } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -11,10 +11,22 @@ import { type BreadcrumbItem } from '@/types';
 import { index, show } from '@/actions/App/Http/Controllers/Admin/ProductController';
 import { update } from '@/actions/App/Http/Controllers/Admin/ProductVariantController';
 
-interface Product {
+interface OptionValue {
+    id: number;
+    value: string;
+    position: number;
+}
+
+interface OptionType {
     id: number;
     name: string;
-    slug: string;
+    values: OptionValue[];
+}
+
+interface ExistingOptionValue {
+    id: number;
+    value: string;
+    option: { id: number; name: string };
 }
 
 interface ProductVariant {
@@ -22,13 +34,20 @@ interface ProductVariant {
     sku: string | null;
     price: number | null;
     stock_quantity: number;
-    options: Record<string, string>;
     is_active: boolean;
+    option_values: ExistingOptionValue[];
+}
+
+interface Product {
+    id: number;
+    name: string;
+    slug: string;
 }
 
 const props = defineProps<{
     product: Product;
     variant: ProductVariant;
+    optionTypes: OptionType[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -38,25 +57,20 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Edit Variant', href: '#' },
 ];
 
+function initialOptionValueIds(): (number | null)[] {
+    return props.optionTypes.map((optionType) => {
+        const existing = props.variant.option_values.find((ov) => ov.option.id === optionType.id);
+        return existing?.id ?? optionType.values[0]?.id ?? null;
+    });
+}
+
 const form = useForm({
     sku: props.variant.sku ?? '',
     price: props.variant.price,
     stock_quantity: props.variant.stock_quantity,
-    options: Object.entries(props.variant.options).map(([name, value]) => ({ name, value })),
+    option_value_ids: initialOptionValueIds(),
     is_active: props.variant.is_active,
 });
-
-function addOption(): void {
-    if (form.options.length < 3) {
-        form.options.push({ name: '', value: '' });
-    }
-}
-
-function removeOption(index: number): void {
-    if (form.options.length > 1) {
-        form.options.splice(index, 1);
-    }
-}
 
 function submit(): void {
     form.put(update({ product: props.product, variant: props.variant }).url);
@@ -83,57 +97,32 @@ function submit(): void {
 
             <!-- Form -->
             <form class="flex flex-col gap-6" @submit.prevent="submit">
-                <!-- Options -->
-                <div class="grid gap-3">
-                    <Label>Options <span class="text-destructive">*</span></Label>
-                    <p class="text-xs text-muted-foreground -mt-1">Define option name and value pairs (e.g. Size: M, Color: Red). Up to 3.</p>
-
+                <!-- Option selects -->
+                <div class="grid gap-4">
                     <div
-                        v-for="(option, idx) in form.options"
-                        :key="idx"
-                        class="flex items-start gap-2"
+                        v-for="(optionType, idx) in optionTypes"
+                        :key="optionType.id"
+                        class="grid gap-2"
                     >
-                        <div class="grid gap-1 flex-1">
-                            <Input
-                                :id="`option-name-${idx}`"
-                                v-model="form.options[idx].name"
-                                placeholder="Name (e.g. Size)"
-                            />
-                            <InputError :message="(form.errors as Record<string, string>)[`options.${idx}.name`]" />
-                        </div>
-                        <div class="grid gap-1 flex-1">
-                            <Input
-                                :id="`option-value-${idx}`"
-                                v-model="form.options[idx].value"
-                                placeholder="Value (e.g. M)"
-                            />
-                            <InputError :message="(form.errors as Record<string, string>)[`options.${idx}.value`]" />
-                        </div>
-                        <Button
-                            v-if="form.options.length > 1"
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            class="mt-0.5"
-                            @click="removeOption(idx)"
+                        <Label :for="`option-${optionType.id}`">
+                            {{ optionType.name }} <span class="text-destructive">*</span>
+                        </Label>
+                        <select
+                            :id="`option-${optionType.id}`"
+                            v-model="form.option_value_ids[idx]"
+                            class="h-9 w-full max-w-xs rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
                         >
-                            <Minus class="size-4" />
-                        </Button>
+                            <option
+                                v-for="val in optionType.values"
+                                :key="val.id"
+                                :value="val.id"
+                            >
+                                {{ val.value }}
+                            </option>
+                        </select>
+                        <InputError :message="(form.errors as Record<string, string>)[`option_value_ids.${idx}`]" />
                     </div>
-
-                    <InputError :message="form.errors.options as string" />
-
-                    <Button
-                        v-if="form.options.length < 3"
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        class="w-fit text-xs"
-                        @click="addOption"
-                    >
-                        <Plus class="mr-1 size-3" />
-                        Add option
-                    </Button>
+                    <InputError :message="form.errors.option_value_ids as string" />
                 </div>
 
                 <!-- SKU & Price -->
