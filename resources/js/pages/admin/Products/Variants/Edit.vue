@@ -59,7 +59,7 @@ function removeOption(index: number): void {
 }
 
 function submit(): void {
-    form.put(update(props.product, props.variant).url);
+    form.put(update({ product: props.product, variant: props.variant }).url);
 }
 </script>
 

@@ -44,8 +44,8 @@ vi.mock('@/actions/App/Http/Controllers/Admin/ProductController', () => ({
 }));
 
 vi.mock('@/actions/App/Http/Controllers/Admin/ProductVariantController', () => ({
-    update: vi.fn((product: { slug: string }, variant: { id: number }) => ({
-        url: `/dashboard/products/${product.slug}/variants/${variant.id}`,
+    update: vi.fn((args: { product: { slug: string }; variant: { id: number } }) => ({
+        url: `/dashboard/products/${args.product.slug}/variants/${args.variant.id}`,
     })),
 }));
 

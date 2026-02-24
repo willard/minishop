@@ -69,7 +69,7 @@ function confirmDelete(): void {
 
 function confirmDeleteVariant(variant: ProductVariant): void {
     if (confirm('Delete this variant? This cannot be undone.')) {
-        router.delete(destroyVariant(props.product, variant).url);
+        router.delete(destroyVariant({ product: props.product, variant }).url);
     }
 }
 </script>
@@ -231,7 +231,7 @@ function confirmDeleteVariant(variant: ProductVariant): void {
                             </td>
                             <td class="px-4 py-2.5 text-right">
                                 <div class="flex items-center justify-end gap-1">
-                                    <Link :href="editVariant(product, variant).url">
+                                    <Link :href="editVariant({ product, variant }).url">
                                         <Button variant="ghost" size="sm" class="h-7 w-7 p-0">
                                             <Pencil class="size-3" />
                                         </Button>
