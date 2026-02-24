@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { PackagePlus, Pencil, Trash2 } from 'lucide-vue-next';
+import { Eye, PackagePlus, Pencil, Trash2 } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { type BreadcrumbItem } from '@/types';
-import { index, create, edit, destroy } from '@/actions/App/Http/Controllers/Admin/ProductController';
+import { index, create, show, edit, destroy } from '@/actions/App/Http/Controllers/Admin/ProductController';
 
 interface Category {
     id: number;
@@ -125,6 +125,11 @@ function confirmDelete(product: Product): void {
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex justify-end gap-2">
+                                    <Link :href="show(product).url">
+                                        <Button variant="ghost" size="sm">
+                                            <Eye class="size-4" />
+                                        </Button>
+                                    </Link>
                                     <Link :href="edit(product).url">
                                         <Button variant="ghost" size="sm">
                                             <Pencil class="size-4" />
