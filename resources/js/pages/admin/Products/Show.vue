@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-vue-next';
+import { ArrowLeft, Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { type BreadcrumbItem } from '@/types';
 import { index, edit, destroy } from '@/actions/App/Http/Controllers/Admin/ProductController';
+import {
+    create as createVariant,
+    edit as editVariant,
+    destroy as destroyVariant,
+} from '@/actions/App/Http/Controllers/Admin/ProductVariantController';
 
 interface Category {
     id: number;
@@ -16,6 +21,15 @@ interface ProductImage {
     id: number;
     path: string;
     alt_text: string | null;
+}
+
+interface ProductVariant {
+    id: number;
+    sku: string | null;
+    price: number | null;
+    stock_quantity: number;
+    options: Record<string, string>;
+    is_active: boolean;
 }
 
 interface Product {
@@ -30,6 +44,7 @@ interface Product {
     sku: string | null;
     categories: Category[];
     images: ProductImage[];
+    variants: ProductVariant[];
 }
 
 const props = defineProps<{
@@ -49,6 +64,12 @@ function formatPrice(cents: number): string {
 function confirmDelete(): void {
     if (confirm(`Delete "${props.product.name}"? This cannot be undone.`)) {
         router.delete(destroy(props.product).url);
+    }
+}
+
+function confirmDeleteVariant(variant: ProductVariant): void {
+    if (confirm('Delete this variant? This cannot be undone.')) {
+        router.delete(destroyVariant(props.product, variant).url);
     }
 }
 </script>
@@ -146,6 +167,88 @@ function confirmDelete(): void {
                     <p class="text-xs text-muted-foreground uppercase tracking-wide mb-1">Description</p>
                     <p class="text-sm whitespace-pre-wrap">{{ product.description }}</p>
                 </div>
+            </div>
+
+            <!-- Variants -->
+            <div class="rounded-lg border border-sidebar-border overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-sidebar-border bg-muted/50">
+                    <h2 class="font-semibold text-sm">Variants</h2>
+                    <Link :href="createVariant(product).url">
+                        <Button variant="outline" size="sm" class="text-xs h-7">
+                            <Plus class="mr-1 size-3" />
+                            Add Variant
+                        </Button>
+                    </Link>
+                </div>
+
+                <div v-if="product.variants.length === 0" class="px-4 py-8 text-center text-sm text-muted-foreground">
+                    No variants yet. Add one to offer size, color, or other options.
+                </div>
+
+                <table v-else class="w-full text-sm">
+                    <thead class="border-b border-sidebar-border bg-muted/20">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Options</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-muted-foreground">SKU</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Price</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Stock</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Status</th>
+                            <th class="px-4 py-2" />
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-sidebar-border">
+                        <tr
+                            v-for="variant in product.variants"
+                            :key="variant.id"
+                            class="hover:bg-muted/30 transition-colors"
+                        >
+                            <td class="px-4 py-2.5">
+                                <div class="flex flex-wrap gap-1">
+                                    <Badge
+                                        v-for="(value, key) in variant.options"
+                                        :key="key"
+                                        variant="secondary"
+                                        class="text-xs font-normal"
+                                    >
+                                        {{ key }}: {{ value }}
+                                    </Badge>
+                                </div>
+                            </td>
+                            <td class="px-4 py-2.5 font-mono text-xs text-muted-foreground">
+                                {{ variant.sku ?? '—' }}
+                            </td>
+                            <td class="px-4 py-2.5">
+                                <span v-if="variant.price !== null">${{ formatPrice(variant.price) }}</span>
+                                <span v-else class="text-xs text-muted-foreground italic">Inherited</span>
+                            </td>
+                            <td class="px-4 py-2.5" :class="variant.stock_quantity === 0 ? 'text-destructive font-medium' : ''">
+                                {{ variant.stock_quantity }}
+                            </td>
+                            <td class="px-4 py-2.5">
+                                <Badge :variant="variant.is_active ? 'default' : 'secondary'" class="text-xs">
+                                    {{ variant.is_active ? 'Active' : 'Inactive' }}
+                                </Badge>
+                            </td>
+                            <td class="px-4 py-2.5 text-right">
+                                <div class="flex items-center justify-end gap-1">
+                                    <Link :href="editVariant(product, variant).url">
+                                        <Button variant="ghost" size="sm" class="h-7 w-7 p-0">
+                                            <Pencil class="size-3" />
+                                        </Button>
+                                    </Link>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        class="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                        @click="confirmDeleteVariant(variant)"
+                                    >
+                                        <Trash2 class="size-3" />
+                                    </Button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </AppLayout>
