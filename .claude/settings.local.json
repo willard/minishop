@@ -3,7 +3,24 @@
     "allow": [
       "Bash(git init:*)",
       "Bash(git -C /Users/willardmacay/Devs/ai/minishop add .)",
-      "Bash(git -C /Users/willardmacay/Devs/ai/minishop status --short)"
+      "Bash(git -C /Users/willardmacay/Devs/ai/minishop status --short)",
+      "Bash(git commit:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run test:run:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(gh pr create:*)",
+      "Bash(git pull:*)",
+      "mcp__laravel-boost__get-absolute-url",
+      "mcp__laravel-boost__application-info",
+      "Bash(xargs ls:*)",
+      "Bash(python3:*)",
+      "Bash(php artisan make:migration:*)",
+      "Bash(vendor/bin/pint:*)",
+      "Bash(php artisan test:*)"
     ]
   }
 }
