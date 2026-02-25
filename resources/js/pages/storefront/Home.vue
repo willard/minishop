@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowRight } from 'lucide-vue-next';
-import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
-import { useCart } from '@/composables/useCart';
-import { formatPrice } from '@/lib/utils';
 import { index as productsIndex, show as productShow } from '@/actions/App/Http/Controllers/Storefront/ProductController';
+import { useCart } from '@/composables/useCart';
+import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
+import { formatPrice } from '@/lib/utils';
 import type { StorefrontProduct, StorefrontCategory } from '@/types/storefront';
 
-const props = defineProps<{
+defineProps<{
     featuredProducts: StorefrontProduct[];
     categories: StorefrontCategory[];
 }>();

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
+import { useDebounceFn } from '@vueuse/core';
 import { Search, SlidersHorizontal } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import { useDebounceFn } from '@vueuse/core';
-import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
-import { useCart } from '@/composables/useCart';
-import { formatPrice } from '@/lib/utils';
 import { index, show as productShow } from '@/actions/App/Http/Controllers/Storefront/ProductController';
+import { useCart } from '@/composables/useCart';
+import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
+import { formatPrice } from '@/lib/utils';
 import type { StorefrontProduct, StorefrontCategory, PaginatedProducts } from '@/types/storefront';
 
 const props = defineProps<{
@@ -295,8 +295,7 @@ function handleAddToCart(product: StorefrontProduct): void {
                             : 'border-color: rgba(28, 26, 23, 0.2); color: #1c1a17'
                     "
                     preserve-scroll
-                    v-html="link.label"
-                />
+                ><span v-html="link.label" /></Link>
             </div>
         </div>
     </StorefrontLayout>
