@@ -116,14 +116,16 @@ class CheckoutController extends Controller
             return $order;
         });
 
-        Mail::to($order->customer->user->email)
-            ->queue(new OrderConfirmationMail($order->load(['items', 'customer.user', 'shippingMethod', 'coupon'])));
-
         $gateway = $order->payment_gateway;
 
         if (in_array($gateway, ['stripe', 'paymongo'])) {
             return redirect()->route('storefront.checkout.payment.show', $order->order_number);
         }
+
+        // Non-gateway orders (COD, bank transfer) are confirmed immediately — send email now.
+        // Gateway orders (Stripe, PayMongo) send the confirmation after the payment webhook fires.
+        Mail::to($order->customer->user->email)
+            ->queue(new OrderConfirmationMail($order->load(['items', 'customer.user', 'shippingMethod', 'coupon'])));
 
         return redirect()->route('storefront.order.confirmation', $order);
     }

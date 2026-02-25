@@ -3,11 +3,13 @@
 namespace Tests\Feature\Webhooks;
 
 use App\Enums\OrderStatus;
+use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
 use App\Models\ShippingMethod;
 use App\Models\StoreSettings;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class StripeWebhookTest extends TestCase
@@ -122,6 +124,78 @@ class StripeWebhookTest extends TestCase
             'id' => $order->id,
             'payment_status' => 'paid',
         ]);
+    }
+
+    public function test_stripe_webhook_queues_confirmation_email_on_success(): void
+    {
+        Mail::fake();
+
+        $settings = StoreSettings::current();
+        $settings->update(['stripe_webhook_secret' => $this->webhookSecret]);
+
+        $order = $this->makeOrder();
+
+        $eventPayload = json_encode([
+            'type' => 'payment_intent.succeeded',
+            'data' => [
+                'object' => [
+                    'id' => 'pi_test_123',
+                    'object' => 'payment_intent',
+                    'status' => 'succeeded',
+                    'amount' => 10000,
+                    'currency' => 'php',
+                ],
+            ],
+        ]);
+
+        $sigHeader = $this->buildSignatureHeader($eventPayload);
+
+        $this->call('POST', route('webhooks.stripe'), [], [], [], [
+            'HTTP_STRIPE_SIGNATURE' => $sigHeader,
+            'CONTENT_TYPE' => 'application/json',
+        ], $eventPayload)->assertStatus(200);
+
+        Mail::assertQueued(OrderConfirmationMail::class, function (OrderConfirmationMail $mail) use ($order) {
+            return $mail->order->id === $order->id;
+        });
+    }
+
+    public function test_stripe_webhook_does_not_queue_email_for_already_paid_order(): void
+    {
+        Mail::fake();
+
+        $settings = StoreSettings::current();
+        $settings->update(['stripe_webhook_secret' => $this->webhookSecret]);
+
+        $shippingMethod = ShippingMethod::factory()->create();
+        $order = Order::factory()->create([
+            'payment_intent_id' => 'pi_test_paid',
+            'payment_status' => 'paid',
+            'status' => OrderStatus::Processing,
+            'shipping_method_id' => $shippingMethod->id,
+        ]);
+
+        $eventPayload = json_encode([
+            'type' => 'payment_intent.succeeded',
+            'data' => [
+                'object' => [
+                    'id' => 'pi_test_paid',
+                    'object' => 'payment_intent',
+                    'status' => 'succeeded',
+                    'amount' => 10000,
+                    'currency' => 'php',
+                ],
+            ],
+        ]);
+
+        $sigHeader = $this->buildSignatureHeader($eventPayload);
+
+        $this->call('POST', route('webhooks.stripe'), [], [], [], [
+            'HTTP_STRIPE_SIGNATURE' => $sigHeader,
+            'CONTENT_TYPE' => 'application/json',
+        ], $eventPayload)->assertStatus(200);
+
+        Mail::assertNotQueued(OrderConfirmationMail::class);
     }
 
     public function test_stripe_webhook_ignores_unhandled_event_types(): void
