@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ShoppingBag, Trash2, Tag, ChevronDown, ChevronUp } from 'lucide-vue-next';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { ShoppingBag, Trash2, Tag, ChevronDown, ChevronUp, Truck } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 import { useCart } from '@/composables/useCart';
@@ -8,7 +8,23 @@ import { formatPrice } from '@/lib/utils';
 import { store } from '@/actions/App/Http/Controllers/Storefront/CheckoutController';
 import { index as productsIndex } from '@/actions/App/Http/Controllers/Storefront/ProductController';
 
+interface ShippingMethod {
+    id: number;
+    name: string;
+    description: string | null;
+    price: number;
+    is_free: boolean;
+}
+
+const page = usePage<{
+    storeSettings: { currency: string; currencyLocale: string; taxRate: number };
+    shippingMethods: ShippingMethod[];
+}>();
+
 const { cartItems, itemCount, subtotal, removeItem, updateQuantity, clearCart } = useCart();
+
+const shippingMethods = computed(() => page.props.shippingMethods ?? []);
+const storeSettings = computed(() => page.props.storeSettings);
 
 const couponExpanded = ref(false);
 const orderSummaryExpanded = ref(true);
@@ -23,6 +39,7 @@ const form = useForm({
     state: '',
     postcode: '',
     country: 'PH',
+    shipping_method_id: computed(() => shippingMethods.value[0]?.id ?? null) as unknown as number | null,
     coupon_code: '',
     notes: '',
     items: computed(() =>
@@ -34,12 +51,25 @@ const form = useForm({
     ),
 });
 
-const shippingAmount = 20000;
-const taxRate = 0.12;
+const selectedShippingMethod = computed(() =>
+    shippingMethods.value.find((m) => m.id === form.shipping_method_id) ?? shippingMethods.value[0] ?? null,
+);
 
-const discountedSubtotal = computed(() => subtotal.value);
-const taxAmount = computed(() => Math.round(discountedSubtotal.value * taxRate));
-const total = computed(() => discountedSubtotal.value + shippingAmount + taxAmount.value);
+const shippingAmount = computed(() => {
+    if (!selectedShippingMethod.value) return 0;
+    return selectedShippingMethod.value.is_free ? 0 : selectedShippingMethod.value.price;
+});
+
+const taxRate = computed(() => (storeSettings.value?.taxRate ?? 12) / 100);
+const taxAmount = computed(() => Math.round(subtotal.value * taxRate.value));
+const total = computed(() => subtotal.value + shippingAmount.value + taxAmount.value);
+
+const currency = computed(() => storeSettings.value?.currency ?? 'PHP');
+const locale = computed(() => storeSettings.value?.currencyLocale ?? 'en-PH');
+
+function price(cents: number): string {
+    return formatPrice(cents, currency.value, locale.value);
+}
 
 function submit(): void {
     form.post(store().url, {
@@ -240,6 +270,44 @@ function submit(): void {
                         </div>
                     </section>
 
+                    <!-- Shipping method -->
+                    <section v-if="shippingMethods.length > 0">
+                        <h2 class="mb-5 flex items-center gap-2 text-lg font-semibold" style="color: #1c1a17">
+                            <Truck class="size-5" style="color: rgba(28, 26, 23, 0.45)" />
+                            Shipping Method
+                        </h2>
+                        <div class="space-y-3">
+                            <label
+                                v-for="method in shippingMethods"
+                                :key="method.id"
+                                class="flex cursor-pointer items-start gap-4 rounded-xl border px-4 py-4 transition-colors"
+                                :style="form.shipping_method_id === method.id
+                                    ? 'border-color: #1c1a17; background-color: rgba(28, 26, 23, 0.03)'
+                                    : 'border-color: rgba(28, 26, 23, 0.15)'"
+                            >
+                                <input
+                                    v-model="form.shipping_method_id"
+                                    type="radio"
+                                    :value="method.id"
+                                    class="mt-0.5 shrink-0 accent-[#1c1a17]"
+                                />
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium" style="color: #1c1a17">{{ method.name }}</p>
+                                    <p v-if="method.description" class="mt-0.5 text-xs" style="color: rgba(28, 26, 23, 0.55)">
+                                        {{ method.description }}
+                                    </p>
+                                </div>
+                                <span class="shrink-0 text-sm font-semibold" style="color: #1c1a17">
+                                    <template v-if="method.is_free">Free</template>
+                                    <template v-else>{{ price(method.price) }}</template>
+                                </span>
+                            </label>
+                        </div>
+                        <p v-if="form.errors.shipping_method_id" class="mt-1.5 text-xs" style="color: #c05c3a">
+                            {{ form.errors.shipping_method_id }}
+                        </p>
+                    </section>
+
                     <!-- Order notes -->
                     <section>
                         <h2 class="mb-5 text-lg font-semibold" style="color: #1c1a17">Additional Notes</h2>
@@ -342,7 +410,7 @@ function submit(): void {
 
                                         <div class="flex items-center gap-2">
                                             <span class="text-sm font-medium" style="color: #1c1a17">
-                                                {{ formatPrice(item.price * item.quantity) }}
+                                                {{ price(item.price * item.quantity) }}
                                             </span>
                                             <button
                                                 class="transition-opacity hover:opacity-60"
@@ -389,20 +457,24 @@ function submit(): void {
                         <div class="space-y-3">
                             <div class="flex justify-between text-sm" style="color: rgba(28, 26, 23, 0.7)">
                                 <span>Subtotal</span>
-                                <span>{{ formatPrice(subtotal) }}</span>
+                                <span>{{ price(subtotal) }}</span>
                             </div>
                             <div class="flex justify-between text-sm" style="color: rgba(28, 26, 23, 0.7)">
                                 <span>Shipping</span>
-                                <span>{{ formatPrice(shippingAmount) }}</span>
+                                <span>
+                                    <template v-if="selectedShippingMethod?.is_free">Free</template>
+                                    <template v-else-if="selectedShippingMethod">{{ price(shippingAmount) }}</template>
+                                    <template v-else>—</template>
+                                </span>
                             </div>
                             <div class="flex justify-between text-sm" style="color: rgba(28, 26, 23, 0.7)">
-                                <span>Tax (12%)</span>
-                                <span>{{ formatPrice(taxAmount) }}</span>
+                                <span>Tax ({{ storeSettings?.taxRate ?? 12 }}%)</span>
+                                <span>{{ price(taxAmount) }}</span>
                             </div>
                             <div class="h-px" style="background-color: rgba(28, 26, 23, 0.1)" />
                             <div class="flex justify-between font-semibold" style="color: #1c1a17">
                                 <span>Total</span>
-                                <span>{{ formatPrice(total) }}</span>
+                                <span>{{ price(total) }}</span>
                             </div>
                         </div>
 

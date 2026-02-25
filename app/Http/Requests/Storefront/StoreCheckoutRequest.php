@@ -23,6 +23,7 @@ class StoreCheckoutRequest extends FormRequest
             'state' => ['required', 'string', 'max:100'],
             'postcode' => ['required', 'string', 'max:20'],
             'country' => ['required', 'string', 'size:2'],
+            'shipping_method_id' => ['required', 'integer', 'exists:shipping_methods,id'],
             'coupon_code' => ['nullable', 'string', 'max:50'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'items' => ['required', 'array', 'min:1'],
@@ -40,6 +41,8 @@ class StoreCheckoutRequest extends FormRequest
             'items.*.product_id.exists' => 'One or more products in your cart no longer exist.',
             'items.*.variant_id.exists' => 'One or more variants in your cart no longer exist.',
             'items.*.quantity.min' => 'Quantity must be at least 1.',
+            'shipping_method_id.required' => 'Please select a shipping method.',
+            'shipping_method_id.exists' => 'The selected shipping method is no longer available.',
         ];
     }
 }

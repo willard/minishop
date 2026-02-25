@@ -16,7 +16,12 @@ class Order extends Model
         'order_number',
         'customer_id',
         'coupon_id',
+        'shipping_method_id',
         'status',
+        'payment_gateway',
+        'payment_intent_id',
+        'payment_status',
+        'paid_at',
         'subtotal',
         'discount_amount',
         'shipping_amount',
@@ -41,6 +46,7 @@ class Order extends Model
             'shipping_amount' => 'integer',
             'tax_amount' => 'integer',
             'total_amount' => 'integer',
+            'paid_at' => 'datetime',
         ];
     }
 
@@ -56,6 +62,11 @@ class Order extends Model
     public function getRouteKeyName(): string
     {
         return 'order_number';
+    }
+
+    public function shippingMethod(): BelongsTo
+    {
+        return $this->belongsTo(ShippingMethod::class);
     }
 
     public function coupon(): BelongsTo

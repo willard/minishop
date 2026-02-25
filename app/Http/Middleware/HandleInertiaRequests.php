@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ShippingMethod;
+use App\Models\StoreSettings;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,6 +37,8 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $settings = StoreSettings::current();
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -42,6 +46,17 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'storeSettings' => [
+                'currency' => $settings->currency,
+                'currencyLocale' => $settings->currency_locale,
+                'taxRate' => (float) $settings->tax_rate,
+                'activeGateway' => $settings->active_payment_gateway,
+                'stripePublicKey' => $settings->stripe_public_key,
+            ],
+            'shippingMethods' => fn () => ShippingMethod::active()
+                ->orderBy('sort_order')
+                ->orderBy('price')
+                ->get(['id', 'name', 'description', 'price', 'is_free']),
         ];
     }
 }
