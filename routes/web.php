@@ -8,15 +8,25 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductOptionController;
 use App\Http\Controllers\Admin\ProductVariantController;
+use App\Http\Controllers\Storefront\CheckoutController;
+use App\Http\Controllers\Storefront\HomeController;
+use App\Http\Controllers\Storefront\ProductController as StorefrontProductController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use Laravel\Fortify\Features;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canRegister' => Features::enabled(Features::registration()),
-    ]);
-})->name('home');
+Route::get('/', HomeController::class)->name('home');
+
+Route::prefix('products')->name('storefront.products.')->group(function () {
+    Route::get('/', [StorefrontProductController::class, 'index'])->name('index');
+    Route::get('/{product:slug}', [StorefrontProductController::class, 'show'])->name('show');
+});
+
+Route::prefix('checkout')->name('storefront.checkout.')->group(function () {
+    Route::get('/', [CheckoutController::class, 'create'])->name('create');
+    Route::post('/', [CheckoutController::class, 'store'])->name('store');
+});
+
+Route::get('/order-confirmation/{order}', [CheckoutController::class, 'confirmation'])
+    ->name('storefront.order.confirmation');
 
 Route::get('dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])
