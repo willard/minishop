@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Storefront;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Storefront\StoreCheckoutRequest;
+use App\Mail\OrderConfirmationMail;
 use App\Models\Coupon;
 use App\Models\Customer;
 use App\Models\Order;
@@ -15,6 +16,7 @@ use App\Models\StoreSettings;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -119,6 +121,11 @@ class CheckoutController extends Controller
         if (in_array($gateway, ['stripe', 'paymongo'])) {
             return redirect()->route('storefront.checkout.payment.show', $order->order_number);
         }
+
+        // Non-gateway orders (COD, bank transfer) are confirmed immediately — send email now.
+        // Gateway orders (Stripe, PayMongo) send the confirmation after the payment webhook fires.
+        Mail::to($order->customer->user->email)
+            ->queue(new OrderConfirmationMail($order->load(['items', 'customer.user', 'shippingMethod', 'coupon'])));
 
         return redirect()->route('storefront.order.confirmation', $order);
     }

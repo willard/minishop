@@ -3,11 +3,13 @@
 namespace Tests\Feature\Webhooks;
 
 use App\Enums\OrderStatus;
+use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
 use App\Models\ShippingMethod;
 use App\Models\StoreSettings;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class PayMongoWebhookTest extends TestCase
@@ -111,6 +113,76 @@ class PayMongoWebhookTest extends TestCase
             'HTTP_PAYMONGO_SIGNATURE' => $sigHeader,
             'CONTENT_TYPE' => 'application/json',
         ], $eventPayload)->assertStatus(200);
+    }
+
+    public function test_paymongo_webhook_queues_confirmation_email_on_payment_paid(): void
+    {
+        Mail::fake();
+
+        StoreSettings::current()->update(['paymongo_webhook_secret' => $this->webhookSecret]);
+
+        $order = $this->makeOrder('ORD-PM-MAIL-001');
+
+        $eventPayload = json_encode([
+            'data' => [
+                'attributes' => [
+                    'type' => 'payment.paid',
+                    'data' => [
+                        'attributes' => [
+                            'metadata' => ['order_number' => 'ORD-PM-MAIL-001'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $sigHeader = $this->buildSignatureHeader($eventPayload);
+
+        $this->call('POST', route('webhooks.paymongo'), [], [], [], [
+            'HTTP_PAYMONGO_SIGNATURE' => $sigHeader,
+            'CONTENT_TYPE' => 'application/json',
+        ], $eventPayload)->assertStatus(200);
+
+        Mail::assertQueued(OrderConfirmationMail::class, function (OrderConfirmationMail $mail) use ($order) {
+            return $mail->order->id === $order->id;
+        });
+    }
+
+    public function test_paymongo_webhook_does_not_queue_email_for_already_paid_order(): void
+    {
+        Mail::fake();
+
+        StoreSettings::current()->update(['paymongo_webhook_secret' => $this->webhookSecret]);
+
+        $shippingMethod = ShippingMethod::factory()->create();
+        Order::factory()->create([
+            'order_number' => 'ORD-PM-PAID-001',
+            'payment_status' => 'paid',
+            'status' => OrderStatus::Processing,
+            'shipping_method_id' => $shippingMethod->id,
+        ]);
+
+        $eventPayload = json_encode([
+            'data' => [
+                'attributes' => [
+                    'type' => 'payment.paid',
+                    'data' => [
+                        'attributes' => [
+                            'metadata' => ['order_number' => 'ORD-PM-PAID-001'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $sigHeader = $this->buildSignatureHeader($eventPayload);
+
+        $this->call('POST', route('webhooks.paymongo'), [], [], [], [
+            'HTTP_PAYMONGO_SIGNATURE' => $sigHeader,
+            'CONTENT_TYPE' => 'application/json',
+        ], $eventPayload)->assertStatus(200);
+
+        Mail::assertNotQueued(OrderConfirmationMail::class);
     }
 
     public function test_paymongo_webhook_does_not_process_if_no_secret_configured(): void

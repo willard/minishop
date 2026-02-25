@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateOrderRequest;
+use App\Mail\OrderStatusChangedMail;
 use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -40,6 +42,15 @@ class OrderController extends Controller
     public function update(UpdateOrderRequest $request, Order $order): RedirectResponse
     {
         $order->update($request->validated());
+
+        if ($order->wasChanged('status')) {
+            $notifiable = [OrderStatus::Shipped, OrderStatus::Delivered, OrderStatus::Cancelled];
+
+            if (in_array($order->status, $notifiable)) {
+                Mail::to($order->customer->user->email)
+                    ->queue(new OrderStatusChangedMail($order->load(['items', 'customer.user', 'shippingMethod'])));
+            }
+        }
 
         return redirect()->route('admin.orders.show', $order)
             ->with('success', 'Order updated successfully.');
