@@ -55,7 +55,7 @@ const isFree = ref(props.shippingMethod.is_free);
 
             <!-- Form -->
             <Form
-                v-bind="update.form(shippingMethod)"
+                v-bind="update.form(shippingMethod.id)"
                 class="flex flex-col gap-6"
                 v-slot="{ errors, processing }"
             >

@@ -32,7 +32,7 @@ function formatPrice(cents: number): string {
 
 function confirmDelete(method: ShippingMethod): void {
     if (confirm(`Delete "${method.name}"? This cannot be undone.`)) {
-        router.delete(destroy(method).url);
+        router.delete(destroy(method.id).url);
     }
 }
 </script>
@@ -95,7 +95,7 @@ function confirmDelete(method: ShippingMethod): void {
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex justify-end gap-2">
-                                    <Link :href="edit(method).url">
+                                    <Link :href="edit(method.id).url">
                                         <Button variant="ghost" size="sm">
                                             <Pencil class="size-4" />
                                         </Button>
