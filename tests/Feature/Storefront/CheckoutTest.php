@@ -4,6 +4,7 @@ namespace Tests\Feature\Storefront;
 
 use App\Models\Coupon;
 use App\Models\Product;
+use App\Models\ShippingMethod;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -11,6 +12,14 @@ use Tests\TestCase;
 class CheckoutTest extends TestCase
 {
     use RefreshDatabase;
+
+    private ?ShippingMethod $shippingMethod = null;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->shippingMethod = ShippingMethod::factory()->create(['price' => 20000, 'is_free' => false]);
+    }
 
     /**
      * @param  array<string, mixed>  $overrides
@@ -26,6 +35,7 @@ class CheckoutTest extends TestCase
             'state' => 'Metro Manila',
             'postcode' => '1200',
             'country' => 'PH',
+            'shipping_method_id' => $this->shippingMethod->id,
             'items' => [],
         ], $overrides);
     }
@@ -45,8 +55,55 @@ class CheckoutTest extends TestCase
             'items' => [['product_id' => $product->id, 'variant_id' => null, 'quantity' => 2]],
         ]))->assertRedirect();
 
-        $this->assertDatabaseHas('orders', ['shipping_name' => 'Maria Santos']);
+        $this->assertDatabaseHas('orders', [
+            'shipping_name' => 'Maria Santos',
+            'shipping_method_id' => $this->shippingMethod->id,
+        ]);
         $this->assertDatabaseHas('order_items', ['product_id' => $product->id, 'quantity' => 2]);
+    }
+
+    public function test_order_stores_shipping_amount_from_selected_method(): void
+    {
+        $product = Product::factory()->create(['price' => 5000, 'stock_quantity' => 5]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [['product_id' => $product->id, 'variant_id' => null, 'quantity' => 1]],
+        ]));
+
+        $this->assertDatabaseHas('orders', ['shipping_amount' => 20000]);
+    }
+
+    public function test_free_shipping_sets_shipping_amount_to_zero(): void
+    {
+        $freeMethod = ShippingMethod::factory()->free()->create();
+        $product = Product::factory()->create(['price' => 5000, 'stock_quantity' => 5]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [['product_id' => $product->id, 'variant_id' => null, 'quantity' => 1]],
+            'shipping_method_id' => $freeMethod->id,
+        ]));
+
+        $this->assertDatabaseHas('orders', ['shipping_amount' => 0]);
+    }
+
+    public function test_order_fails_when_shipping_method_missing(): void
+    {
+        $product = Product::factory()->create(['price' => 5000, 'stock_quantity' => 5]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [['product_id' => $product->id, 'variant_id' => null, 'quantity' => 1]],
+            'shipping_method_id' => null,
+        ]))->assertSessionHasErrors('shipping_method_id');
+    }
+
+    public function test_order_fails_when_shipping_method_does_not_exist(): void
+    {
+        $product = Product::factory()->create(['price' => 5000, 'stock_quantity' => 5]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [['product_id' => $product->id, 'variant_id' => null, 'quantity' => 1]],
+            'shipping_method_id' => 99999,
+        ]))->assertSessionHasErrors('shipping_method_id');
     }
 
     public function test_stock_is_decremented_after_order(): void

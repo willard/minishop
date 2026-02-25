@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Package, ShoppingCart, Tag, Ticket, Users } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Package, Settings, ShoppingCart, Tag, Ticket, Truck, Users } from 'lucide-vue-next';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -21,6 +21,8 @@ import { index as categoriesIndex } from '@/actions/App/Http/Controllers/Admin/C
 import { index as ordersIndex } from '@/actions/App/Http/Controllers/Admin/OrderController';
 import { index as customersIndex } from '@/actions/App/Http/Controllers/Admin/CustomerController';
 import { index as couponsIndex } from '@/actions/App/Http/Controllers/Admin/CouponController';
+import { index as shippingMethodsIndex } from '@/actions/App/Http/Controllers/Admin/ShippingMethodController';
+import { edit as settingsEdit } from '@/actions/App/Http/Controllers/Admin/StoreSettingsController';
 
 const mainNavItems: NavItem[] = [
     {
@@ -52,6 +54,16 @@ const mainNavItems: NavItem[] = [
         title: 'Coupons',
         href: couponsIndex().url,
         icon: Ticket,
+    },
+    {
+        title: 'Shipping Methods',
+        href: shippingMethodsIndex().url,
+        icon: Truck,
+    },
+    {
+        title: 'Settings',
+        href: settingsEdit().url,
+        icon: Settings,
     },
 ];
 

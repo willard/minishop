@@ -10,6 +10,8 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\ShippingMethod;
+use App\Models\StoreSettings;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -46,9 +48,12 @@ class CheckoutController extends Controller
                 }
             }
 
-            $shippingAmount = 20000;
+            $shippingMethod = ShippingMethod::query()->findOrFail($validated['shipping_method_id']);
+            $shippingAmount = $shippingMethod->is_free ? 0 : $shippingMethod->price;
+
+            $settings = StoreSettings::current();
             $taxableAmount = $subtotal - $discountAmount;
-            $taxAmount = (int) round($taxableAmount * 0.12);
+            $taxAmount = (int) round($taxableAmount * ($settings->tax_rate / 100));
             $totalAmount = $taxableAmount + $shippingAmount + $taxAmount;
 
             $user = User::query()->firstOrCreate(
@@ -62,7 +67,10 @@ class CheckoutController extends Controller
                 'order_number' => '',
                 'customer_id' => $customer->id,
                 'coupon_id' => $coupon?->id,
+                'shipping_method_id' => $shippingMethod->id,
                 'status' => OrderStatus::Pending,
+                'payment_gateway' => $settings->active_payment_gateway,
+                'payment_status' => 'pending',
                 'subtotal' => $subtotal,
                 'discount_amount' => $discountAmount,
                 'shipping_amount' => $shippingAmount,
@@ -105,6 +113,12 @@ class CheckoutController extends Controller
 
             return $order;
         });
+
+        $gateway = $order->payment_gateway;
+
+        if (in_array($gateway, ['stripe', 'paymongo'])) {
+            return redirect()->route('storefront.checkout.payment.show', $order->order_number);
+        }
 
         return redirect()->route('storefront.order.confirmation', $order);
     }

@@ -1,0 +1,182 @@
+<?php
+
+namespace Tests\Feature\Admin;
+
+use App\Models\ShippingMethod;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class ShippingMethodTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_guests_are_redirected_from_index(): void
+    {
+        $this->get(route('admin.shipping-methods.index'))
+            ->assertRedirect(route('login'));
+    }
+
+    public function test_guests_are_redirected_from_create(): void
+    {
+        $this->get(route('admin.shipping-methods.create'))
+            ->assertRedirect(route('login'));
+    }
+
+    public function test_guests_are_redirected_from_store(): void
+    {
+        $this->post(route('admin.shipping-methods.store'), [])
+            ->assertRedirect(route('login'));
+    }
+
+    public function test_guests_are_redirected_from_edit(): void
+    {
+        $method = ShippingMethod::factory()->create();
+
+        $this->get(route('admin.shipping-methods.edit', $method))
+            ->assertRedirect(route('login'));
+    }
+
+    public function test_guests_are_redirected_from_destroy(): void
+    {
+        $method = ShippingMethod::factory()->create();
+
+        $this->delete(route('admin.shipping-methods.destroy', $method))
+            ->assertRedirect(route('login'));
+    }
+
+    public function test_authenticated_users_can_view_index(): void
+    {
+        $user = User::factory()->create();
+        ShippingMethod::factory(3)->create();
+
+        $this->actingAs($user)
+            ->get(route('admin.shipping-methods.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('admin/ShippingMethods/Index')
+                ->has('shippingMethods', 3)
+            );
+    }
+
+    public function test_authenticated_users_can_view_create_form(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('admin.shipping-methods.create'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('admin/ShippingMethods/Create'));
+    }
+
+    public function test_authenticated_users_can_store_a_shipping_method(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.shipping-methods.store'), [
+                'name' => 'Standard Delivery',
+                'description' => 'Delivered in 3-5 days',
+                'price' => 20000,
+                'is_free' => false,
+                'is_active' => true,
+                'sort_order' => 0,
+            ])
+            ->assertRedirect(route('admin.shipping-methods.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('shipping_methods', [
+            'name' => 'Standard Delivery',
+            'price' => 20000,
+        ]);
+    }
+
+    public function test_free_shipping_sets_price_to_zero(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.shipping-methods.store'), [
+                'name' => 'Free Shipping',
+                'is_free' => true,
+                'price' => 99999,
+                'sort_order' => 0,
+            ]);
+
+        $this->assertDatabaseHas('shipping_methods', [
+            'name' => 'Free Shipping',
+            'price' => 0,
+            'is_free' => true,
+        ]);
+    }
+
+    public function test_store_requires_name(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.shipping-methods.store'), ['price' => 1000])
+            ->assertSessionHasErrors('name');
+    }
+
+    public function test_authenticated_users_can_view_edit_form(): void
+    {
+        $user = User::factory()->create();
+        $method = ShippingMethod::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('admin.shipping-methods.edit', $method))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('admin/ShippingMethods/Edit')
+                ->has('shippingMethod')
+            );
+    }
+
+    public function test_authenticated_users_can_update_a_shipping_method(): void
+    {
+        $user = User::factory()->create();
+        $method = ShippingMethod::factory()->create(['name' => 'Old Name', 'price' => 10000]);
+
+        $this->actingAs($user)
+            ->put(route('admin.shipping-methods.update', $method), [
+                'name' => 'New Name',
+                'price' => 30000,
+                'is_free' => false,
+                'is_active' => true,
+                'sort_order' => 1,
+            ])
+            ->assertRedirect(route('admin.shipping-methods.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('shipping_methods', [
+            'id' => $method->id,
+            'name' => 'New Name',
+            'price' => 30000,
+        ]);
+    }
+
+    public function test_authenticated_users_can_delete_a_shipping_method(): void
+    {
+        $user = User::factory()->create();
+        $method = ShippingMethod::factory()->create();
+
+        $this->actingAs($user)
+            ->delete(route('admin.shipping-methods.destroy', $method))
+            ->assertRedirect(route('admin.shipping-methods.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('shipping_methods', ['id' => $method->id]);
+    }
+
+    public function test_scope_active_returns_only_active_methods(): void
+    {
+        ShippingMethod::factory()->create(['is_active' => true]);
+        ShippingMethod::factory()->inactive()->create();
+
+        $active = ShippingMethod::active()->get();
+
+        $this->assertCount(1, $active);
+        $this->assertTrue($active->first()->is_active);
+    }
+}

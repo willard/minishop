@@ -1,0 +1,270 @@
+<script setup lang="ts">
+import { Head, useForm } from '@inertiajs/vue3';
+import { Eye, EyeOff } from 'lucide-vue-next';
+import { ref } from 'vue';
+import { edit, update } from '@/actions/App/Http/Controllers/Admin/StoreSettingsController';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+
+interface Settings {
+    currency: string;
+    currency_locale: string;
+    tax_rate: number;
+    active_payment_gateway: string;
+    stripe_public_key: string | null;
+    stripe_secret_key: string | null;
+    stripe_webhook_secret: string | null;
+    paymongo_public_key: string | null;
+    paymongo_secret_key: string | null;
+    paymongo_webhook_secret: string | null;
+}
+
+const props = defineProps<{
+    settings: Settings;
+    hasStripeSecretKey: boolean;
+    hasStripeWebhookSecret: boolean;
+    hasPaymongoSecretKey: boolean;
+    hasPaymongoWebhookSecret: boolean;
+}>();
+
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Store Settings', href: edit().url },
+];
+
+const currencies = [
+    { code: 'PHP', locale: 'en-PH', label: 'PHP — Philippine Peso' },
+    { code: 'USD', locale: 'en-US', label: 'USD — US Dollar' },
+    { code: 'EUR', locale: 'de-DE', label: 'EUR — Euro' },
+    { code: 'GBP', locale: 'en-GB', label: 'GBP — British Pound' },
+    { code: 'JPY', locale: 'ja-JP', label: 'JPY — Japanese Yen' },
+    { code: 'AUD', locale: 'en-AU', label: 'AUD — Australian Dollar' },
+    { code: 'CAD', locale: 'en-CA', label: 'CAD — Canadian Dollar' },
+    { code: 'SGD', locale: 'en-SG', label: 'SGD — Singapore Dollar' },
+    { code: 'MYR', locale: 'ms-MY', label: 'MYR — Malaysian Ringgit' },
+    { code: 'IDR', locale: 'id-ID', label: 'IDR — Indonesian Rupiah' },
+];
+
+const form = useForm({
+    currency: props.settings.currency,
+    currency_locale: props.settings.currency_locale,
+    tax_rate: props.settings.tax_rate,
+    active_payment_gateway: props.settings.active_payment_gateway,
+    stripe_public_key: props.settings.stripe_public_key ?? '',
+    stripe_secret_key: '',
+    stripe_webhook_secret: '',
+    paymongo_public_key: props.settings.paymongo_public_key ?? '',
+    paymongo_secret_key: '',
+    paymongo_webhook_secret: '',
+});
+
+const showFields = ref<Record<string, boolean>>({});
+
+function toggleVisibility(field: string) {
+    showFields.value[field] = !showFields.value[field];
+}
+
+function onCurrencyChange(code: string) {
+    const match = currencies.find((c) => c.code === code);
+    if (match) {
+        form.currency_locale = match.locale;
+    }
+}
+
+function submit() {
+    form.put(update().url);
+}
+</script>
+
+<template>
+    <Head title="Store Settings" />
+
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <div class="flex max-w-2xl flex-col gap-8 p-4">
+            <div>
+                <h1 class="text-2xl font-semibold">Store Settings</h1>
+                <p class="text-sm text-muted-foreground">Configure currency, tax, and payment gateways.</p>
+            </div>
+
+            <form class="flex flex-col gap-8" @submit.prevent="submit">
+                <!-- Currency & Tax -->
+                <section class="flex flex-col gap-4">
+                    <h2 class="text-base font-semibold border-b pb-2">Currency &amp; Tax</h2>
+
+                    <div class="grid gap-2">
+                        <Label for="currency">Currency</Label>
+                        <select
+                            id="currency"
+                            v-model="form.currency"
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            @change="onCurrencyChange(form.currency)"
+                        >
+                            <option v-for="c in currencies" :key="c.code" :value="c.code">{{ c.label }}</option>
+                        </select>
+                        <InputError :message="form.errors.currency" />
+                    </div>
+
+                    <div class="grid gap-2 max-w-xs">
+                        <Label for="tax_rate">Tax Rate (%)</Label>
+                        <Input
+                            id="tax_rate"
+                            v-model="form.tax_rate"
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="0.01"
+                            placeholder="e.g. 12"
+                        />
+                        <InputError :message="form.errors.tax_rate" />
+                    </div>
+                </section>
+
+                <!-- Payment Gateway -->
+                <section class="flex flex-col gap-4">
+                    <h2 class="text-base font-semibold border-b pb-2">Payment Gateway</h2>
+
+                    <div class="flex flex-col gap-3">
+                        <label
+                            v-for="gw in [
+                                { value: 'stripe', label: 'Stripe', description: 'Credit/debit cards via Stripe Elements.' },
+                                { value: 'paymongo', label: 'PayMongo', description: 'GCash, Grab Pay, cards via PayMongo hosted checkout.' },
+                                { value: 'cod', label: 'Cash on Delivery', description: 'Customer pays on delivery. No online processing.' },
+                                { value: 'bank_transfer', label: 'Bank Transfer', description: 'Customer transfers payment manually. Admin confirms.' },
+                            ]"
+                            :key="gw.value"
+                            class="flex items-start gap-3 rounded-lg border p-4 cursor-pointer transition-colors"
+                            :class="form.active_payment_gateway === gw.value ? 'border-primary bg-primary/5' : 'border-border'"
+                        >
+                            <input
+                                v-model="form.active_payment_gateway"
+                                type="radio"
+                                :value="gw.value"
+                                class="mt-0.5"
+                            />
+                            <div>
+                                <p class="text-sm font-medium">{{ gw.label }}</p>
+                                <p class="text-xs text-muted-foreground">{{ gw.description }}</p>
+                            </div>
+                        </label>
+                        <InputError :message="form.errors.active_payment_gateway" />
+                    </div>
+                </section>
+
+                <!-- Stripe Keys -->
+                <section v-if="form.active_payment_gateway === 'stripe'" class="flex flex-col gap-4">
+                    <h2 class="text-base font-semibold border-b pb-2">Stripe Keys</h2>
+
+                    <div class="grid gap-2">
+                        <Label for="stripe_public_key">Publishable Key</Label>
+                        <Input id="stripe_public_key" v-model="form.stripe_public_key" placeholder="pk_live_..." />
+                        <InputError :message="form.errors.stripe_public_key" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="stripe_secret_key">
+                            Secret Key
+                            <span v-if="hasStripeSecretKey" class="text-xs text-muted-foreground ml-1">(leave blank to keep existing)</span>
+                        </Label>
+                        <div class="relative">
+                            <Input
+                                id="stripe_secret_key"
+                                v-model="form.stripe_secret_key"
+                                :type="showFields.stripe_secret_key ? 'text' : 'password'"
+                                :placeholder="hasStripeSecretKey ? '••••••••' : 'sk_live_...'"
+                            />
+                            <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" @click="toggleVisibility('stripe_secret_key')">
+                                <EyeOff v-if="showFields.stripe_secret_key" class="size-4" />
+                                <Eye v-else class="size-4" />
+                            </button>
+                        </div>
+                        <InputError :message="form.errors.stripe_secret_key" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="stripe_webhook_secret">
+                            Webhook Secret
+                            <span v-if="hasStripeWebhookSecret" class="text-xs text-muted-foreground ml-1">(leave blank to keep existing)</span>
+                        </Label>
+                        <div class="relative">
+                            <Input
+                                id="stripe_webhook_secret"
+                                v-model="form.stripe_webhook_secret"
+                                :type="showFields.stripe_webhook_secret ? 'text' : 'password'"
+                                :placeholder="hasStripeWebhookSecret ? '••••••••' : 'whsec_...'"
+                            />
+                            <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" @click="toggleVisibility('stripe_webhook_secret')">
+                                <EyeOff v-if="showFields.stripe_webhook_secret" class="size-4" />
+                                <Eye v-else class="size-4" />
+                            </button>
+                        </div>
+                        <p class="text-xs text-muted-foreground">Webhook endpoint: <code class="font-mono">{{ $page.props.ziggy?.url ?? '' }}/webhooks/stripe</code></p>
+                        <InputError :message="form.errors.stripe_webhook_secret" />
+                    </div>
+                </section>
+
+                <!-- PayMongo Keys -->
+                <section v-if="form.active_payment_gateway === 'paymongo'" class="flex flex-col gap-4">
+                    <h2 class="text-base font-semibold border-b pb-2">PayMongo Keys</h2>
+
+                    <div class="grid gap-2">
+                        <Label for="paymongo_public_key">Public Key</Label>
+                        <Input id="paymongo_public_key" v-model="form.paymongo_public_key" placeholder="pk_live_..." />
+                        <InputError :message="form.errors.paymongo_public_key" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="paymongo_secret_key">
+                            Secret Key
+                            <span v-if="hasPaymongoSecretKey" class="text-xs text-muted-foreground ml-1">(leave blank to keep existing)</span>
+                        </Label>
+                        <div class="relative">
+                            <Input
+                                id="paymongo_secret_key"
+                                v-model="form.paymongo_secret_key"
+                                :type="showFields.paymongo_secret_key ? 'text' : 'password'"
+                                :placeholder="hasPaymongoSecretKey ? '••••••••' : 'sk_live_...'"
+                            />
+                            <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" @click="toggleVisibility('paymongo_secret_key')">
+                                <EyeOff v-if="showFields.paymongo_secret_key" class="size-4" />
+                                <Eye v-else class="size-4" />
+                            </button>
+                        </div>
+                        <InputError :message="form.errors.paymongo_secret_key" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="paymongo_webhook_secret">
+                            Webhook Secret
+                            <span v-if="hasPaymongoWebhookSecret" class="text-xs text-muted-foreground ml-1">(leave blank to keep existing)</span>
+                        </Label>
+                        <div class="relative">
+                            <Input
+                                id="paymongo_webhook_secret"
+                                v-model="form.paymongo_webhook_secret"
+                                :type="showFields.paymongo_webhook_secret ? 'text' : 'password'"
+                                :placeholder="hasPaymongoWebhookSecret ? '••••••••' : 'whsec_...'"
+                            />
+                            <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" @click="toggleVisibility('paymongo_webhook_secret')">
+                                <EyeOff v-if="showFields.paymongo_webhook_secret" class="size-4" />
+                                <Eye v-else class="size-4" />
+                            </button>
+                        </div>
+                        <p class="text-xs text-muted-foreground">Webhook endpoint: <code class="font-mono">{{ $page.props.ziggy?.url ?? '' }}/webhooks/paymongo</code></p>
+                        <InputError :message="form.errors.paymongo_webhook_secret" />
+                    </div>
+                </section>
+
+                <!-- Submit -->
+                <div>
+                    <Button type="submit" :disabled="form.processing">
+                        {{ form.processing ? 'Saving...' : 'Save Settings' }}
+                    </Button>
+                </div>
+            </form>
+        </div>
+    </AppLayout>
+</template>
