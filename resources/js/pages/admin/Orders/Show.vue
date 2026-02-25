@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { ArrowLeft } from 'lucide-vue-next';
+import { ArrowLeft, Download } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { type BreadcrumbItem } from '@/types';
-import { index, update } from '@/actions/App/Http/Controllers/Admin/OrderController';
+import { index, invoice, update } from '@/actions/App/Http/Controllers/Admin/OrderController';
 
 interface OrderStatus {
     value: string;
@@ -107,6 +107,13 @@ function statusVariant(status: string): 'default' | 'secondary' | 'destructive' 
                         Placed {{ new Date(order.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) }}
                     </p>
                 </div>
+                <a
+                    :href="invoice(order).url"
+                    class="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground"
+                >
+                    <Download class="size-4" />
+                    Download Invoice
+                </a>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
