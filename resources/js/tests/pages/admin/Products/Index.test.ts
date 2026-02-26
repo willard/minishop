@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
     Link: { name: 'Link', template: '<a :href="href"><slot /></a>', props: ['href'] },
-    router: { delete: vi.fn() },
+    router: { delete: vi.fn(), get: vi.fn() },
 }));
 
 vi.mock('@/layouts/AppLayout.vue', () => ({
@@ -18,6 +18,10 @@ vi.mock('@/components/ui/button', () => ({
 
 vi.mock('@/components/ui/badge', () => ({
     Badge: { name: 'Badge', template: '<span class="badge"><slot /></span>', props: ['variant'] },
+}));
+
+vi.mock('@/components/ui/input', () => ({
+    Input: { name: 'Input', template: '<input />', props: ['modelValue', 'placeholder', 'class'] },
 }));
 
 vi.mock('@/actions/App/Http/Controllers/Admin/ProductController', () => ({
@@ -58,12 +62,23 @@ const baseProducts = {
     links: [],
 };
 
+const baseFilters: { search?: string; category_id?: string; stock?: string } = {
+    search: '',
+    category_id: undefined,
+    stock: undefined,
+};
+
+const baseCategories = [
+    { id: 1, name: 'Apparel' },
+    { id: 2, name: 'Electronics' },
+];
+
 describe('admin/Products/Index', () => {
     let wrapper: ReturnType<typeof mount>;
 
     beforeEach(() => {
         wrapper = mount(IndexPage, {
-            props: { products: baseProducts },
+            props: { products: baseProducts, filters: baseFilters, categories: baseCategories },
         });
     });
 
@@ -94,11 +109,43 @@ describe('admin/Products/Index', () => {
         expect(hrefs).toContain('/dashboard/products/blue-jeans/edit');
     });
 
+    it('renders the search input', () => {
+        expect(wrapper.find('input').exists()).toBe(true);
+    });
+
+    it('renders stock filter buttons', () => {
+        const buttons = wrapper.findAll('button');
+        const buttonTexts = buttons.map((b) => b.text().trim().toLowerCase());
+        expect(buttonTexts).toContain('all stock');
+        expect(buttonTexts).toContain('in stock');
+        expect(buttonTexts).toContain('out of stock');
+    });
+
+    it('renders category filter buttons', () => {
+        const buttons = wrapper.findAll('button');
+        const buttonTexts = buttons.map((b) => b.text().trim().toLowerCase());
+        expect(buttonTexts).toContain('all categories');
+        baseCategories.forEach((cat) => {
+            expect(buttonTexts).toContain(cat.name.toLowerCase());
+        });
+    });
+
     it('shows empty state when no products', () => {
         const emptyWrapper = mount(IndexPage, {
-            props: { products: { ...baseProducts, data: [], total: 0 } },
+            props: { products: { ...baseProducts, data: [], total: 0 }, filters: baseFilters, categories: baseCategories },
         });
         expect(emptyWrapper.text()).toContain('No products yet');
+    });
+
+    it('shows "No products found." when empty and a filter is active', () => {
+        const filteredWrapper = mount(IndexPage, {
+            props: {
+                products: { ...baseProducts, data: [], total: 0 },
+                filters: { search: 'missing', category_id: undefined, stock: undefined },
+                categories: baseCategories,
+            },
+        });
+        expect(filteredWrapper.text()).toContain('No products found.');
     });
 
     it('shows out-of-stock styling for zero stock', () => {
