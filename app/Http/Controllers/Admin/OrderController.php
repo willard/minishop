@@ -7,7 +7,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateOrderRequest;
 use App\Mail\OrderStatusChangedMail;
 use App\Models\Order;
+use App\Models\StoreSettings;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -54,6 +57,17 @@ class OrderController extends Controller
 
         return redirect()->route('admin.orders.show', $order)
             ->with('success', 'Order updated successfully.');
+    }
+
+    public function invoice(Order $order): HttpResponse
+    {
+        $order->load(['customer.user', 'items', 'shippingMethod', 'coupon']);
+        $settings = StoreSettings::current();
+
+        $pdf = Pdf::loadView('pdf.invoice', compact('order', 'settings'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->download('invoice-'.$order->order_number.'.pdf');
     }
 
     public function destroy(Order $order): RedirectResponse

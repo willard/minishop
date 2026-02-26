@@ -127,4 +127,39 @@ class OrderTest extends TestCase
         $this->assertEquals($customer->id, $order->customer_id);
         $this->assertInstanceOf(Customer::class, $order->customer);
     }
+
+    public function test_guests_cannot_access_order_invoice(): void
+    {
+        $order = Order::factory()->create();
+
+        $this->get(route('admin.orders.invoice', $order))->assertRedirect(route('login'));
+    }
+
+    public function test_authenticated_users_can_download_order_invoice(): void
+    {
+        $user = User::factory()->create();
+        $order = Order::factory()->create();
+        OrderItem::factory(2)->for($order)->create();
+
+        $response = $this->actingAs($user)
+            ->get(route('admin.orders.invoice', $order));
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'application/pdf');
+    }
+
+    public function test_invoice_content_disposition_contains_order_number(): void
+    {
+        $user = User::factory()->create();
+        $order = Order::factory()->create();
+        OrderItem::factory(2)->for($order)->create();
+
+        $response = $this->actingAs($user)
+            ->get(route('admin.orders.invoice', $order));
+
+        $response->assertHeader(
+            'Content-Disposition',
+            'attachment; filename=invoice-'.$order->order_number.'.pdf'
+        );
+    }
 }

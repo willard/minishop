@@ -50,6 +50,7 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('admin.')->gr
     Route::resource('products.options', ProductOptionController::class)->only(['create', 'store', 'destroy'])->scoped();
     Route::resource('categories', CategoryController::class);
     Route::resource('orders', OrderController::class)->except(['create', 'store', 'edit']);
+    Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
     Route::resource('customers', CustomerController::class)->only(['index', 'show']);
     Route::resource('coupons', CouponController::class)->except(['show']);
     Route::resource('shipping-methods', ShippingMethodController::class)->except(['show']);
