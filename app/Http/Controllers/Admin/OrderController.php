@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\StoreSettings;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
@@ -17,15 +18,38 @@ use Inertia\Response;
 
 class OrderController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $filters = $request->only(['status', 'search']);
+
         $orders = Order::query()
             ->with('customer.user')
+            ->when(
+                $filters['status'] ?? null,
+                fn ($query, $status) => $query->where('status', $status)
+            )
+            ->when(
+                $filters['search'] ?? null,
+                function ($query, $search): void {
+                    $query->where(function ($q) use ($search): void {
+                        $q->where('order_number', 'like', "%{$search}%")
+                            ->orWhereHas('customer.user', function ($q) use ($search): void {
+                                $q->where('name', 'like', "%{$search}%");
+                            });
+                    });
+                }
+            )
             ->orderByDesc('created_at')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
         return Inertia::render('admin/Orders/Index', [
             'orders' => $orders,
+            'filters' => $filters,
+            'statuses' => array_map(
+                fn (OrderStatus $s) => ['value' => $s->value, 'label' => $s->label()],
+                OrderStatus::cases()
+            ),
         ]);
     }
 
