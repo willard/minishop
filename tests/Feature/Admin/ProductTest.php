@@ -175,4 +175,109 @@ class ProductTest extends TestCase
 
         $this->assertCount(2, $product->categories);
     }
+
+    public function test_products_index_passes_filters_and_categories_as_props(): void
+    {
+        $user = User::factory()->create();
+        Category::factory()->create(['name' => 'Apparel']);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index'))
+            ->assertInertia(fn ($page) => $page
+                ->has('filters')
+                ->has('categories')
+            );
+    }
+
+    public function test_products_index_can_be_searched_by_name(): void
+    {
+        $user = User::factory()->create();
+        Product::factory()->create(['name' => 'Red Sneakers']);
+        Product::factory()->create(['name' => 'Blue Jeans']);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index', ['search' => 'Sneakers']))
+            ->assertInertia(fn ($page) => $page
+                ->component('admin/Products/Index')
+                ->has('products.data', 1)
+                ->where('products.data.0.name', 'Red Sneakers')
+            );
+    }
+
+    public function test_products_index_can_be_searched_by_sku(): void
+    {
+        $user = User::factory()->create();
+        Product::factory()->create(['name' => 'Widget A', 'sku' => 'SKU-WIDGET-001']);
+        Product::factory()->create(['name' => 'Widget B', 'sku' => 'SKU-OTHER-002']);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index', ['search' => 'WIDGET-001']))
+            ->assertInertia(fn ($page) => $page
+                ->has('products.data', 1)
+                ->where('products.data.0.sku', 'SKU-WIDGET-001')
+            );
+    }
+
+    public function test_products_index_can_be_filtered_by_category(): void
+    {
+        $user = User::factory()->create();
+        $apparel = Category::factory()->create(['name' => 'Apparel']);
+        $electronics = Category::factory()->create(['name' => 'Electronics']);
+
+        $shirt = Product::factory()->create(['name' => 'Shirt']);
+        $shirt->categories()->attach($apparel);
+
+        $phone = Product::factory()->create(['name' => 'Phone']);
+        $phone->categories()->attach($electronics);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index', ['category_id' => $apparel->id]))
+            ->assertInertia(fn ($page) => $page
+                ->has('products.data', 1)
+                ->where('products.data.0.name', 'Shirt')
+            );
+    }
+
+    public function test_products_index_can_be_filtered_by_in_stock(): void
+    {
+        $user = User::factory()->create();
+        Product::factory()->create(['name' => 'Available', 'stock_quantity' => 5]);
+        Product::factory()->create(['name' => 'Sold Out', 'stock_quantity' => 0]);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index', ['stock' => 'in_stock']))
+            ->assertInertia(fn ($page) => $page
+                ->has('products.data', 1)
+                ->where('products.data.0.name', 'Available')
+            );
+    }
+
+    public function test_products_index_can_be_filtered_by_out_of_stock(): void
+    {
+        $user = User::factory()->create();
+        Product::factory()->create(['name' => 'Available', 'stock_quantity' => 5]);
+        Product::factory()->create(['name' => 'Sold Out', 'stock_quantity' => 0]);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index', ['stock' => 'out_of_stock']))
+            ->assertInertia(fn ($page) => $page
+                ->has('products.data', 1)
+                ->where('products.data.0.name', 'Sold Out')
+            );
+    }
+
+    public function test_products_index_search_and_stock_filters_can_be_combined(): void
+    {
+        $user = User::factory()->create();
+        Product::factory()->create(['name' => 'Red Widget', 'stock_quantity' => 10]);
+        Product::factory()->create(['name' => 'Red Gadget', 'stock_quantity' => 0]);
+        Product::factory()->create(['name' => 'Blue Widget', 'stock_quantity' => 5]);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index', ['search' => 'Red', 'stock' => 'in_stock']))
+            ->assertInertia(fn ($page) => $page
+                ->has('products.data', 1)
+                ->where('products.data.0.name', 'Red Widget')
+            );
+    }
 }

@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Eye, PackagePlus, Pencil, Trash2 } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { type BreadcrumbItem } from '@/types';
 import { index, create, show, edit, destroy } from '@/actions/App/Http/Controllers/Admin/ProductController';
 
@@ -32,14 +34,54 @@ interface Pagination {
     links: { url: string | null; label: string; active: boolean }[];
 }
 
-defineProps<{
+interface Filters {
+    search?: string;
+    category_id?: string;
+    stock?: string;
+}
+
+const props = defineProps<{
     products: Pagination;
+    filters: Filters;
+    categories: Category[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Products', href: index().url },
 ];
+
+const search = ref(props.filters.search ?? '');
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+watch(search, (value) => {
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+    searchTimeout = setTimeout(() => {
+        router.get(
+            index().url,
+            { ...props.filters, search: value || undefined },
+            { preserveState: true, replace: true },
+        );
+    }, 300);
+});
+
+function applyCategory(categoryId: number | undefined): void {
+    router.get(
+        index().url,
+        { ...props.filters, search: search.value || undefined, category_id: categoryId },
+        { preserveState: true, replace: true },
+    );
+}
+
+function applyStock(stock: string | undefined): void {
+    router.get(
+        index().url,
+        { ...props.filters, search: search.value || undefined, stock },
+        { preserveState: true, replace: true },
+    );
+}
 
 function formatPrice(cents: number): string {
     return (cents / 100).toFixed(2);
@@ -50,6 +92,8 @@ function confirmDelete(product: Product): void {
         router.delete(destroy(product).url);
     }
 }
+
+const isFiltered = props.filters.search || props.filters.category_id || props.filters.stock;
 </script>
 
 <template>
@@ -71,6 +115,61 @@ function confirmDelete(product: Product): void {
                 </Link>
             </div>
 
+            <!-- Filters -->
+            <div class="flex flex-col gap-3">
+                <Input
+                    v-model="search"
+                    placeholder="Search by name or SKU..."
+                    class="max-w-xs"
+                />
+                <div class="flex flex-wrap gap-2">
+                    <!-- Stock filters -->
+                    <Button
+                        size="sm"
+                        :variant="!filters.stock ? 'default' : 'outline'"
+                        @click="applyStock(undefined)"
+                    >
+                        All Stock
+                    </Button>
+                    <Button
+                        size="sm"
+                        :variant="filters.stock === 'in_stock' ? 'default' : 'outline'"
+                        @click="applyStock('in_stock')"
+                    >
+                        In Stock
+                    </Button>
+                    <Button
+                        size="sm"
+                        :variant="filters.stock === 'out_of_stock' ? 'default' : 'outline'"
+                        @click="applyStock('out_of_stock')"
+                    >
+                        Out of Stock
+                    </Button>
+
+                    <!-- Separator -->
+                    <span v-if="categories.length > 0" class="text-muted-foreground self-center">|</span>
+
+                    <!-- Category filters -->
+                    <Button
+                        v-if="categories.length > 0"
+                        size="sm"
+                        :variant="!filters.category_id ? 'default' : 'outline'"
+                        @click="applyCategory(undefined)"
+                    >
+                        All Categories
+                    </Button>
+                    <Button
+                        v-for="cat in categories"
+                        :key="cat.id"
+                        size="sm"
+                        :variant="filters.category_id === String(cat.id) ? 'default' : 'outline'"
+                        @click="applyCategory(cat.id)"
+                    >
+                        {{ cat.name }}
+                    </Button>
+                </div>
+            </div>
+
             <!-- Table -->
             <div class="rounded-lg border border-sidebar-border overflow-hidden">
                 <table class="w-full text-sm">
@@ -88,8 +187,13 @@ function confirmDelete(product: Product): void {
                     <tbody class="divide-y divide-sidebar-border">
                         <tr v-if="products.data.length === 0">
                             <td colspan="7" class="px-4 py-8 text-center text-muted-foreground">
-                                No products yet.
-                                <Link :href="create().url" class="text-primary underline ml-1">Add your first product</Link>
+                                <template v-if="isFiltered">
+                                    No products found.
+                                </template>
+                                <template v-else>
+                                    No products yet.
+                                    <Link :href="create().url" class="text-primary underline ml-1">Add your first product</Link>
+                                </template>
                             </td>
                         </tr>
                         <tr

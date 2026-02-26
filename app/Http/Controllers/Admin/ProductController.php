@@ -8,21 +8,48 @@ use App\Http\Requests\Admin\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProductController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $filters = $request->only(['search', 'category_id', 'stock']);
+
         $products = Product::query()
             ->with('categories')
+            ->when($filters['search'] ?? null, function ($query, $search): void {
+                $query->where(function ($q) use ($search): void {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('sku', 'like', "%{$search}%");
+                });
+            })
+            ->when($filters['category_id'] ?? null, function ($query, $categoryId): void {
+                $query->whereHas('categories', fn ($q) => $q->where('categories.id', $categoryId));
+            })
+            ->when($filters['stock'] ?? null, function ($query, $stock): void {
+                if ($stock === 'in_stock') {
+                    $query->where('stock_quantity', '>', 0);
+                } elseif ($stock === 'out_of_stock') {
+                    $query->where('stock_quantity', 0);
+                }
+            })
             ->orderByDesc('created_at')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
+
+        $categories = Category::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
         return Inertia::render('admin/Products/Index', [
             'products' => $products,
+            'filters' => $filters,
+            'categories' => $categories,
         ]);
     }
 
