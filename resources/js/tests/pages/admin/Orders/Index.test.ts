@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
     Link: { name: 'Link', template: '<a href="#"><slot /></a>', props: ['href'] },
-    router: { delete: vi.fn() },
+    router: { delete: vi.fn(), get: vi.fn() },
 }));
 
 vi.mock('@/layouts/AppLayout.vue', () => ({
@@ -18,6 +18,10 @@ vi.mock('@/components/ui/button', () => ({
 
 vi.mock('@/components/ui/badge', () => ({
     Badge: { name: 'Badge', template: '<span class="badge"><slot /></span>', props: ['variant'] },
+}));
+
+vi.mock('@/components/ui/input', () => ({
+    Input: { name: 'Input', template: '<input />', props: ['modelValue', 'placeholder', 'class'] },
 }));
 
 vi.mock('@/actions/App/Http/Controllers/Admin/OrderController', () => ({
@@ -60,12 +64,26 @@ const baseOrders = {
     links: [],
 };
 
+const baseFilters: { status?: string; search?: string } = {
+    status: undefined,
+    search: '',
+};
+
+const baseStatuses = [
+    { value: 'pending', label: 'Pending' },
+    { value: 'processing', label: 'Processing' },
+    { value: 'shipped', label: 'Shipped' },
+    { value: 'delivered', label: 'Delivered' },
+    { value: 'cancelled', label: 'Cancelled' },
+    { value: 'refunded', label: 'Refunded' },
+];
+
 describe('admin/Orders/Index', () => {
     let wrapper: ReturnType<typeof mount>;
 
     beforeEach(() => {
         wrapper = mount(IndexPage, {
-            props: { orders: baseOrders },
+            props: { orders: baseOrders, filters: baseFilters, statuses: baseStatuses },
         });
     });
 
@@ -99,10 +117,34 @@ describe('admin/Orders/Index', () => {
         expect(badgeTexts).toContain('delivered');
     });
 
+    it('renders the search input', () => {
+        expect(wrapper.find('input').exists()).toBe(true);
+    });
+
+    it('renders an All button and one button per status', () => {
+        const buttons = wrapper.findAll('button');
+        const buttonTexts = buttons.map((b) => b.text().trim().toLowerCase());
+        expect(buttonTexts).toContain('all');
+        baseStatuses.forEach((s) => {
+            expect(buttonTexts).toContain(s.label.toLowerCase());
+        });
+    });
+
     it('shows empty state when no orders', () => {
         const emptyWrapper = mount(IndexPage, {
-            props: { orders: { ...baseOrders, data: [], total: 0 } },
+            props: { orders: { ...baseOrders, data: [], total: 0 }, filters: baseFilters, statuses: baseStatuses },
         });
         expect(emptyWrapper.text()).toContain('No orders yet');
+    });
+
+    it('shows "No orders found." when empty and a filter is active', () => {
+        const filteredWrapper = mount(IndexPage, {
+            props: {
+                orders: { ...baseOrders, data: [], total: 0 },
+                filters: { status: 'pending', search: '' },
+                statuses: baseStatuses,
+            },
+        });
+        expect(filteredWrapper.text()).toContain('No orders found.');
     });
 });

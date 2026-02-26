@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Eye, Trash2 } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { type BreadcrumbItem } from '@/types';
 import { index, show, destroy } from '@/actions/App/Http/Controllers/Admin/OrderController';
 
@@ -35,14 +37,50 @@ interface Pagination {
     links: { url: string | null; label: string; active: boolean }[];
 }
 
-defineProps<{
+interface Filters {
+    status?: string;
+    search?: string;
+}
+
+interface StatusOption {
+    value: string;
+    label: string;
+}
+
+const props = defineProps<{
     orders: Pagination;
+    filters: Filters;
+    statuses: StatusOption[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Orders', href: index().url },
 ];
+
+const search = ref(props.filters.search ?? '');
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+watch(search, (value) => {
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+    searchTimeout = setTimeout(() => {
+        router.get(
+            index().url,
+            { ...props.filters, search: value || undefined },
+            { preserveState: true, replace: true },
+        );
+    }, 300);
+});
+
+function applyFilter(status: string | undefined): void {
+    router.get(
+        index().url,
+        { search: search.value || undefined, status },
+        { preserveState: true, replace: true },
+    );
+}
 
 function formatPrice(cents: number): string {
     return (cents / 100).toFixed(2);
@@ -80,6 +118,34 @@ function confirmDelete(order: Order): void {
                 </div>
             </div>
 
+            <!-- Filters -->
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Input
+                    v-model="search"
+                    placeholder="Search order # or customer..."
+                    class="max-w-xs"
+                />
+                <div class="flex flex-wrap gap-2">
+                    <Button
+                        size="sm"
+                        :variant="!filters.status ? 'default' : 'outline'"
+                        @click="applyFilter(undefined)"
+                    >
+                        All
+                    </Button>
+                    <Button
+                        v-for="s in statuses"
+                        :key="s.value"
+                        size="sm"
+                        :variant="filters.status === s.value ? 'default' : 'outline'"
+                        class="capitalize"
+                        @click="applyFilter(s.value)"
+                    >
+                        {{ s.label }}
+                    </Button>
+                </div>
+            </div>
+
             <!-- Table -->
             <div class="rounded-lg border border-sidebar-border overflow-hidden">
                 <table class="w-full text-sm">
@@ -96,7 +162,7 @@ function confirmDelete(order: Order): void {
                     <tbody class="divide-y divide-sidebar-border">
                         <tr v-if="orders.data.length === 0">
                             <td colspan="6" class="px-4 py-8 text-center text-muted-foreground">
-                                No orders yet.
+                                {{ filters.status || filters.search ? 'No orders found.' : 'No orders yet.' }}
                             </td>
                         </tr>
                         <tr

@@ -175,7 +175,7 @@ class OrderEmailTest extends TestCase
         Mail::fake();
 
         $admin = User::factory()->create();
-        $order = $this->createOrderWithCustomer();
+        $order = $this->createOrderWithCustomer(OrderStatus::Processing);
 
         $this->actingAs($admin)
             ->put(route('admin.orders.update', $order), ['status' => 'shipped']);
@@ -190,7 +190,7 @@ class OrderEmailTest extends TestCase
         Mail::fake();
 
         $admin = User::factory()->create();
-        $order = $this->createOrderWithCustomer();
+        $order = $this->createOrderWithCustomer(OrderStatus::Shipped);
 
         $this->actingAs($admin)
             ->put(route('admin.orders.update', $order), ['status' => 'delivered']);
@@ -253,7 +253,7 @@ class OrderEmailTest extends TestCase
         $customer = Customer::factory()->create(['user_id' => $user->id]);
         $order = Order::factory()->create([
             'customer_id' => $customer->id,
-            'status' => OrderStatus::Pending,
+            'status' => OrderStatus::Processing,
             'shipping_method_id' => $this->shippingMethod->id,
         ]);
         OrderItem::factory()->create(['order_id' => $order->id]);
@@ -284,13 +284,13 @@ class OrderEmailTest extends TestCase
         return "t={$timestamp},te={$signature}";
     }
 
-    private function createOrderWithCustomer(): Order
+    private function createOrderWithCustomer(OrderStatus $status = OrderStatus::Pending): Order
     {
         $user = User::factory()->create();
         $customer = Customer::factory()->create(['user_id' => $user->id]);
         $order = Order::factory()->create([
             'customer_id' => $customer->id,
-            'status' => OrderStatus::Pending,
+            'status' => $status,
             'shipping_method_id' => $this->shippingMethod->id,
         ]);
         OrderItem::factory()->create(['order_id' => $order->id]);
