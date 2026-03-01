@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\StoreSettings;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -13,6 +14,8 @@ class DashboardController extends Controller
 {
     public function __invoke(): Response
     {
+        $threshold = StoreSettings::current()->low_stock_threshold;
+
         $totalRevenue = Order::query()
             ->whereNotIn('status', ['cancelled', 'refunded'])
             ->sum('total_amount');
@@ -23,7 +26,7 @@ class DashboardController extends Controller
 
         $lowStockCount = Product::query()
             ->where('is_active', true)
-            ->where('stock_quantity', '<=', 10)
+            ->where('stock_quantity', '<=', $threshold)
             ->count();
 
         $recentOrders = Order::query()
@@ -34,7 +37,7 @@ class DashboardController extends Controller
 
         $lowStockProducts = Product::query()
             ->where('is_active', true)
-            ->where('stock_quantity', '<=', 10)
+            ->where('stock_quantity', '<=', $threshold)
             ->orderBy('stock_quantity')
             ->limit(5)
             ->get();
@@ -44,6 +47,7 @@ class DashboardController extends Controller
             'totalOrders' => $totalOrders,
             'totalCustomers' => $totalCustomers,
             'lowStockCount' => $lowStockCount,
+            'lowStockThreshold' => $threshold,
             'recentOrders' => $recentOrders,
             'lowStockProducts' => $lowStockProducts,
         ]);

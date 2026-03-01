@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\StoreSettings;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -42,6 +43,7 @@ class DashboardTest extends TestCase
                     ->has('totalOrders')
                     ->has('totalCustomers')
                     ->has('lowStockCount')
+                    ->has('lowStockThreshold')
                     ->has('recentOrders')
                     ->has('lowStockProducts')
             );
@@ -77,6 +79,7 @@ class DashboardTest extends TestCase
     public function test_dashboard_counts_low_stock_products_correctly(): void
     {
         $user = User::factory()->create();
+        StoreSettings::current()->update(['low_stock_threshold' => 10]);
 
         Product::factory()->create(['stock_quantity' => 5, 'is_active' => true]);
         Product::factory()->create(['stock_quantity' => 10, 'is_active' => true]);
@@ -89,6 +92,26 @@ class DashboardTest extends TestCase
                 fn ($page) => $page
                     ->component('Dashboard')
                     ->where('lowStockCount', 2)
+                    ->where('lowStockThreshold', 10)
+            );
+    }
+
+    public function test_dashboard_uses_custom_low_stock_threshold(): void
+    {
+        $user = User::factory()->create();
+        StoreSettings::current()->update(['low_stock_threshold' => 5]);
+
+        Product::factory()->create(['stock_quantity' => 5, 'is_active' => true]);
+        Product::factory()->create(['stock_quantity' => 10, 'is_active' => true]);
+        Product::factory()->create(['stock_quantity' => 3, 'is_active' => true]);
+
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertInertia(
+                fn ($page) => $page
+                    ->component('Dashboard')
+                    ->where('lowStockCount', 2)
+                    ->where('lowStockThreshold', 5)
             );
     }
 

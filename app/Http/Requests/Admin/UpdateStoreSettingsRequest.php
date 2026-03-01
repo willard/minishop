@@ -24,6 +24,7 @@ class UpdateStoreSettingsRequest extends FormRequest
             'paymongo_public_key' => ['nullable', 'string', 'max:500'],
             'paymongo_secret_key' => ['nullable', 'string', 'max:500'],
             'paymongo_webhook_secret' => ['nullable', 'string', 'max:500'],
+            'low_stock_threshold' => ['required', 'integer', 'min:0', 'max:10000'],
         ];
     }
 
@@ -34,6 +35,8 @@ class UpdateStoreSettingsRequest extends FormRequest
             'tax_rate.min' => 'Tax rate cannot be negative.',
             'tax_rate.max' => 'Tax rate cannot exceed 100%.',
             'active_payment_gateway.in' => 'Payment gateway must be stripe, paymongo, cod, or bank_transfer.',
+            'low_stock_threshold.min' => 'Threshold cannot be negative.',
+            'low_stock_threshold.max' => 'Threshold cannot exceed 10,000 units.',
         ];
     }
 }

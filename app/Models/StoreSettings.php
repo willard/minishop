@@ -17,6 +17,7 @@ class StoreSettings extends Model
         'paymongo_public_key',
         'paymongo_secret_key',
         'paymongo_webhook_secret',
+        'low_stock_threshold',
     ];
 
     protected function casts(): array
@@ -27,6 +28,7 @@ class StoreSettings extends Model
             'paymongo_secret_key' => 'encrypted',
             'paymongo_webhook_secret' => 'encrypted',
             'tax_rate' => 'decimal:2',
+            'low_stock_threshold' => 'integer',
         ];
     }
 
