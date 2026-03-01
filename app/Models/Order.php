@@ -54,7 +54,8 @@ class Order extends Model
     {
         static::created(function (Order $order): void {
             if (empty($order->order_number)) {
-                $order->update(['order_number' => 'ORD-'.str_pad((string) $order->id, 6, '0', STR_PAD_LEFT)]);
+                $order->order_number = 'ORD-'.str_pad((string) $order->id, 6, '0', STR_PAD_LEFT);
+                $order->saveQuietly();
             }
         });
     }

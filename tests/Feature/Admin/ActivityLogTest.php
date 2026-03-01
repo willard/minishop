@@ -93,6 +93,21 @@ class ActivityLogTest extends TestCase
         ]);
     }
 
+    public function test_creating_an_order_logs_exactly_one_entry_with_order_number(): void
+    {
+        $user = User::factory()->create();
+        $order = Order::factory()->create();
+
+        $logs = ActivityLog::query()
+            ->where('subject_type', 'Order')
+            ->where('subject_id', $order->id)
+            ->get();
+
+        $this->assertCount(1, $logs);
+        $this->assertEquals('created', $logs->first()->action);
+        $this->assertStringContainsString('ORD-', $logs->first()->description);
+    }
+
     public function test_updating_order_status_logs_an_activity(): void
     {
         $user = User::factory()->create();
