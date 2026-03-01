@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\Customer;
 use App\Models\Product;
 use App\Models\StoreSettings;
 use App\Models\User;
@@ -187,24 +188,29 @@ class LowStockAlertTest extends TestCase
         Notification::assertSentTo($user, LowStockAlert::class);
     }
 
-    public function test_notification_is_sent_to_all_users(): void
+    public function test_notification_is_sent_to_admin_users_only(): void
     {
         Notification::fake();
 
-        $users = User::factory(3)->create();
+        $adminUsers = User::factory(2)->create();
+        $customerUser = User::factory()->create();
+        Customer::factory()->create(['user_id' => $customerUser->id]);
+
         StoreSettings::current()->update(['low_stock_threshold' => 10]);
 
         $product = Product::factory()->create(['stock_quantity' => 20]);
 
-        $this->actingAs($users->first())
+        $this->actingAs($adminUsers->first())
             ->put(route('admin.products.update', $product), [
                 'name' => $product->name,
                 'price' => $product->price,
                 'stock_quantity' => 5,
             ]);
 
-        foreach ($users as $user) {
-            Notification::assertSentTo($user, LowStockAlert::class);
+        foreach ($adminUsers as $admin) {
+            Notification::assertSentTo($admin, LowStockAlert::class);
         }
+
+        Notification::assertNotSentTo($customerUser, LowStockAlert::class);
     }
 }
