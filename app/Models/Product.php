@@ -22,6 +22,7 @@ class Product extends Model
         'sku',
         'stock_quantity',
         'is_active',
+        'low_stock_notified',
     ];
 
     protected function casts(): array
@@ -31,6 +32,7 @@ class Product extends Model
             'compare_price' => 'integer',
             'stock_quantity' => 'integer',
             'is_active' => 'boolean',
+            'low_stock_notified' => 'boolean',
         ];
     }
 

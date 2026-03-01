@@ -57,6 +57,7 @@ class StoreSettingsTest extends TestCase
                 'currency_locale' => 'en-US',
                 'tax_rate' => 8.5,
                 'active_payment_gateway' => 'cod',
+                'low_stock_threshold' => 10,
             ])
             ->assertRedirect(route('admin.settings.edit'))
             ->assertSessionHas('success');
@@ -77,6 +78,7 @@ class StoreSettingsTest extends TestCase
                 'currency_locale' => 'en-US',
                 'tax_rate' => 10,
                 'active_payment_gateway' => 'paypal',
+                'low_stock_threshold' => 10,
             ])
             ->assertSessionHasErrors('active_payment_gateway');
     }
@@ -91,6 +93,7 @@ class StoreSettingsTest extends TestCase
                 'currency_locale' => 'en-US',
                 'tax_rate' => 10,
                 'active_payment_gateway' => 'cod',
+                'low_stock_threshold' => 10,
             ])
             ->assertSessionHasErrors('currency');
     }
@@ -105,6 +108,7 @@ class StoreSettingsTest extends TestCase
                 'currency_locale' => 'en-US',
                 'tax_rate' => 150,
                 'active_payment_gateway' => 'cod',
+                'low_stock_threshold' => 10,
             ])
             ->assertSessionHasErrors('tax_rate');
     }
@@ -122,6 +126,7 @@ class StoreSettingsTest extends TestCase
                 'tax_rate' => 10,
                 'active_payment_gateway' => 'stripe',
                 'stripe_secret_key' => '••••••••',
+                'low_stock_threshold' => 10,
             ]);
 
         $this->assertDatabaseHas('store_settings', [
@@ -146,9 +151,72 @@ class StoreSettingsTest extends TestCase
                 'tax_rate' => 10,
                 'active_payment_gateway' => 'stripe',
                 'stripe_secret_key' => 'sk_live_new_secret',
+                'low_stock_threshold' => 10,
             ]);
 
         $updated = StoreSettings::find($settings->id);
         $this->assertSame('sk_live_new_secret', $updated->stripe_secret_key);
+    }
+
+    public function test_authenticated_users_can_update_low_stock_threshold(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->put(route('admin.settings.update'), [
+                'currency' => 'USD',
+                'currency_locale' => 'en-US',
+                'tax_rate' => 10,
+                'active_payment_gateway' => 'cod',
+                'low_stock_threshold' => 15,
+            ])
+            ->assertRedirect(route('admin.settings.edit'));
+
+        $this->assertDatabaseHas('store_settings', [
+            'low_stock_threshold' => 15,
+        ]);
+    }
+
+    public function test_update_rejects_negative_low_stock_threshold(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->put(route('admin.settings.update'), [
+                'currency' => 'USD',
+                'currency_locale' => 'en-US',
+                'tax_rate' => 10,
+                'active_payment_gateway' => 'cod',
+                'low_stock_threshold' => -1,
+            ])
+            ->assertSessionHasErrors('low_stock_threshold');
+    }
+
+    public function test_update_rejects_low_stock_threshold_over_max(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->put(route('admin.settings.update'), [
+                'currency' => 'USD',
+                'currency_locale' => 'en-US',
+                'tax_rate' => 10,
+                'active_payment_gateway' => 'cod',
+                'low_stock_threshold' => 10001,
+            ])
+            ->assertSessionHasErrors('low_stock_threshold');
+    }
+
+    public function test_settings_page_passes_low_stock_threshold_prop(): void
+    {
+        $user = User::factory()->create();
+        StoreSettings::current()->update(['low_stock_threshold' => 15]);
+
+        $this->actingAs($user)
+            ->get(route('admin.settings.edit'))
+            ->assertInertia(fn ($page) => $page
+                ->component('admin/Settings/Edit')
+                ->where('settings.low_stock_threshold', 15)
+            );
     }
 }

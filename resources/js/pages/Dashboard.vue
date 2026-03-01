@@ -33,6 +33,7 @@ defineProps<{
     totalOrders: number;
     totalCustomers: number;
     lowStockCount: number;
+    lowStockThreshold: number;
     recentOrders: RecentOrder[];
     lowStockProducts: LowStockProduct[];
 }>();
@@ -108,7 +109,7 @@ function statusVariant(status: string): 'default' | 'secondary' | 'destructive' 
                     <p class="text-2xl font-bold" :class="lowStockCount > 0 ? 'text-destructive' : ''">
                         {{ lowStockCount }}
                     </p>
-                    <p class="text-xs text-muted-foreground">Products with ≤ 10 units</p>
+                    <p class="text-xs text-muted-foreground">Products with &le; {{ lowStockThreshold }} units</p>
                 </div>
             </div>
 

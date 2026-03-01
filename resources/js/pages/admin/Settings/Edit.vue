@@ -21,6 +21,7 @@ interface Settings {
     paymongo_public_key: string | null;
     paymongo_secret_key: string | null;
     paymongo_webhook_secret: string | null;
+    low_stock_threshold: number;
 }
 
 const props = defineProps<{
@@ -60,6 +61,7 @@ const form = useForm({
     paymongo_public_key: props.settings.paymongo_public_key ?? '',
     paymongo_secret_key: '',
     paymongo_webhook_secret: '',
+    low_stock_threshold: props.settings.low_stock_threshold,
 });
 
 const showFields = ref<Record<string, boolean>>({});
@@ -255,6 +257,27 @@ function submit() {
                         </div>
                         <p class="text-xs text-muted-foreground">Webhook endpoint: <code class="font-mono">{{ $page.props.ziggy?.url ?? '' }}/webhooks/paymongo</code></p>
                         <InputError :message="form.errors.paymongo_webhook_secret" />
+                    </div>
+                </section>
+
+                <!-- Inventory -->
+                <section class="flex flex-col gap-4">
+                    <h2 class="text-base font-semibold border-b pb-2">Inventory</h2>
+
+                    <div class="grid gap-2 max-w-xs">
+                        <Label for="low_stock_threshold">Low Stock Threshold</Label>
+                        <Input
+                            id="low_stock_threshold"
+                            v-model="form.low_stock_threshold"
+                            type="number"
+                            min="0"
+                            max="10000"
+                            placeholder="e.g. 10"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            Products with stock at or below this number will appear as "low stock" on the dashboard and trigger email alerts.
+                        </p>
+                        <InputError :message="form.errors.low_stock_threshold" />
                     </div>
                 </section>
 

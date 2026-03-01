@@ -27,6 +27,7 @@ class StoreSettingsController extends Controller
                 'paymongo_public_key' => $settings->paymongo_public_key,
                 'paymongo_secret_key' => $settings->paymongo_secret_key ? '••••••••' : null,
                 'paymongo_webhook_secret' => $settings->paymongo_webhook_secret ? '••••••••' : null,
+                'low_stock_threshold' => $settings->low_stock_threshold,
             ],
             'hasStripeSecretKey' => ! empty($settings->stripe_secret_key),
             'hasStripeWebhookSecret' => ! empty($settings->stripe_webhook_secret),
@@ -46,6 +47,7 @@ class StoreSettingsController extends Controller
             'active_payment_gateway',
             'stripe_public_key',
             'paymongo_public_key',
+            'low_stock_threshold',
         ]);
 
         // Only update secret keys if a new non-masked value is provided
