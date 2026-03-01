@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\ActivityLog;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ProductObserver
 {
@@ -37,6 +38,13 @@ class ProductObserver
             'description' => "Updated product \"{$product->name}\"",
             'properties' => $changed,
         ]);
+    }
+
+    public function deleting(Product $product): void
+    {
+        foreach ($product->images as $image) {
+            Storage::disk('public')->delete($image->path);
+        }
     }
 
     public function deleted(Product $product): void
