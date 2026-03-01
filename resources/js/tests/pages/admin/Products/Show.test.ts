@@ -1,6 +1,6 @@
-import ShowPage from '@/pages/admin/Products/Show.vue';
 import { mount } from '@vue/test-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import ShowPage from '@/pages/admin/Products/Show.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
