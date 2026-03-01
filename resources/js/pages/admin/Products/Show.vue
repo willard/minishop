@@ -2,25 +2,25 @@
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, ChevronDown, ChevronUp, Pencil, Plus, Trash2, Upload, X } from 'lucide-vue-next';
 import { ref } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { type BreadcrumbItem } from '@/types';
 import { index, edit, destroy } from '@/actions/App/Http/Controllers/Admin/ProductController';
-import {
-    create as createVariant,
-    edit as editVariant,
-    destroy as destroyVariant,
-} from '@/actions/App/Http/Controllers/Admin/ProductVariantController';
-import {
-    create as createOption,
-    destroy as destroyOption,
-} from '@/actions/App/Http/Controllers/Admin/ProductOptionController';
 import {
     store as storeImage,
     destroy as destroyImage,
     reorder as reorderImages,
 } from '@/actions/App/Http/Controllers/Admin/ProductImageController';
+import {
+    create as createOption,
+    destroy as destroyOption,
+} from '@/actions/App/Http/Controllers/Admin/ProductOptionController';
+import {
+    create as createVariant,
+    edit as editVariant,
+    destroy as destroyVariant,
+} from '@/actions/App/Http/Controllers/Admin/ProductVariantController';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
 
 interface Category {
     id: number;

@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ReorderProductImagesRequest;
 use App\Http\Requests\Admin\StoreProductImageRequest;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -46,14 +46,9 @@ class ProductImageController extends Controller
             ->with('success', 'Image deleted successfully.');
     }
 
-    public function reorder(Request $request, Product $product): RedirectResponse
+    public function reorder(ReorderProductImagesRequest $request, Product $product): RedirectResponse
     {
-        $request->validate([
-            'image_ids' => ['required', 'array'],
-            'image_ids.*' => ['integer', 'exists:product_images,id'],
-        ]);
-
-        foreach ($request->input('image_ids') as $index => $imageId) {
+        foreach ($request->validated('image_ids') as $index => $imageId) {
             ProductImage::query()
                 ->where('id', $imageId)
                 ->where('product_id', $product->id)
