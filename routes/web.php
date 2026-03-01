@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductImageController;
 use App\Http\Controllers\Admin\ProductOptionController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\ShippingMethodController;
@@ -49,6 +50,9 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('admin.')->gr
     Route::resource('products', ProductController::class);
     Route::resource('products.variants', ProductVariantController::class)->except(['index', 'show'])->scoped();
     Route::resource('products.options', ProductOptionController::class)->only(['create', 'store', 'destroy'])->scoped();
+    Route::post('products/{product}/images', [ProductImageController::class, 'store'])->name('products.images.store');
+    Route::put('products/{product}/images/reorder', [ProductImageController::class, 'reorder'])->name('products.images.reorder');
+    Route::delete('products/{product}/images/{image}', [ProductImageController::class, 'destroy'])->name('products.images.destroy');
     Route::resource('categories', CategoryController::class);
     Route::resource('orders', OrderController::class)->except(['create', 'store', 'edit']);
     Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');

@@ -1,20 +1,26 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ArrowLeft, Pencil, Plus, Trash2 } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { type BreadcrumbItem } from '@/types';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { ArrowLeft, ChevronDown, ChevronUp, Pencil, Plus, Trash2, Upload, X } from 'lucide-vue-next';
+import { ref } from 'vue';
 import { index, edit, destroy } from '@/actions/App/Http/Controllers/Admin/ProductController';
+import {
+    store as storeImage,
+    destroy as destroyImage,
+    reorder as reorderImages,
+} from '@/actions/App/Http/Controllers/Admin/ProductImageController';
+import {
+    create as createOption,
+    destroy as destroyOption,
+} from '@/actions/App/Http/Controllers/Admin/ProductOptionController';
 import {
     create as createVariant,
     edit as editVariant,
     destroy as destroyVariant,
 } from '@/actions/App/Http/Controllers/Admin/ProductVariantController';
-import {
-    create as createOption,
-    destroy as destroyOption,
-} from '@/actions/App/Http/Controllers/Admin/ProductOptionController';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
 
 interface Category {
     id: number;
@@ -25,6 +31,7 @@ interface ProductImage {
     id: number;
     path: string;
     alt_text: string | null;
+    sort_order: number;
 }
 
 interface ProductOptionValue {
@@ -101,6 +108,51 @@ function confirmDeleteOption(option: ProductOption): void {
     if (confirm(`Delete option "${option.name}" and all its values? Variants using these values will also be affected.`)) {
         router.delete(destroyOption({ product: props.product, option }).url);
     }
+}
+
+const imageForm = useForm({
+    images: null as File[] | null,
+    alt_text: null as string | null,
+});
+
+const fileInput = ref<HTMLInputElement | null>(null);
+
+function uploadImages(): void {
+    imageForm.post(storeImage(props.product).url, {
+        forceFormData: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            imageForm.reset();
+            if (fileInput.value) {
+                fileInput.value.value = '';
+            }
+        },
+    });
+}
+
+function onFileChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    imageForm.images = target.files ? Array.from(target.files) : null;
+}
+
+function confirmDeleteImage(image: ProductImage): void {
+    if (confirm('Delete this image? This cannot be undone.')) {
+        router.delete(destroyImage({ product: props.product, image }).url, {
+            preserveScroll: true,
+        });
+    }
+}
+
+function moveImage(fromIndex: number, toIndex: number): void {
+    const ids = props.product.images.map((img) => img.id);
+    const [moved] = ids.splice(fromIndex, 1);
+    ids.splice(toIndex, 0, moved);
+
+    router.put(reorderImages(props.product).url, {
+        image_ids: ids,
+    } as Record<string, unknown>, {
+        preserveScroll: true,
+    });
 }
 </script>
 
@@ -196,6 +248,96 @@ function confirmDeleteOption(option: ProductOption): void {
                 <div v-if="product.description" class="px-4 py-3">
                     <p class="text-xs text-muted-foreground uppercase tracking-wide mb-1">Description</p>
                     <p class="text-sm whitespace-pre-wrap">{{ product.description }}</p>
+                </div>
+            </div>
+
+            <!-- Images -->
+            <div class="rounded-lg border border-sidebar-border overflow-hidden">
+                <div class="px-4 py-3 border-b border-sidebar-border bg-muted/50">
+                    <h2 class="font-semibold text-sm">Images</h2>
+                </div>
+
+                <div v-if="product.images.length === 0" class="px-4 py-6 text-center text-sm text-muted-foreground">
+                    No images yet. Upload images below.
+                </div>
+
+                <div v-else class="p-4">
+                    <div class="grid grid-cols-3 gap-3">
+                        <div
+                            v-for="(image, idx) in product.images"
+                            :key="image.id"
+                            class="group relative rounded-md border border-sidebar-border overflow-hidden"
+                        >
+                            <img
+                                :src="`/storage/${image.path}`"
+                                :alt="image.alt_text ?? product.name"
+                                class="aspect-square w-full object-cover"
+                            />
+                            <Badge
+                                v-if="idx === 0"
+                                variant="default"
+                                class="absolute top-1.5 left-1.5 text-[10px]"
+                            >
+                                Primary
+                            </Badge>
+                            <div class="absolute top-1.5 right-1.5 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                    v-if="idx > 0"
+                                    variant="secondary"
+                                    size="sm"
+                                    class="h-6 w-6 p-0"
+                                    @click="moveImage(idx, idx - 1)"
+                                >
+                                    <ChevronUp class="size-3" />
+                                </Button>
+                                <Button
+                                    v-if="idx < product.images.length - 1"
+                                    variant="secondary"
+                                    size="sm"
+                                    class="h-6 w-6 p-0"
+                                    @click="moveImage(idx, idx + 1)"
+                                >
+                                    <ChevronDown class="size-3" />
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    class="h-6 w-6 p-0"
+                                    @click="confirmDeleteImage(image)"
+                                >
+                                    <X class="size-3" />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-sidebar-border px-4 py-3">
+                    <form class="flex items-end gap-3" @submit.prevent="uploadImages">
+                        <div class="flex-1">
+                            <label class="text-xs text-muted-foreground mb-1 block">Upload Images</label>
+                            <input
+                                ref="fileInput"
+                                type="file"
+                                multiple
+                                accept="image/jpeg,image/png,image/webp,image/gif"
+                                class="text-sm file:mr-3 file:rounded file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-xs file:font-medium"
+                                @change="onFileChange"
+                            />
+                            <p v-if="imageForm.errors.images" class="text-xs text-destructive mt-1">{{ imageForm.errors.images }}</p>
+                            <template v-for="(error, key) in imageForm.errors" :key="key">
+                                <p v-if="String(key).startsWith('images.')" class="text-xs text-destructive mt-1">{{ error }}</p>
+                            </template>
+                        </div>
+                        <Button
+                            type="submit"
+                            size="sm"
+                            :disabled="!imageForm.images || imageForm.processing"
+                        >
+                            <Upload class="mr-1 size-3" />
+                            Upload
+                        </Button>
+                    </form>
                 </div>
             </div>
 
