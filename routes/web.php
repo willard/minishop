@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -56,6 +57,7 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('admin.')->gr
     Route::resource('shipping-methods', ShippingMethodController::class)->except(['show']);
     Route::get('settings', [StoreSettingsController::class, 'edit'])->name('settings.edit');
     Route::put('settings', [StoreSettingsController::class, 'update'])->name('settings.update');
+    Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 });
 
 require __DIR__.'/settings.php';

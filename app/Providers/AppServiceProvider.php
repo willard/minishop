@@ -2,6 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\Coupon;
+use App\Models\Order;
+use App\Models\Product;
+use App\Observers\CouponObserver;
+use App\Observers\OrderObserver;
+use App\Observers\ProductObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +30,14 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->registerObservers();
+    }
+
+    protected function registerObservers(): void
+    {
+        Order::observe(OrderObserver::class);
+        Product::observe(ProductObserver::class);
+        Coupon::observe(CouponObserver::class);
     }
 
     /**
