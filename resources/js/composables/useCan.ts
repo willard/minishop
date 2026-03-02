@@ -1,5 +1,4 @@
 import { usePage } from '@inertiajs/vue3';
-import type { Auth } from '@/types';
 
 export type UseCanReturn = {
     can: (permission: string) => boolean;
@@ -7,9 +6,13 @@ export type UseCanReturn = {
 };
 
 export function useCan(): UseCanReturn {
-    const page = usePage<{ auth: Auth }>();
+    const page = usePage();
 
     function can(permission: string): boolean {
+        // Super-admins bypass all permission checks via Gate::before on the backend,
+        // which means their permissions array is empty (permissions are never explicitly
+        // assigned to the super-admin role). Without this client-side bypass, the UI
+        // would incorrectly hide all permission-gated elements for super-admins.
         if (page.props.auth.roles.includes('super-admin')) {
             return true;
         }

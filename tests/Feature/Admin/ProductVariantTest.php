@@ -62,7 +62,7 @@ class ProductVariantTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_create_variant_form(): void
+    public function test_super_admin_can_view_create_variant_form(): void
     {
         $user = User::factory()->superAdmin()->create();
         ['product' => $product] = $this->productWithOptions();
@@ -77,7 +77,7 @@ class ProductVariantTest extends TestCase
             );
     }
 
-    public function test_authenticated_users_can_view_edit_variant_form(): void
+    public function test_super_admin_can_view_edit_variant_form(): void
     {
         $user = User::factory()->superAdmin()->create();
         ['product' => $product, 'valueS' => $valueS] = $this->productWithOptions();
@@ -95,7 +95,7 @@ class ProductVariantTest extends TestCase
             );
     }
 
-    public function test_authenticated_users_can_store_a_variant(): void
+    public function test_super_admin_can_store_a_variant(): void
     {
         $user = User::factory()->superAdmin()->create();
         ['product' => $product, 'valueM' => $valueM] = $this->productWithOptions();
@@ -191,7 +191,7 @@ class ProductVariantTest extends TestCase
             ->assertSessionHasErrors('sku');
     }
 
-    public function test_authenticated_users_can_update_a_variant(): void
+    public function test_super_admin_can_update_a_variant(): void
     {
         $user = User::factory()->superAdmin()->create();
         ['product' => $product, 'valueS' => $valueS, 'valueM' => $valueM] = $this->productWithOptions();
@@ -232,7 +232,7 @@ class ProductVariantTest extends TestCase
             ->assertSessionDoesntHaveErrors('sku');
     }
 
-    public function test_authenticated_users_can_delete_a_variant(): void
+    public function test_super_admin_can_delete_a_variant(): void
     {
         $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();

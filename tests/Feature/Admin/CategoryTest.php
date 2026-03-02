@@ -24,7 +24,7 @@ class CategoryTest extends TestCase
         $this->get(route('admin.categories.index'))->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_categories_index(): void
+    public function test_super_admin_can_view_categories_index(): void
     {
         $user = User::factory()->superAdmin()->create();
         Category::factory(3)->create();
@@ -34,7 +34,7 @@ class CategoryTest extends TestCase
             ->assertOk();
     }
 
-    public function test_authenticated_users_can_store_a_category(): void
+    public function test_super_admin_can_store_a_category(): void
     {
         $user = User::factory()->superAdmin()->create();
 
@@ -82,7 +82,7 @@ class CategoryTest extends TestCase
             ->assertSessionHasErrors('parent_id');
     }
 
-    public function test_authenticated_users_can_update_a_category(): void
+    public function test_super_admin_can_update_a_category(): void
     {
         $user = User::factory()->superAdmin()->create();
         $category = Category::factory()->create(['name' => 'Old Name']);
@@ -96,7 +96,7 @@ class CategoryTest extends TestCase
         $this->assertDatabaseHas('categories', ['id' => $category->id, 'name' => 'New Name']);
     }
 
-    public function test_authenticated_users_can_delete_a_category(): void
+    public function test_super_admin_can_delete_a_category(): void
     {
         $user = User::factory()->superAdmin()->create();
         $category = Category::factory()->create();

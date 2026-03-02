@@ -2,6 +2,10 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Enums\OrderStatus;
+use App\Models\Category;
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
@@ -154,9 +158,46 @@ class RolePermissionTest extends TestCase
                 'price' => 1000,
                 'stock_quantity' => 10,
             ])
-            ->assertRedirect();
+            ->assertRedirect()
+            ->assertSessionDoesntHaveErrors();
 
         $this->assertDatabaseHas('products', ['name' => 'Manager Product']);
+    }
+
+    public function test_manager_can_update_order_status(): void
+    {
+        $user = User::factory()->manager()->create();
+        $order = Order::factory()->pending()->create();
+
+        $this->actingAs($user)
+            ->put(route('admin.orders.update', $order), [
+                'status' => OrderStatus::Processing->value,
+            ])
+            ->assertRedirect()
+            ->assertSessionDoesntHaveErrors();
+    }
+
+    public function test_manager_cannot_update_a_category(): void
+    {
+        $user = User::factory()->manager()->create();
+        $category = Category::factory()->create();
+
+        $this->actingAs($user)
+            ->put(route('admin.categories.update', $category), [
+                'name' => 'Updated Name',
+                'is_active' => true,
+            ])
+            ->assertForbidden();
+    }
+
+    public function test_manager_cannot_delete_a_category(): void
+    {
+        $user = User::factory()->manager()->create();
+        $category = Category::factory()->create();
+
+        $this->actingAs($user)
+            ->delete(route('admin.categories.destroy', $category))
+            ->assertForbidden();
     }
 
     public function test_manager_can_view_customers(): void
@@ -181,6 +222,40 @@ class RolePermissionTest extends TestCase
                 'name' => 'New Category',
                 'is_active' => true,
             ])
+            ->assertForbidden();
+    }
+
+    public function test_admin_can_download_order_invoice(): void
+    {
+        $user = User::factory()->admin()->create();
+        $order = Order::factory()->create();
+        OrderItem::factory(2)->for($order)->create();
+
+        $this->actingAs($user)
+            ->get(route('admin.orders.invoice', $order))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/pdf');
+    }
+
+    public function test_manager_can_download_order_invoice(): void
+    {
+        $user = User::factory()->manager()->create();
+        $order = Order::factory()->create();
+        OrderItem::factory(2)->for($order)->create();
+
+        $this->actingAs($user)
+            ->get(route('admin.orders.invoice', $order))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/pdf');
+    }
+
+    public function test_user_without_role_cannot_download_invoice(): void
+    {
+        $user = User::factory()->create();
+        $order = Order::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('admin.orders.invoice', $order))
             ->assertForbidden();
     }
 

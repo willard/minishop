@@ -5,6 +5,12 @@ namespace App\Policies;
 use App\Models\Product;
 use App\Models\User;
 
+/**
+ * Authorization policy for Product management.
+ *
+ * Each method delegates to a Spatie permission check (e.g. 'products.view').
+ * Super-admins bypass all checks via Gate::before in AppServiceProvider.
+ */
 class ProductPolicy
 {
     public function viewAny(User $user): bool

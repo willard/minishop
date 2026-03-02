@@ -5,6 +5,12 @@ namespace App\Policies;
 use App\Models\Coupon;
 use App\Models\User;
 
+/**
+ * Authorization policy for Coupon management.
+ *
+ * Each method delegates to a Spatie permission check (e.g. 'coupons.view').
+ * Super-admins bypass all checks via Gate::before in AppServiceProvider.
+ */
 class CouponPolicy
 {
     public function viewAny(User $user): bool

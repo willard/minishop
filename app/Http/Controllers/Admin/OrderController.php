@@ -12,7 +12,6 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -92,7 +91,7 @@ class OrderController extends Controller
 
     public function invoice(Order $order): HttpResponse
     {
-        Gate::authorize('orders.invoice');
+        $this->authorize('invoice', $order);
 
         $order->load(['customer.user', 'items', 'shippingMethod', 'coupon']);
         $settings = StoreSettings::current();

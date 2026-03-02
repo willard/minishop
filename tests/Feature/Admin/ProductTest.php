@@ -25,7 +25,7 @@ class ProductTest extends TestCase
         $this->get(route('admin.products.index'))->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_products_index(): void
+    public function test_super_admin_can_view_products_index(): void
     {
         $user = User::factory()->superAdmin()->create();
         Product::factory(3)->create();
@@ -35,7 +35,7 @@ class ProductTest extends TestCase
             ->assertOk();
     }
 
-    public function test_authenticated_users_can_view_create_product_form(): void
+    public function test_super_admin_can_view_create_product_form(): void
     {
         $user = User::factory()->superAdmin()->create();
 
@@ -44,7 +44,7 @@ class ProductTest extends TestCase
             ->assertOk();
     }
 
-    public function test_authenticated_users_can_store_a_product(): void
+    public function test_super_admin_can_store_a_product(): void
     {
         $user = User::factory()->superAdmin()->create();
 
@@ -105,7 +105,7 @@ class ProductTest extends TestCase
             ->assertSessionHasErrors('compare_price');
     }
 
-    public function test_authenticated_users_can_view_a_product(): void
+    public function test_super_admin_can_view_a_product(): void
     {
         $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
@@ -115,7 +115,7 @@ class ProductTest extends TestCase
             ->assertOk();
     }
 
-    public function test_authenticated_users_can_view_edit_product_form(): void
+    public function test_super_admin_can_view_edit_product_form(): void
     {
         $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
@@ -125,7 +125,7 @@ class ProductTest extends TestCase
             ->assertOk();
     }
 
-    public function test_authenticated_users_can_update_a_product(): void
+    public function test_super_admin_can_update_a_product(): void
     {
         $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create(['name' => 'Old Name', 'price' => 1000]);
@@ -155,7 +155,7 @@ class ProductTest extends TestCase
             ->assertSessionDoesntHaveErrors('sku');
     }
 
-    public function test_authenticated_users_can_delete_a_product(): void
+    public function test_super_admin_can_delete_a_product(): void
     {
         $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();

@@ -1,9 +1,10 @@
 <?php
 
 use App\Models\User;
-use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\Artisan;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 return new class extends Migration
 {
@@ -12,9 +13,45 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Artisan::call('db:seed', [
-            '--class' => RoleAndPermissionSeeder::class,
-            '--force' => true,
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        $permissions = [
+            'dashboard.view',
+            'products.view', 'products.create', 'products.update', 'products.delete',
+            'categories.view', 'categories.create', 'categories.update', 'categories.delete',
+            'orders.view', 'orders.update', 'orders.delete', 'orders.invoice',
+            'customers.view',
+            'coupons.view', 'coupons.create', 'coupons.update', 'coupons.delete',
+            'shipping-methods.view', 'shipping-methods.create', 'shipping-methods.update', 'shipping-methods.delete',
+            'settings.view', 'settings.update',
+            'activity-log.view',
+        ];
+
+        foreach ($permissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
+        }
+
+        Role::firstOrCreate(['name' => 'super-admin']);
+
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $adminRole->syncPermissions([
+            'dashboard.view',
+            'products.view', 'products.create', 'products.update', 'products.delete',
+            'categories.view', 'categories.create', 'categories.update', 'categories.delete',
+            'orders.view', 'orders.update', 'orders.delete', 'orders.invoice',
+            'customers.view',
+            'coupons.view', 'coupons.create', 'coupons.update', 'coupons.delete',
+            'shipping-methods.view', 'shipping-methods.create', 'shipping-methods.update', 'shipping-methods.delete',
+            'activity-log.view',
+        ]);
+
+        $managerRole = Role::firstOrCreate(['name' => 'manager']);
+        $managerRole->syncPermissions([
+            'dashboard.view',
+            'products.view', 'products.create', 'products.update',
+            'categories.view',
+            'orders.view', 'orders.update', 'orders.invoice',
+            'customers.view',
         ]);
 
         User::whereDoesntHave('customer')

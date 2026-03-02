@@ -50,7 +50,7 @@ class OrderTest extends TestCase
         $this->delete(route('admin.orders.destroy', $order))->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_orders_index(): void
+    public function test_super_admin_can_view_orders_index(): void
     {
         $user = User::factory()->superAdmin()->create();
         Order::factory(3)->create();
@@ -60,7 +60,7 @@ class OrderTest extends TestCase
             ->assertOk();
     }
 
-    public function test_authenticated_users_can_view_an_order(): void
+    public function test_super_admin_can_view_an_order(): void
     {
         $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->create();
@@ -71,7 +71,7 @@ class OrderTest extends TestCase
             ->assertOk();
     }
 
-    public function test_authenticated_users_can_update_order_status(): void
+    public function test_super_admin_can_update_order_status(): void
     {
         $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->create(['status' => OrderStatus::Pending->value]);
@@ -108,7 +108,7 @@ class OrderTest extends TestCase
             ->assertSessionHasErrors('status');
     }
 
-    public function test_authenticated_users_can_delete_an_order(): void
+    public function test_super_admin_can_delete_an_order(): void
     {
         $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->create();
@@ -144,7 +144,7 @@ class OrderTest extends TestCase
         $this->get(route('admin.orders.invoice', $order))->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_download_order_invoice(): void
+    public function test_super_admin_can_download_order_invoice(): void
     {
         $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->create();

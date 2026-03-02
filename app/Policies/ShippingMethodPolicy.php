@@ -5,6 +5,12 @@ namespace App\Policies;
 use App\Models\ShippingMethod;
 use App\Models\User;
 
+/**
+ * Authorization policy for Shipping Method management.
+ *
+ * Each method delegates to a Spatie permission check (e.g. 'shipping-methods.view').
+ * Super-admins bypass all checks via Gate::before in AppServiceProvider.
+ */
 class ShippingMethodPolicy
 {
     public function viewAny(User $user): bool

@@ -53,7 +53,7 @@ class ShippingMethodTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_index(): void
+    public function test_super_admin_can_view_index(): void
     {
         $user = User::factory()->superAdmin()->create();
         ShippingMethod::factory(3)->create();
@@ -67,7 +67,7 @@ class ShippingMethodTest extends TestCase
             );
     }
 
-    public function test_authenticated_users_can_view_create_form(): void
+    public function test_super_admin_can_view_create_form(): void
     {
         $user = User::factory()->superAdmin()->create();
 
@@ -77,7 +77,7 @@ class ShippingMethodTest extends TestCase
             ->assertInertia(fn ($page) => $page->component('admin/ShippingMethods/Create'));
     }
 
-    public function test_authenticated_users_can_store_a_shipping_method(): void
+    public function test_super_admin_can_store_a_shipping_method(): void
     {
         $user = User::factory()->superAdmin()->create();
 
@@ -127,7 +127,7 @@ class ShippingMethodTest extends TestCase
             ->assertSessionHasErrors('name');
     }
 
-    public function test_authenticated_users_can_view_edit_form(): void
+    public function test_super_admin_can_view_edit_form(): void
     {
         $user = User::factory()->superAdmin()->create();
         $method = ShippingMethod::factory()->create();
@@ -141,7 +141,7 @@ class ShippingMethodTest extends TestCase
             );
     }
 
-    public function test_authenticated_users_can_update_a_shipping_method(): void
+    public function test_super_admin_can_update_a_shipping_method(): void
     {
         $user = User::factory()->superAdmin()->create();
         $method = ShippingMethod::factory()->create(['name' => 'Old Name', 'price' => 10000]);
@@ -164,7 +164,7 @@ class ShippingMethodTest extends TestCase
         ]);
     }
 
-    public function test_authenticated_users_can_delete_a_shipping_method(): void
+    public function test_super_admin_can_delete_a_shipping_method(): void
     {
         $user = User::factory()->superAdmin()->create();
         $method = ShippingMethod::factory()->create();

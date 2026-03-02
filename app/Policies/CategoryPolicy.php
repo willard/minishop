@@ -5,6 +5,12 @@ namespace App\Policies;
 use App\Models\Category;
 use App\Models\User;
 
+/**
+ * Authorization policy for Category management.
+ *
+ * Each method delegates to a Spatie permission check (e.g. 'categories.view').
+ * Super-admins bypass all checks via Gate::before in AppServiceProvider.
+ */
 class CategoryPolicy
 {
     public function viewAny(User $user): bool

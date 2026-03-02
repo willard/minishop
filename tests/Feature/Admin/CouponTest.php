@@ -62,7 +62,7 @@ class CouponTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_coupons_index(): void
+    public function test_super_admin_can_view_coupons_index(): void
     {
         $user = User::factory()->superAdmin()->create();
         Coupon::factory(3)->create();
@@ -76,7 +76,7 @@ class CouponTest extends TestCase
             );
     }
 
-    public function test_authenticated_users_can_view_create_coupon_form(): void
+    public function test_super_admin_can_view_create_coupon_form(): void
     {
         $user = User::factory()->superAdmin()->create();
 
@@ -86,7 +86,7 @@ class CouponTest extends TestCase
             ->assertInertia(fn ($page) => $page->component('admin/Coupons/Create'));
     }
 
-    public function test_authenticated_users_can_store_a_coupon(): void
+    public function test_super_admin_can_store_a_coupon(): void
     {
         $user = User::factory()->superAdmin()->create();
 
@@ -170,7 +170,7 @@ class CouponTest extends TestCase
             ->assertSessionHasErrors('value');
     }
 
-    public function test_authenticated_users_can_view_edit_coupon_form(): void
+    public function test_super_admin_can_view_edit_coupon_form(): void
     {
         $user = User::factory()->superAdmin()->create();
         $coupon = Coupon::factory()->create();
@@ -184,7 +184,7 @@ class CouponTest extends TestCase
             );
     }
 
-    public function test_authenticated_users_can_update_a_coupon(): void
+    public function test_super_admin_can_update_a_coupon(): void
     {
         $user = User::factory()->superAdmin()->create();
         $coupon = Coupon::factory()->create(['code' => 'OLD10', 'type' => CouponType::Percentage, 'value' => 10]);
@@ -220,7 +220,7 @@ class CouponTest extends TestCase
             ->assertSessionDoesntHaveErrors('code');
     }
 
-    public function test_authenticated_users_can_delete_a_coupon(): void
+    public function test_super_admin_can_delete_a_coupon(): void
     {
         $user = User::factory()->superAdmin()->create();
         $coupon = Coupon::factory()->create();

@@ -31,7 +31,7 @@ class StoreSettingsTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_settings_page(): void
+    public function test_super_admin_can_view_settings_page(): void
     {
         $user = User::factory()->superAdmin()->create();
 
@@ -55,7 +55,7 @@ class StoreSettingsTest extends TestCase
         $this->assertDatabaseCount('store_settings', 1);
     }
 
-    public function test_authenticated_users_can_update_settings(): void
+    public function test_super_admin_can_update_settings(): void
     {
         $user = User::factory()->superAdmin()->create();
 
@@ -166,7 +166,7 @@ class StoreSettingsTest extends TestCase
         $this->assertSame('sk_live_new_secret', $updated->stripe_secret_key);
     }
 
-    public function test_authenticated_users_can_update_low_stock_threshold(): void
+    public function test_super_admin_can_update_low_stock_threshold(): void
     {
         $user = User::factory()->superAdmin()->create();
 

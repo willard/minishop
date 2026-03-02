@@ -27,7 +27,7 @@ class ActivityLogTest extends TestCase
         $this->get(route('admin.activity-log.index'))->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_activity_log(): void
+    public function test_super_admin_can_view_activity_log(): void
     {
         $user = User::factory()->superAdmin()->create();
         ActivityLog::factory(3)->create();

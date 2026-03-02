@@ -45,7 +45,7 @@ class ProductOptionTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_create_option_form(): void
+    public function test_super_admin_can_view_create_option_form(): void
     {
         $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();

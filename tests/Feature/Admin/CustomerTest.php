@@ -32,7 +32,7 @@ class CustomerTest extends TestCase
         $this->get(route('admin.customers.show', $customer))->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_customers_index(): void
+    public function test_super_admin_can_view_customers_index(): void
     {
         $user = User::factory()->superAdmin()->create();
         Customer::factory(3)->create();
@@ -60,7 +60,7 @@ class CustomerTest extends TestCase
         );
     }
 
-    public function test_authenticated_users_can_view_a_customer(): void
+    public function test_super_admin_can_view_a_customer(): void
     {
         $user = User::factory()->superAdmin()->create();
         $customer = Customer::factory()->create();
