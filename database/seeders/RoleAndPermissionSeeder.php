@@ -42,6 +42,10 @@ class RoleAndPermissionSeeder extends Seeder
             'settings.view',
             'settings.update',
             'activity-log.view',
+            'users.view',
+            'users.create',
+            'users.update',
+            'users.delete',
         ];
 
         foreach ($permissions as $permission) {
@@ -61,6 +65,7 @@ class RoleAndPermissionSeeder extends Seeder
             'coupons.view', 'coupons.create', 'coupons.update', 'coupons.delete',
             'shipping-methods.view', 'shipping-methods.create', 'shipping-methods.update', 'shipping-methods.delete',
             'activity-log.view',
+            'users.view', 'users.create', 'users.update', 'users.delete',
         ]);
 
         $managerRole = Role::firstOrCreate(['name' => 'manager']);

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, ClipboardList, Folder, LayoutGrid, Package, Settings, ShoppingCart, Tag, Ticket, Truck, Users } from 'lucide-vue-next';
+import { BookOpen, ClipboardList, Folder, LayoutGrid, Package, Settings, ShoppingCart, Tag, Ticket, Truck, UserCog, Users } from 'lucide-vue-next';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -21,6 +21,7 @@ import { index as productsIndex } from '@/actions/App/Http/Controllers/Admin/Pro
 import { index as categoriesIndex } from '@/actions/App/Http/Controllers/Admin/CategoryController';
 import { index as ordersIndex } from '@/actions/App/Http/Controllers/Admin/OrderController';
 import { index as customersIndex } from '@/actions/App/Http/Controllers/Admin/CustomerController';
+import { index as usersIndex } from '@/actions/App/Http/Controllers/Admin/UserController';
 import { index as couponsIndex } from '@/actions/App/Http/Controllers/Admin/CouponController';
 import { index as shippingMethodsIndex } from '@/actions/App/Http/Controllers/Admin/ShippingMethodController';
 import { edit as settingsEdit } from '@/actions/App/Http/Controllers/Admin/StoreSettingsController';
@@ -61,6 +62,12 @@ const allNavItems: PermissionNavItem[] = [
         href: customersIndex().url,
         icon: Users,
         permission: 'customers.view',
+    },
+    {
+        title: 'Users',
+        href: usersIndex().url,
+        icon: UserCog,
+        permission: 'users.view',
     },
     {
         title: 'Coupons',
