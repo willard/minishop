@@ -1,11 +1,10 @@
+import { usePage } from '@inertiajs/vue3';
 import { describe, expect, it, vi } from 'vitest';
 import { useCan } from '@/composables/useCan';
 
 vi.mock('@inertiajs/vue3', () => ({
     usePage: vi.fn(),
 }));
-
-import { usePage } from '@inertiajs/vue3';
 
 function mockPage(roles: string[], permissions: string[]) {
     (usePage as ReturnType<typeof vi.fn>).mockReturnValue({
