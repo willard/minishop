@@ -57,7 +57,7 @@ class ProductObserver
         if ($product->stock_quantity <= $threshold && ! $product->low_stock_notified) {
             $product->updateQuietly(['low_stock_notified' => true]);
 
-            Notification::send(User::whereDoesntHave('customer')->get(), new LowStockAlert($product));
+            Notification::send(User::role(['super-admin', 'admin'])->get(), new LowStockAlert($product));
         }
 
         if ($product->stock_quantity > $threshold && $product->low_stock_notified) {

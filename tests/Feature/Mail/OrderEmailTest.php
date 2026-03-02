@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\ShippingMethod;
 use App\Models\StoreSettings;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -29,6 +30,7 @@ class OrderEmailTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(RoleAndPermissionSeeder::class);
         $this->shippingMethod = ShippingMethod::factory()->create(['price' => 20000, 'is_free' => false]);
     }
 
@@ -174,7 +176,7 @@ class OrderEmailTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::factory()->create();
+        $admin = User::factory()->superAdmin()->create();
         $order = $this->createOrderWithCustomer(OrderStatus::Processing);
 
         $this->actingAs($admin)
@@ -189,7 +191,7 @@ class OrderEmailTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::factory()->create();
+        $admin = User::factory()->superAdmin()->create();
         $order = $this->createOrderWithCustomer(OrderStatus::Shipped);
 
         $this->actingAs($admin)
@@ -204,7 +206,7 @@ class OrderEmailTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::factory()->create();
+        $admin = User::factory()->superAdmin()->create();
         $order = $this->createOrderWithCustomer();
 
         $this->actingAs($admin)
@@ -219,7 +221,7 @@ class OrderEmailTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::factory()->create();
+        $admin = User::factory()->superAdmin()->create();
         $order = $this->createOrderWithCustomer();
 
         $this->actingAs($admin)
@@ -232,7 +234,7 @@ class OrderEmailTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::factory()->create();
+        $admin = User::factory()->superAdmin()->create();
         $order = $this->createOrderWithCustomer();
 
         $this->actingAs($admin)
@@ -248,7 +250,7 @@ class OrderEmailTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::factory()->create();
+        $admin = User::factory()->superAdmin()->create();
         $user = User::factory()->create(['email' => 'customer@example.com']);
         $customer = Customer::factory()->create(['user_id' => $user->id]);
         $order = Order::factory()->create([
@@ -286,7 +288,7 @@ class OrderEmailTest extends TestCase
 
     private function createOrderWithCustomer(OrderStatus $status = OrderStatus::Pending): Order
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $customer = Customer::factory()->create(['user_id' => $user->id]);
         $order = Order::factory()->create([
             'customer_id' => $customer->id,

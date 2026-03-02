@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\StoreSettings;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -14,6 +15,8 @@ class DashboardController extends Controller
 {
     public function __invoke(): Response
     {
+        Gate::authorize('dashboard.view');
+
         $threshold = StoreSettings::current()->low_stock_threshold;
 
         $totalRevenue = Order::query()

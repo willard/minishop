@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\StoreSettings;
 use App\Models\User;
 use App\Notifications\LowStockAlert;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -15,11 +16,18 @@ class LowStockAlertTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(RoleAndPermissionSeeder::class);
+    }
+
     public function test_notification_is_sent_when_stock_drops_below_threshold(): void
     {
         Notification::fake();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         StoreSettings::current()->update(['low_stock_threshold' => 10]);
 
         $product = Product::factory()->create(['stock_quantity' => 20]);
@@ -40,7 +48,7 @@ class LowStockAlertTest extends TestCase
     {
         Notification::fake();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         StoreSettings::current()->update(['low_stock_threshold' => 10]);
 
         $product = Product::factory()->create(['stock_quantity' => 50]);
@@ -59,7 +67,7 @@ class LowStockAlertTest extends TestCase
     {
         Notification::fake();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         StoreSettings::current()->update(['low_stock_threshold' => 10]);
 
         $product = Product::factory()->create(['stock_quantity' => 20]);
@@ -87,7 +95,7 @@ class LowStockAlertTest extends TestCase
     {
         Notification::fake();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         StoreSettings::current()->update(['low_stock_threshold' => 10]);
 
         $product = Product::factory()->create(['stock_quantity' => 20]);
@@ -117,7 +125,7 @@ class LowStockAlertTest extends TestCase
     {
         Notification::fake();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         StoreSettings::current()->update(['low_stock_threshold' => 10]);
 
         $product = Product::factory()->create(['stock_quantity' => 20]);
@@ -153,7 +161,7 @@ class LowStockAlertTest extends TestCase
     {
         Notification::fake();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         StoreSettings::current()->update(['low_stock_threshold' => 10]);
 
         $product = Product::factory()->create(['stock_quantity' => 5]);
@@ -173,7 +181,7 @@ class LowStockAlertTest extends TestCase
     {
         Notification::fake();
 
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         StoreSettings::current()->update(['low_stock_threshold' => 10]);
 
         $product = Product::factory()->create(['stock_quantity' => 20]);
@@ -192,7 +200,7 @@ class LowStockAlertTest extends TestCase
     {
         Notification::fake();
 
-        $adminUsers = User::factory(2)->create();
+        $adminUsers = User::factory(2)->superAdmin()->create();
         $customerUser = User::factory()->create();
         Customer::factory()->create(['user_id' => $customerUser->id]);
 

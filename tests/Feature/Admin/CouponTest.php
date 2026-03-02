@@ -5,12 +5,20 @@ namespace Tests\Feature\Admin;
 use App\Enums\CouponType;
 use App\Models\Coupon;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class CouponTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(RoleAndPermissionSeeder::class);
+    }
 
     public function test_guests_are_redirected_from_index(): void
     {
@@ -56,7 +64,7 @@ class CouponTest extends TestCase
 
     public function test_authenticated_users_can_view_coupons_index(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         Coupon::factory(3)->create();
 
         $this->actingAs($user)
@@ -70,7 +78,7 @@ class CouponTest extends TestCase
 
     public function test_authenticated_users_can_view_create_coupon_form(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->get(route('admin.coupons.create'))
@@ -80,7 +88,7 @@ class CouponTest extends TestCase
 
     public function test_authenticated_users_can_store_a_coupon(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.coupons.store'), [
@@ -101,7 +109,7 @@ class CouponTest extends TestCase
 
     public function test_store_uppercases_coupon_code(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.coupons.store'), [
@@ -115,7 +123,7 @@ class CouponTest extends TestCase
 
     public function test_store_requires_code(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.coupons.store'), ['type' => 'fixed', 'value' => 100])
@@ -124,7 +132,7 @@ class CouponTest extends TestCase
 
     public function test_store_rejects_duplicate_code(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         Coupon::factory()->create(['code' => 'DUPE']);
 
         $this->actingAs($user)
@@ -138,7 +146,7 @@ class CouponTest extends TestCase
 
     public function test_store_requires_valid_type(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.coupons.store'), [
@@ -151,7 +159,7 @@ class CouponTest extends TestCase
 
     public function test_store_requires_value_of_at_least_one(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.coupons.store'), [
@@ -164,7 +172,7 @@ class CouponTest extends TestCase
 
     public function test_authenticated_users_can_view_edit_coupon_form(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $coupon = Coupon::factory()->create();
 
         $this->actingAs($user)
@@ -178,7 +186,7 @@ class CouponTest extends TestCase
 
     public function test_authenticated_users_can_update_a_coupon(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $coupon = Coupon::factory()->create(['code' => 'OLD10', 'type' => CouponType::Percentage, 'value' => 10]);
 
         $this->actingAs($user)
@@ -200,7 +208,7 @@ class CouponTest extends TestCase
 
     public function test_update_ignores_own_code_uniqueness(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $coupon = Coupon::factory()->create(['code' => 'MYCODE']);
 
         $this->actingAs($user)
@@ -214,7 +222,7 @@ class CouponTest extends TestCase
 
     public function test_authenticated_users_can_delete_a_coupon(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $coupon = Coupon::factory()->create();
 
         $this->actingAs($user)

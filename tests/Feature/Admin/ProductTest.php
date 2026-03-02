@@ -5,12 +5,20 @@ namespace Tests\Feature\Admin;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(RoleAndPermissionSeeder::class);
+    }
 
     public function test_guests_are_redirected_when_accessing_admin_products(): void
     {
@@ -19,7 +27,7 @@ class ProductTest extends TestCase
 
     public function test_authenticated_users_can_view_products_index(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         Product::factory(3)->create();
 
         $this->actingAs($user)
@@ -29,7 +37,7 @@ class ProductTest extends TestCase
 
     public function test_authenticated_users_can_view_create_product_form(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->get(route('admin.products.create'))
@@ -38,7 +46,7 @@ class ProductTest extends TestCase
 
     public function test_authenticated_users_can_store_a_product(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.products.store'), [
@@ -54,7 +62,7 @@ class ProductTest extends TestCase
 
     public function test_store_product_requires_name(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.products.store'), ['price' => 1999])
@@ -63,7 +71,7 @@ class ProductTest extends TestCase
 
     public function test_store_product_requires_valid_price(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.products.store'), ['name' => 'Test', 'price' => -1])
@@ -72,7 +80,7 @@ class ProductTest extends TestCase
 
     public function test_store_product_validates_sku_is_unique(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         Product::factory()->create(['sku' => 'SKU-001']);
 
         $this->actingAs($user)
@@ -86,7 +94,7 @@ class ProductTest extends TestCase
 
     public function test_compare_price_must_be_greater_than_price(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.products.store'), [
@@ -99,7 +107,7 @@ class ProductTest extends TestCase
 
     public function test_authenticated_users_can_view_a_product(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -109,7 +117,7 @@ class ProductTest extends TestCase
 
     public function test_authenticated_users_can_view_edit_product_form(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -119,7 +127,7 @@ class ProductTest extends TestCase
 
     public function test_authenticated_users_can_update_a_product(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create(['name' => 'Old Name', 'price' => 1000]);
 
         $this->actingAs($user)
@@ -135,7 +143,7 @@ class ProductTest extends TestCase
 
     public function test_update_product_ignores_own_sku_uniqueness(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create(['sku' => 'MYSKU-001', 'price' => 1000]);
 
         $this->actingAs($user)
@@ -149,7 +157,7 @@ class ProductTest extends TestCase
 
     public function test_authenticated_users_can_delete_a_product(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -161,7 +169,7 @@ class ProductTest extends TestCase
 
     public function test_store_product_syncs_categories(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $categories = Category::factory(2)->create();
 
         $this->actingAs($user)
@@ -178,7 +186,7 @@ class ProductTest extends TestCase
 
     public function test_products_index_passes_filters_and_categories_as_props(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         Category::factory()->create(['name' => 'Apparel']);
 
         $this->actingAs($user)
@@ -191,7 +199,7 @@ class ProductTest extends TestCase
 
     public function test_products_index_can_be_searched_by_name(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         Product::factory()->create(['name' => 'Red Sneakers']);
         Product::factory()->create(['name' => 'Blue Jeans']);
 
@@ -206,7 +214,7 @@ class ProductTest extends TestCase
 
     public function test_products_index_can_be_searched_by_sku(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         Product::factory()->create(['name' => 'Widget A', 'sku' => 'SKU-WIDGET-001']);
         Product::factory()->create(['name' => 'Widget B', 'sku' => 'SKU-OTHER-002']);
 
@@ -220,7 +228,7 @@ class ProductTest extends TestCase
 
     public function test_products_index_can_be_filtered_by_category(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $apparel = Category::factory()->create(['name' => 'Apparel']);
         $electronics = Category::factory()->create(['name' => 'Electronics']);
 
@@ -240,7 +248,7 @@ class ProductTest extends TestCase
 
     public function test_products_index_can_be_filtered_by_in_stock(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         Product::factory()->create(['name' => 'Available', 'stock_quantity' => 5]);
         Product::factory()->create(['name' => 'Sold Out', 'stock_quantity' => 0]);
 
@@ -254,7 +262,7 @@ class ProductTest extends TestCase
 
     public function test_products_index_can_be_filtered_by_out_of_stock(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         Product::factory()->create(['name' => 'Available', 'stock_quantity' => 5]);
         Product::factory()->create(['name' => 'Sold Out', 'stock_quantity' => 0]);
 
@@ -268,7 +276,7 @@ class ProductTest extends TestCase
 
     public function test_products_index_search_and_stock_filters_can_be_combined(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         Product::factory()->create(['name' => 'Red Widget', 'stock_quantity' => 10]);
         Product::factory()->create(['name' => 'Red Gadget', 'stock_quantity' => 0]);
         Product::factory()->create(['name' => 'Blue Widget', 'stock_quantity' => 5]);

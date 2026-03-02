@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { BookOpen, ClipboardList, Folder, LayoutGrid, Package, Settings, ShoppingCart, Tag, Ticket, Truck, Users } from 'lucide-vue-next';
 import NavFooter from '@/components/NavFooter.vue';
@@ -24,54 +25,72 @@ import { index as couponsIndex } from '@/actions/App/Http/Controllers/Admin/Coup
 import { index as shippingMethodsIndex } from '@/actions/App/Http/Controllers/Admin/ShippingMethodController';
 import { edit as settingsEdit } from '@/actions/App/Http/Controllers/Admin/StoreSettingsController';
 import { index as activityLogIndex } from '@/actions/App/Http/Controllers/Admin/ActivityLogController';
+import { useCan } from '@/composables/useCan';
 
-const mainNavItems: NavItem[] = [
+const { can } = useCan();
+
+type PermissionNavItem = NavItem & { permission?: string };
+
+const allNavItems: PermissionNavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+        permission: 'dashboard.view',
     },
     {
         title: 'Products',
         href: productsIndex().url,
         icon: Package,
+        permission: 'products.view',
     },
     {
         title: 'Categories',
         href: categoriesIndex().url,
         icon: Tag,
+        permission: 'categories.view',
     },
     {
         title: 'Orders',
         href: ordersIndex().url,
         icon: ShoppingCart,
+        permission: 'orders.view',
     },
     {
         title: 'Customers',
         href: customersIndex().url,
         icon: Users,
+        permission: 'customers.view',
     },
     {
         title: 'Coupons',
         href: couponsIndex().url,
         icon: Ticket,
+        permission: 'coupons.view',
     },
     {
         title: 'Shipping Methods',
         href: shippingMethodsIndex().url,
         icon: Truck,
+        permission: 'shipping-methods.view',
     },
     {
         title: 'Activity Log',
         href: activityLogIndex().url,
         icon: ClipboardList,
+        permission: 'activity-log.view',
     },
     {
         title: 'Settings',
         href: settingsEdit().url,
         icon: Settings,
+        permission: 'settings.view',
     },
 ];
+
+const mainNavItems = computed<NavItem[]>(() =>
+    allNavItems.filter((item) => !item.permission || can(item.permission)),
+);
 
 const footerNavItems: NavItem[] = [
     {

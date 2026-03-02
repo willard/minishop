@@ -17,6 +17,8 @@ class ProductController extends Controller
 {
     public function index(Request $request): Response
     {
+        $this->authorize('viewAny', Product::class);
+
         $filters = $request->only(['search', 'category_id', 'stock']);
 
         $products = Product::query()
@@ -55,6 +57,8 @@ class ProductController extends Controller
 
     public function create(): Response
     {
+        $this->authorize('create', Product::class);
+
         $categories = Category::query()
             ->where('is_active', true)
             ->orderBy('name')
@@ -67,6 +71,8 @@ class ProductController extends Controller
 
     public function store(StoreProductRequest $request): RedirectResponse
     {
+        $this->authorize('create', Product::class);
+
         $data = $request->validated();
         $data['is_active'] = $request->boolean('is_active', true);
         $data['slug'] = $this->uniqueSlug($data['name']);
@@ -80,6 +86,8 @@ class ProductController extends Controller
 
     public function show(Product $product): Response
     {
+        $this->authorize('view', $product);
+
         $product->load(['categories', 'images', 'options.values', 'variants.optionValues.option']);
 
         return Inertia::render('admin/Products/Show', [
@@ -89,6 +97,8 @@ class ProductController extends Controller
 
     public function edit(Product $product): Response
     {
+        $this->authorize('update', $product);
+
         $product->load('categories');
 
         $categories = Category::query()
@@ -104,6 +114,8 @@ class ProductController extends Controller
 
     public function update(UpdateProductRequest $request, Product $product): RedirectResponse
     {
+        $this->authorize('update', $product);
+
         $data = $request->validated();
         $data['is_active'] = $request->boolean('is_active', true);
         unset($data['category_ids']);
@@ -117,6 +129,8 @@ class ProductController extends Controller
 
     public function destroy(Product $product): RedirectResponse
     {
+        $this->authorize('delete', $product);
+
         $product->delete();
 
         return redirect()->route('admin.products.index')

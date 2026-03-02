@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
@@ -14,6 +15,13 @@ use Tests\TestCase;
 class OrderTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(RoleAndPermissionSeeder::class);
+    }
 
     public function test_guests_are_redirected_when_accessing_admin_orders(): void
     {
@@ -44,7 +52,7 @@ class OrderTest extends TestCase
 
     public function test_authenticated_users_can_view_orders_index(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         Order::factory(3)->create();
 
         $this->actingAs($user)
@@ -54,7 +62,7 @@ class OrderTest extends TestCase
 
     public function test_authenticated_users_can_view_an_order(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->create();
         OrderItem::factory(2)->for($order)->create();
 
@@ -65,7 +73,7 @@ class OrderTest extends TestCase
 
     public function test_authenticated_users_can_update_order_status(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->create(['status' => OrderStatus::Pending->value]);
 
         $this->actingAs($user)
@@ -82,7 +90,7 @@ class OrderTest extends TestCase
 
     public function test_update_order_rejects_invalid_status(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->create();
 
         $this->actingAs($user)
@@ -92,7 +100,7 @@ class OrderTest extends TestCase
 
     public function test_update_order_requires_status(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->create();
 
         $this->actingAs($user)
@@ -102,7 +110,7 @@ class OrderTest extends TestCase
 
     public function test_authenticated_users_can_delete_an_order(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->create();
 
         $this->actingAs($user)
@@ -138,7 +146,7 @@ class OrderTest extends TestCase
 
     public function test_authenticated_users_can_download_order_invoice(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->create();
         OrderItem::factory(2)->for($order)->create();
 
@@ -151,7 +159,7 @@ class OrderTest extends TestCase
 
     public function test_invoice_content_disposition_contains_order_number(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->create();
         OrderItem::factory(2)->for($order)->create();
 
@@ -166,7 +174,7 @@ class OrderTest extends TestCase
 
     public function test_orders_index_passes_filters_and_statuses_as_props(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->get(route('admin.orders.index'))
@@ -178,7 +186,7 @@ class OrderTest extends TestCase
 
     public function test_orders_index_can_be_filtered_by_status(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         Order::factory()->pending()->create();
         Order::factory()->processing()->create();
 
@@ -194,7 +202,7 @@ class OrderTest extends TestCase
 
     public function test_orders_index_can_be_searched_by_order_number(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $target = Order::factory()->create(['order_number' => 'ORD-SEARCH-001']);
         Order::factory()->create(['order_number' => 'ORD-SEARCH-002']);
 
@@ -209,7 +217,7 @@ class OrderTest extends TestCase
 
     public function test_orders_index_can_be_searched_by_customer_name(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $namedUser = User::factory()->create(['name' => 'Specific Customer']);
         $customer = Customer::factory()->for($namedUser, 'user')->create();
         Order::factory()->for($customer)->create();
@@ -225,7 +233,7 @@ class OrderTest extends TestCase
 
     public function test_valid_status_transition_is_accepted(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->pending()->create();
 
         $this->actingAs($user)
@@ -237,7 +245,7 @@ class OrderTest extends TestCase
 
     public function test_invalid_backwards_transition_is_rejected(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->delivered()->create();
 
         $this->actingAs($user)
@@ -247,7 +255,7 @@ class OrderTest extends TestCase
 
     public function test_terminal_cancelled_order_cannot_be_updated(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->cancelled()->create();
 
         $this->actingAs($user)
@@ -257,7 +265,7 @@ class OrderTest extends TestCase
 
     public function test_terminal_refunded_order_cannot_be_updated(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->create(['status' => OrderStatus::Refunded->value]);
 
         $this->actingAs($user)
@@ -267,7 +275,7 @@ class OrderTest extends TestCase
 
     public function test_delivered_order_can_be_refunded(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->delivered()->create();
 
         $this->actingAs($user)
@@ -279,7 +287,7 @@ class OrderTest extends TestCase
 
     public function test_shipped_order_can_be_cancelled(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->shipped()->create();
 
         $this->actingAs($user)

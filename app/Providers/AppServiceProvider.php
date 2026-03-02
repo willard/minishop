@@ -11,6 +11,7 @@ use App\Observers\ProductObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -31,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->registerObservers();
+        $this->registerGates();
     }
 
     protected function registerObservers(): void
@@ -38,6 +40,13 @@ class AppServiceProvider extends ServiceProvider
         Order::observe(OrderObserver::class);
         Product::observe(ProductObserver::class);
         Coupon::observe(CouponObserver::class);
+    }
+
+    protected function registerGates(): void
+    {
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole('super-admin') ? true : null;
+        });
     }
 
     /**

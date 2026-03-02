@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\StoreProductImageRequest;
 use App\Models\Product;
 use App\Models\ProductImage;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -15,6 +16,8 @@ class ProductImageController extends Controller
 {
     public function store(StoreProductImageRequest $request, Product $product): RedirectResponse
     {
+        Gate::authorize('products.update');
+
         $files = $request->file('images');
         $maxSortOrder = $product->images()->max('sort_order') ?? -1;
 
@@ -35,6 +38,8 @@ class ProductImageController extends Controller
 
     public function destroy(Product $product, ProductImage $image): RedirectResponse
     {
+        Gate::authorize('products.update');
+
         if ($image->product_id !== $product->id) {
             abort(404);
         }
@@ -48,6 +53,8 @@ class ProductImageController extends Controller
 
     public function reorder(ReorderProductImagesRequest $request, Product $product): RedirectResponse
     {
+        Gate::authorize('products.update');
+
         foreach ($request->validated('image_ids') as $index => $imageId) {
             ProductImage::query()
                 ->where('id', $imageId)

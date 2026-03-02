@@ -8,12 +8,20 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\StoreSettings;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class DashboardTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(RoleAndPermissionSeeder::class);
+    }
 
     public function test_guests_are_redirected_to_the_login_page(): void
     {
@@ -23,7 +31,7 @@ class DashboardTest extends TestCase
 
     public function test_authenticated_users_can_visit_the_dashboard(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $this->actingAs($user);
 
         $response = $this->get(route('dashboard'));
@@ -32,7 +40,7 @@ class DashboardTest extends TestCase
 
     public function test_dashboard_passes_required_props(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->get(route('dashboard'))
@@ -51,7 +59,7 @@ class DashboardTest extends TestCase
 
     public function test_dashboard_excludes_cancelled_orders_from_revenue(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $customer = Customer::factory()->create();
         Order::factory()->for($customer)->create([
@@ -78,7 +86,7 @@ class DashboardTest extends TestCase
 
     public function test_dashboard_counts_low_stock_products_correctly(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         StoreSettings::current()->update(['low_stock_threshold' => 10]);
 
         Product::factory()->create(['stock_quantity' => 5, 'is_active' => true]);
@@ -98,7 +106,7 @@ class DashboardTest extends TestCase
 
     public function test_dashboard_uses_custom_low_stock_threshold(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         StoreSettings::current()->update(['low_stock_threshold' => 5]);
 
         Product::factory()->create(['stock_quantity' => 5, 'is_active' => true]);
@@ -117,7 +125,7 @@ class DashboardTest extends TestCase
 
     public function test_dashboard_recent_orders_are_limited_to_five(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $customer = Customer::factory()->create();
         Order::factory(7)->for($customer)->create();
 
