@@ -45,6 +45,9 @@ vi.mock('@/actions/App/Http/Controllers/Admin/StoreSettingsController', () => ({
 vi.mock('@/actions/App/Http/Controllers/Admin/ActivityLogController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/activity-log' })),
 }));
+vi.mock('@/actions/App/Http/Controllers/Admin/UserController', () => ({
+    index: vi.fn(() => ({ url: '/dashboard/users' })),
+}));
 
 vi.mock('@/components/ui/sidebar', () => ({
     Sidebar: { name: 'Sidebar', template: '<div><slot /></div>', props: ['collapsible', 'variant'] },
@@ -82,6 +85,7 @@ const ALL_NAV_TITLES = [
     'Categories',
     'Orders',
     'Customers',
+    'Users',
     'Coupons',
     'Shipping Methods',
     'Activity Log',
@@ -145,9 +149,21 @@ describe('AppSidebar', () => {
         expect(titles).toContain('Orders');
         expect(titles).toContain('Customers');
 
+        expect(titles).not.toContain('Users');
         expect(titles).not.toContain('Coupons');
         expect(titles).not.toContain('Shipping Methods');
         expect(titles).not.toContain('Activity Log');
         expect(titles).not.toContain('Settings');
+    });
+
+    it('hides Users for users without users.view permission', () => {
+        mockCan.mockImplementation((permission: string) => permission !== 'users.view');
+
+        const wrapper = mount(AppSidebar);
+        const titles = getNavItemTitles(wrapper);
+
+        expect(titles).not.toContain('Users');
+        expect(titles).toContain('Customers');
+        expect(titles).toContain('Coupons');
     });
 });

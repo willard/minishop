@@ -27,6 +27,10 @@ class UserPolicy
             return false;
         }
 
+        if ($user->id === $model->id) {
+            return false;
+        }
+
         // Non-super-admins cannot delete a super-admin
         if ($model->hasRole('super-admin') && ! $user->hasRole('super-admin')) {
             return false;
