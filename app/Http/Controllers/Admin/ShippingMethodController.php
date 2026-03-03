@@ -14,6 +14,8 @@ class ShippingMethodController extends Controller
 {
     public function index(): Response
     {
+        $this->authorize('viewAny', ShippingMethod::class);
+
         $shippingMethods = ShippingMethod::query()
             ->orderBy('sort_order')
             ->orderBy('name')
@@ -26,11 +28,15 @@ class ShippingMethodController extends Controller
 
     public function create(): Response
     {
+        $this->authorize('create', ShippingMethod::class);
+
         return Inertia::render('admin/ShippingMethods/Create');
     }
 
     public function store(StoreShippingMethodRequest $request): RedirectResponse
     {
+        $this->authorize('create', ShippingMethod::class);
+
         $data = $request->validated();
         $data['is_free'] = $request->boolean('is_free');
         $data['is_active'] = $request->boolean('is_active', true);
@@ -46,6 +52,8 @@ class ShippingMethodController extends Controller
 
     public function edit(ShippingMethod $shippingMethod): Response
     {
+        $this->authorize('update', $shippingMethod);
+
         return Inertia::render('admin/ShippingMethods/Edit', [
             'shippingMethod' => $shippingMethod,
         ]);
@@ -53,6 +61,8 @@ class ShippingMethodController extends Controller
 
     public function update(UpdateShippingMethodRequest $request, ShippingMethod $shippingMethod): RedirectResponse
     {
+        $this->authorize('update', $shippingMethod);
+
         $data = $request->validated();
         $data['is_free'] = $request->boolean('is_free');
         $data['is_active'] = $request->boolean('is_active', true);
@@ -68,6 +78,8 @@ class ShippingMethodController extends Controller
 
     public function destroy(ShippingMethod $shippingMethod): RedirectResponse
     {
+        $this->authorize('delete', $shippingMethod);
+
         $shippingMethod->delete();
 
         return redirect()->route('admin.shipping-methods.index')

@@ -7,6 +7,7 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,14 +15,21 @@ class ActivityLogTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(RoleAndPermissionSeeder::class);
+    }
+
     public function test_guests_are_redirected_from_activity_log(): void
     {
         $this->get(route('admin.activity-log.index'))->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_activity_log(): void
+    public function test_super_admin_can_view_activity_log(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         ActivityLog::factory(3)->create();
 
         $this->actingAs($user)
@@ -35,7 +43,7 @@ class ActivityLogTest extends TestCase
 
     public function test_creating_a_product_logs_an_activity(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.products.store'), [
@@ -55,7 +63,7 @@ class ActivityLogTest extends TestCase
 
     public function test_updating_a_product_logs_an_activity(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create(['name' => 'Old Name', 'price' => 1000]);
 
         // Clear any creation log
@@ -77,7 +85,7 @@ class ActivityLogTest extends TestCase
 
     public function test_deleting_a_product_logs_an_activity(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create(['name' => 'To Delete', 'price' => 1000]);
 
         ActivityLog::query()->delete();
@@ -95,7 +103,7 @@ class ActivityLogTest extends TestCase
 
     public function test_creating_an_order_logs_exactly_one_entry_with_order_number(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->create();
 
         $logs = ActivityLog::query()
@@ -110,7 +118,7 @@ class ActivityLogTest extends TestCase
 
     public function test_updating_order_status_logs_an_activity(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $order = Order::factory()->create();
 
         ActivityLog::query()->delete();
@@ -131,7 +139,7 @@ class ActivityLogTest extends TestCase
 
     public function test_creating_a_coupon_logs_an_activity(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.coupons.store'), [
@@ -153,7 +161,7 @@ class ActivityLogTest extends TestCase
 
     public function test_deleting_a_coupon_logs_an_activity(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $coupon = Coupon::factory()->create(['code' => 'DELME20']);
 
         ActivityLog::query()->delete();
@@ -170,7 +178,7 @@ class ActivityLogTest extends TestCase
 
     public function test_activity_log_shows_user_name(): void
     {
-        $user = User::factory()->create(['name' => 'Alice Admin']);
+        $user = User::factory()->superAdmin()->create(['name' => 'Alice Admin']);
         ActivityLog::factory()->create(['user_id' => $user->id]);
 
         $this->actingAs($user)
@@ -183,7 +191,7 @@ class ActivityLogTest extends TestCase
 
     public function test_activity_log_is_paginated(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         ActivityLog::factory(55)->create();
 
         $this->actingAs($user)

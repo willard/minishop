@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateStoreSettingsRequest;
 use App\Models\StoreSettings;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -13,6 +14,8 @@ class StoreSettingsController extends Controller
 {
     public function edit(): Response
     {
+        Gate::authorize('settings.view');
+
         $settings = StoreSettings::current();
 
         return Inertia::render('admin/Settings/Edit', [
@@ -38,6 +41,8 @@ class StoreSettingsController extends Controller
 
     public function update(UpdateStoreSettingsRequest $request): RedirectResponse
     {
+        Gate::authorize('settings.update');
+
         $settings = StoreSettings::current();
 
         $data = $request->safe()->only([

@@ -14,6 +14,8 @@ class CategoryController extends Controller
 {
     public function index(): Response
     {
+        $this->authorize('viewAny', Category::class);
+
         $categories = Category::query()
             ->with('parent')
             ->orderBy('sort_order')
@@ -27,6 +29,8 @@ class CategoryController extends Controller
 
     public function create(): Response
     {
+        $this->authorize('create', Category::class);
+
         $parentCategories = Category::query()
             ->where('is_active', true)
             ->whereNull('parent_id')
@@ -40,6 +44,8 @@ class CategoryController extends Controller
 
     public function store(StoreCategoryRequest $request): RedirectResponse
     {
+        $this->authorize('create', Category::class);
+
         $data = $request->validated();
         $data['is_active'] = $request->boolean('is_active', true);
 
@@ -51,6 +57,8 @@ class CategoryController extends Controller
 
     public function edit(Category $category): Response
     {
+        $this->authorize('update', $category);
+
         $parentCategories = Category::query()
             ->where('is_active', true)
             ->whereNull('parent_id')
@@ -66,6 +74,8 @@ class CategoryController extends Controller
 
     public function update(UpdateCategoryRequest $request, Category $category): RedirectResponse
     {
+        $this->authorize('update', $category);
+
         $data = $request->validated();
         $data['is_active'] = $request->boolean('is_active', true);
 
@@ -77,6 +87,8 @@ class CategoryController extends Controller
 
     public function destroy(Category $category): RedirectResponse
     {
+        $this->authorize('delete', $category);
+
         $category->delete();
 
         return redirect()->route('admin.categories.index')

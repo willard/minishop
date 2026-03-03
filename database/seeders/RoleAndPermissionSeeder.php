@@ -1,0 +1,75 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
+
+class RoleAndPermissionSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        $permissions = [
+            'dashboard.view',
+            'products.view',
+            'products.create',
+            'products.update',
+            'products.delete',
+            'categories.view',
+            'categories.create',
+            'categories.update',
+            'categories.delete',
+            'orders.view',
+            'orders.update',
+            'orders.delete',
+            'orders.invoice',
+            'customers.view',
+            'coupons.view',
+            'coupons.create',
+            'coupons.update',
+            'coupons.delete',
+            'shipping-methods.view',
+            'shipping-methods.create',
+            'shipping-methods.update',
+            'shipping-methods.delete',
+            'settings.view',
+            'settings.update',
+            'activity-log.view',
+        ];
+
+        foreach ($permissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
+        }
+
+        // super-admin bypasses all permission checks via Gate::before
+        Role::firstOrCreate(['name' => 'super-admin']);
+
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $adminRole->syncPermissions([
+            'dashboard.view',
+            'products.view', 'products.create', 'products.update', 'products.delete',
+            'categories.view', 'categories.create', 'categories.update', 'categories.delete',
+            'orders.view', 'orders.update', 'orders.delete', 'orders.invoice',
+            'customers.view',
+            'coupons.view', 'coupons.create', 'coupons.update', 'coupons.delete',
+            'shipping-methods.view', 'shipping-methods.create', 'shipping-methods.update', 'shipping-methods.delete',
+            'activity-log.view',
+        ]);
+
+        $managerRole = Role::firstOrCreate(['name' => 'manager']);
+        $managerRole->syncPermissions([
+            'dashboard.view',
+            'products.view', 'products.create', 'products.update',
+            'categories.view',
+            'orders.view', 'orders.update', 'orders.invoice',
+            'customers.view',
+        ]);
+    }
+}

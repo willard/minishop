@@ -4,12 +4,20 @@ namespace Tests\Feature\Admin;
 
 use App\Models\ShippingMethod;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ShippingMethodTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(RoleAndPermissionSeeder::class);
+    }
 
     public function test_guests_are_redirected_from_index(): void
     {
@@ -45,9 +53,9 @@ class ShippingMethodTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_index(): void
+    public function test_super_admin_can_view_index(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         ShippingMethod::factory(3)->create();
 
         $this->actingAs($user)
@@ -59,9 +67,9 @@ class ShippingMethodTest extends TestCase
             );
     }
 
-    public function test_authenticated_users_can_view_create_form(): void
+    public function test_super_admin_can_view_create_form(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->get(route('admin.shipping-methods.create'))
@@ -69,9 +77,9 @@ class ShippingMethodTest extends TestCase
             ->assertInertia(fn ($page) => $page->component('admin/ShippingMethods/Create'));
     }
 
-    public function test_authenticated_users_can_store_a_shipping_method(): void
+    public function test_super_admin_can_store_a_shipping_method(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.shipping-methods.store'), [
@@ -93,7 +101,7 @@ class ShippingMethodTest extends TestCase
 
     public function test_free_shipping_sets_price_to_zero(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.shipping-methods.store'), [
@@ -112,16 +120,16 @@ class ShippingMethodTest extends TestCase
 
     public function test_store_requires_name(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.shipping-methods.store'), ['price' => 1000])
             ->assertSessionHasErrors('name');
     }
 
-    public function test_authenticated_users_can_view_edit_form(): void
+    public function test_super_admin_can_view_edit_form(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $method = ShippingMethod::factory()->create();
 
         $this->actingAs($user)
@@ -133,9 +141,9 @@ class ShippingMethodTest extends TestCase
             );
     }
 
-    public function test_authenticated_users_can_update_a_shipping_method(): void
+    public function test_super_admin_can_update_a_shipping_method(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $method = ShippingMethod::factory()->create(['name' => 'Old Name', 'price' => 10000]);
 
         $this->actingAs($user)
@@ -156,9 +164,9 @@ class ShippingMethodTest extends TestCase
         ]);
     }
 
-    public function test_authenticated_users_can_delete_a_shipping_method(): void
+    public function test_super_admin_can_delete_a_shipping_method(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $method = ShippingMethod::factory()->create();
 
         $this->actingAs($user)

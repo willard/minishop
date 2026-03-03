@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\UpdateProductVariantRequest;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,6 +16,8 @@ class ProductVariantController extends Controller
 {
     public function create(Product $product): Response
     {
+        Gate::authorize('products.update');
+
         return Inertia::render('admin/Products/Variants/Create', [
             'product' => $product,
             'optionTypes' => $product->options()->with('values')->get(),
@@ -23,6 +26,8 @@ class ProductVariantController extends Controller
 
     public function store(StoreProductVariantRequest $request, Product $product): RedirectResponse
     {
+        Gate::authorize('products.update');
+
         $data = $request->validated();
         $optionValueIds = $data['option_value_ids'];
         unset($data['option_value_ids']);
@@ -36,6 +41,8 @@ class ProductVariantController extends Controller
 
     public function edit(Product $product, ProductVariant $variant): Response
     {
+        Gate::authorize('products.update');
+
         return Inertia::render('admin/Products/Variants/Edit', [
             'product' => $product,
             'variant' => $variant->load('optionValues'),
@@ -45,6 +52,8 @@ class ProductVariantController extends Controller
 
     public function update(UpdateProductVariantRequest $request, Product $product, ProductVariant $variant): RedirectResponse
     {
+        Gate::authorize('products.update');
+
         $data = $request->validated();
         $optionValueIds = $data['option_value_ids'];
         unset($data['option_value_ids']);
@@ -58,6 +67,8 @@ class ProductVariantController extends Controller
 
     public function destroy(Product $product, ProductVariant $variant): RedirectResponse
     {
+        Gate::authorize('products.update');
+
         $variant->delete();
 
         return redirect()->route('admin.products.show', $product)

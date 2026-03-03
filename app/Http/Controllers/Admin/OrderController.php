@@ -20,6 +20,8 @@ class OrderController extends Controller
 {
     public function index(Request $request): Response
     {
+        $this->authorize('viewAny', Order::class);
+
         $filters = $request->only(['status', 'search']);
 
         $orders = Order::query()
@@ -55,6 +57,8 @@ class OrderController extends Controller
 
     public function show(Order $order): Response
     {
+        $this->authorize('view', $order);
+
         $order->load(['customer.user', 'items.product']);
 
         return Inertia::render('admin/Orders/Show', [
@@ -68,6 +72,8 @@ class OrderController extends Controller
 
     public function update(UpdateOrderRequest $request, Order $order): RedirectResponse
     {
+        $this->authorize('update', $order);
+
         $order->update($request->validated());
 
         if ($order->wasChanged('status')) {
@@ -85,6 +91,8 @@ class OrderController extends Controller
 
     public function invoice(Order $order): HttpResponse
     {
+        $this->authorize('invoice', $order);
+
         $order->load(['customer.user', 'items', 'shippingMethod', 'coupon']);
         $settings = StoreSettings::current();
 
@@ -96,6 +104,8 @@ class OrderController extends Controller
 
     public function destroy(Order $order): RedirectResponse
     {
+        $this->authorize('delete', $order);
+
         $order->delete();
 
         return redirect()->route('admin.orders.index')

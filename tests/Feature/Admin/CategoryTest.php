@@ -4,6 +4,7 @@ namespace Tests\Feature\Admin;
 
 use App\Models\Category;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,14 +12,21 @@ class CategoryTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(RoleAndPermissionSeeder::class);
+    }
+
     public function test_guests_are_redirected_when_accessing_admin_categories(): void
     {
         $this->get(route('admin.categories.index'))->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_categories_index(): void
+    public function test_super_admin_can_view_categories_index(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         Category::factory(3)->create();
 
         $this->actingAs($user)
@@ -26,9 +34,9 @@ class CategoryTest extends TestCase
             ->assertOk();
     }
 
-    public function test_authenticated_users_can_store_a_category(): void
+    public function test_super_admin_can_store_a_category(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.categories.store'), [
@@ -42,7 +50,7 @@ class CategoryTest extends TestCase
 
     public function test_store_category_requires_name(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.categories.store'), [])
@@ -51,7 +59,7 @@ class CategoryTest extends TestCase
 
     public function test_store_category_validates_parent_exists(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->post(route('admin.categories.store'), [
@@ -63,7 +71,7 @@ class CategoryTest extends TestCase
 
     public function test_category_cannot_set_itself_as_parent(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $category = Category::factory()->create();
 
         $this->actingAs($user)
@@ -74,9 +82,9 @@ class CategoryTest extends TestCase
             ->assertSessionHasErrors('parent_id');
     }
 
-    public function test_authenticated_users_can_update_a_category(): void
+    public function test_super_admin_can_update_a_category(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $category = Category::factory()->create(['name' => 'Old Name']);
 
         $this->actingAs($user)
@@ -88,9 +96,9 @@ class CategoryTest extends TestCase
         $this->assertDatabaseHas('categories', ['id' => $category->id, 'name' => 'New Name']);
     }
 
-    public function test_authenticated_users_can_delete_a_category(): void
+    public function test_super_admin_can_delete_a_category(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $category = Category::factory()->create();
 
         $this->actingAs($user)

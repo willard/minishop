@@ -14,6 +14,8 @@ class CouponController extends Controller
 {
     public function index(): Response
     {
+        $this->authorize('viewAny', Coupon::class);
+
         $coupons = Coupon::query()
             ->orderByDesc('created_at')
             ->paginate(20);
@@ -25,11 +27,15 @@ class CouponController extends Controller
 
     public function create(): Response
     {
+        $this->authorize('create', Coupon::class);
+
         return Inertia::render('admin/Coupons/Create');
     }
 
     public function store(StoreCouponRequest $request): RedirectResponse
     {
+        $this->authorize('create', Coupon::class);
+
         $data = $request->validated();
         $data['code'] = strtoupper($data['code']);
         $data['is_active'] = $request->boolean('is_active', true);
@@ -42,6 +48,8 @@ class CouponController extends Controller
 
     public function edit(Coupon $coupon): Response
     {
+        $this->authorize('update', $coupon);
+
         return Inertia::render('admin/Coupons/Edit', [
             'coupon' => $coupon,
         ]);
@@ -49,6 +57,8 @@ class CouponController extends Controller
 
     public function update(UpdateCouponRequest $request, Coupon $coupon): RedirectResponse
     {
+        $this->authorize('update', $coupon);
+
         $data = $request->validated();
         $data['code'] = strtoupper($data['code']);
         $data['is_active'] = $request->boolean('is_active', true);
@@ -61,6 +71,8 @@ class CouponController extends Controller
 
     public function destroy(Coupon $coupon): RedirectResponse
     {
+        $this->authorize('delete', $coupon);
+
         $coupon->delete();
 
         return redirect()->route('admin.coupons.index')

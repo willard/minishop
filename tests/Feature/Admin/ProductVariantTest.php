@@ -7,12 +7,20 @@ use App\Models\ProductOption;
 use App\Models\ProductOptionValue;
 use App\Models\ProductVariant;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ProductVariantTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(RoleAndPermissionSeeder::class);
+    }
 
     /**
      * Create a product with a Size option (S, M) and return all relevant models.
@@ -54,9 +62,9 @@ class ProductVariantTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_create_variant_form(): void
+    public function test_super_admin_can_view_create_variant_form(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         ['product' => $product] = $this->productWithOptions();
 
         $this->actingAs($user)
@@ -69,9 +77,9 @@ class ProductVariantTest extends TestCase
             );
     }
 
-    public function test_authenticated_users_can_view_edit_variant_form(): void
+    public function test_super_admin_can_view_edit_variant_form(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         ['product' => $product, 'valueS' => $valueS] = $this->productWithOptions();
         $variant = ProductVariant::factory()->for($product)->create();
         $variant->optionValues()->sync([$valueS->id]);
@@ -87,9 +95,9 @@ class ProductVariantTest extends TestCase
             );
     }
 
-    public function test_authenticated_users_can_store_a_variant(): void
+    public function test_super_admin_can_store_a_variant(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         ['product' => $product, 'valueM' => $valueM] = $this->productWithOptions();
 
         $this->actingAs($user)
@@ -111,7 +119,7 @@ class ProductVariantTest extends TestCase
 
     public function test_store_syncs_multiple_option_values(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
         $sizeOption = $product->options()->create(['name' => 'Size', 'position' => 0]);
         $valueM = $sizeOption->values()->create(['value' => 'M', 'position' => 0]);
@@ -132,7 +140,7 @@ class ProductVariantTest extends TestCase
 
     public function test_store_requires_stock_quantity(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         ['product' => $product, 'valueS' => $valueS] = $this->productWithOptions();
 
         $this->actingAs($user)
@@ -144,7 +152,7 @@ class ProductVariantTest extends TestCase
 
     public function test_store_requires_at_least_one_option_value_id(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -157,7 +165,7 @@ class ProductVariantTest extends TestCase
 
     public function test_store_rejects_non_existent_option_value_id(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -170,7 +178,7 @@ class ProductVariantTest extends TestCase
 
     public function test_store_rejects_duplicate_sku(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         ['product' => $product, 'valueS' => $valueS] = $this->productWithOptions();
         ProductVariant::factory()->for($product)->create(['sku' => 'UNIQUE-SKU']);
 
@@ -183,9 +191,9 @@ class ProductVariantTest extends TestCase
             ->assertSessionHasErrors('sku');
     }
 
-    public function test_authenticated_users_can_update_a_variant(): void
+    public function test_super_admin_can_update_a_variant(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         ['product' => $product, 'valueS' => $valueS, 'valueM' => $valueM] = $this->productWithOptions();
         $variant = ProductVariant::factory()->for($product)->create(['stock_quantity' => 5]);
         $variant->optionValues()->sync([$valueS->id]);
@@ -211,7 +219,7 @@ class ProductVariantTest extends TestCase
 
     public function test_update_ignores_own_sku_uniqueness(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         ['product' => $product, 'valueM' => $valueM] = $this->productWithOptions();
         $variant = ProductVariant::factory()->for($product)->create(['sku' => 'MY-SKU']);
 
@@ -224,9 +232,9 @@ class ProductVariantTest extends TestCase
             ->assertSessionDoesntHaveErrors('sku');
     }
 
-    public function test_authenticated_users_can_delete_a_variant(): void
+    public function test_super_admin_can_delete_a_variant(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
         $variant = ProductVariant::factory()->for($product)->create();
 
@@ -239,7 +247,7 @@ class ProductVariantTest extends TestCase
 
     public function test_variant_scoped_to_parent_product(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $productA = Product::factory()->create();
         $productB = Product::factory()->create();
         $variantOfB = ProductVariant::factory()->for($productB)->create();

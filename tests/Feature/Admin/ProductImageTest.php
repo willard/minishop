@@ -5,6 +5,7 @@ namespace Tests\Feature\Admin;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -13,6 +14,13 @@ use Tests\TestCase;
 class ProductImageTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(RoleAndPermissionSeeder::class);
+    }
 
     public function test_guests_are_redirected_from_store(): void
     {
@@ -42,7 +50,7 @@ class ProductImageTest extends TestCase
     public function test_upload_stores_files_and_creates_records(): void
     {
         Storage::fake('public');
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -73,7 +81,7 @@ class ProductImageTest extends TestCase
     public function test_upload_auto_increments_sort_order(): void
     {
         Storage::fake('public');
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
         ProductImage::factory()->create(['product_id' => $product->id, 'sort_order' => 2]);
 
@@ -92,7 +100,7 @@ class ProductImageTest extends TestCase
     public function test_upload_saves_alt_text(): void
     {
         Storage::fake('public');
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -110,7 +118,7 @@ class ProductImageTest extends TestCase
     public function test_upload_rejects_non_image_files(): void
     {
         Storage::fake('public');
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -123,7 +131,7 @@ class ProductImageTest extends TestCase
     public function test_upload_rejects_files_over_2mb(): void
     {
         Storage::fake('public');
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -136,7 +144,7 @@ class ProductImageTest extends TestCase
     public function test_upload_requires_at_least_one_image(): void
     {
         Storage::fake('public');
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -149,7 +157,7 @@ class ProductImageTest extends TestCase
     public function test_delete_removes_file_and_record(): void
     {
         Storage::fake('public');
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
         $path = UploadedFile::fake()->image('test.jpg')
             ->storeAs("products/{$product->id}", 'test.jpg', 'public');
@@ -168,7 +176,7 @@ class ProductImageTest extends TestCase
 
     public function test_delete_only_works_for_owning_product(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
         $otherProduct = Product::factory()->create();
         $image = ProductImage::factory()->create(['product_id' => $otherProduct->id]);
@@ -180,7 +188,7 @@ class ProductImageTest extends TestCase
 
     public function test_reorder_updates_sort_order(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
         $image1 = ProductImage::factory()->create(['product_id' => $product->id, 'sort_order' => 0]);
         $image2 = ProductImage::factory()->create(['product_id' => $product->id, 'sort_order' => 1]);
@@ -199,7 +207,7 @@ class ProductImageTest extends TestCase
 
     public function test_reorder_requires_image_ids(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -210,7 +218,7 @@ class ProductImageTest extends TestCase
     public function test_product_delete_cleans_up_image_files(): void
     {
         Storage::fake('public');
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $path1 = UploadedFile::fake()->image('a.jpg')

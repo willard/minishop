@@ -4,12 +4,20 @@ namespace Tests\Feature\Admin;
 
 use App\Models\StoreSettings;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class StoreSettingsTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(RoleAndPermissionSeeder::class);
+    }
 
     public function test_guests_are_redirected_from_edit(): void
     {
@@ -23,9 +31,9 @@ class StoreSettingsTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_settings_page(): void
+    public function test_super_admin_can_view_settings_page(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->get(route('admin.settings.edit'))
@@ -47,9 +55,9 @@ class StoreSettingsTest extends TestCase
         $this->assertDatabaseCount('store_settings', 1);
     }
 
-    public function test_authenticated_users_can_update_settings(): void
+    public function test_super_admin_can_update_settings(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->put(route('admin.settings.update'), [
@@ -70,7 +78,7 @@ class StoreSettingsTest extends TestCase
 
     public function test_update_rejects_invalid_gateway(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->put(route('admin.settings.update'), [
@@ -85,7 +93,7 @@ class StoreSettingsTest extends TestCase
 
     public function test_update_rejects_invalid_currency_code(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->put(route('admin.settings.update'), [
@@ -100,7 +108,7 @@ class StoreSettingsTest extends TestCase
 
     public function test_update_rejects_tax_rate_over_100(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->put(route('admin.settings.update'), [
@@ -115,7 +123,7 @@ class StoreSettingsTest extends TestCase
 
     public function test_masked_secret_key_is_not_overwritten(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $settings = StoreSettings::current();
         $settings->update(['stripe_secret_key' => 'sk_live_original_secret']);
 
@@ -140,7 +148,7 @@ class StoreSettingsTest extends TestCase
 
     public function test_new_secret_key_replaces_existing(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $settings = StoreSettings::current();
         $settings->update(['stripe_secret_key' => 'sk_live_old_secret']);
 
@@ -158,9 +166,9 @@ class StoreSettingsTest extends TestCase
         $this->assertSame('sk_live_new_secret', $updated->stripe_secret_key);
     }
 
-    public function test_authenticated_users_can_update_low_stock_threshold(): void
+    public function test_super_admin_can_update_low_stock_threshold(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->put(route('admin.settings.update'), [
@@ -179,7 +187,7 @@ class StoreSettingsTest extends TestCase
 
     public function test_update_rejects_negative_low_stock_threshold(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->put(route('admin.settings.update'), [
@@ -194,7 +202,7 @@ class StoreSettingsTest extends TestCase
 
     public function test_update_rejects_low_stock_threshold_over_max(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
 
         $this->actingAs($user)
             ->put(route('admin.settings.update'), [
@@ -209,7 +217,7 @@ class StoreSettingsTest extends TestCase
 
     public function test_settings_page_passes_low_stock_threshold_prop(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         StoreSettings::current()->update(['low_stock_threshold' => 15]);
 
         $this->actingAs($user)

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -11,6 +12,8 @@ class CustomerController extends Controller
 {
     public function index(): Response
     {
+        Gate::authorize('customers.view');
+
         $customers = Customer::query()
             ->with('user')
             ->withCount('orders')
@@ -24,6 +27,8 @@ class CustomerController extends Controller
 
     public function show(Customer $customer): Response
     {
+        Gate::authorize('customers.view');
+
         $customer->load([
             'user',
             'orders' => fn ($query) => $query->latest()->limit(10)->with('items'),

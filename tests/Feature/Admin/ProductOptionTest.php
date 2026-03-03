@@ -5,12 +5,20 @@ namespace Tests\Feature\Admin;
 use App\Models\Product;
 use App\Models\ProductOption;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ProductOptionTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(RoleAndPermissionSeeder::class);
+    }
 
     public function test_guests_are_redirected_from_create_form(): void
     {
@@ -37,9 +45,9 @@ class ProductOptionTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_view_create_option_form(): void
+    public function test_super_admin_can_view_create_option_form(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -53,7 +61,7 @@ class ProductOptionTest extends TestCase
 
     public function test_store_creates_option_type_with_values(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -77,7 +85,7 @@ class ProductOptionTest extends TestCase
 
     public function test_store_assigns_sequential_positions_to_values(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -93,7 +101,7 @@ class ProductOptionTest extends TestCase
 
     public function test_store_requires_name(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -106,7 +114,7 @@ class ProductOptionTest extends TestCase
 
     public function test_store_requires_at_least_one_value(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -119,7 +127,7 @@ class ProductOptionTest extends TestCase
 
     public function test_store_requires_values_to_be_non_empty_strings(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
 
         $this->actingAs($user)
@@ -132,7 +140,7 @@ class ProductOptionTest extends TestCase
 
     public function test_destroy_deletes_option_type_and_cascades_to_values(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $product = Product::factory()->create();
         $option = $product->options()->create(['name' => 'Size', 'position' => 0]);
         $value = $option->values()->create(['value' => 'M', 'position' => 0]);
@@ -148,7 +156,7 @@ class ProductOptionTest extends TestCase
 
     public function test_option_scoped_to_parent_product(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superAdmin()->create();
         $productA = Product::factory()->create();
         $productB = Product::factory()->create();
         $optionOfB = $productB->options()->create(['name' => 'Size', 'position' => 0]);

@@ -43,10 +43,10 @@ Route::get('/order-confirmation/{order}', [CheckoutController::class, 'confirmat
     ->name('storefront.order.confirmation');
 
 Route::get('dashboard', DashboardController::class)
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'role:super-admin|admin|manager'])
     ->name('dashboard');
 
-Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', 'role:super-admin|admin|manager'])->prefix('dashboard')->name('admin.')->group(function () {
     Route::resource('products', ProductController::class);
     Route::resource('products.variants', ProductVariantController::class)->except(['index', 'show'])->scoped();
     Route::resource('products.options', ProductOptionController::class)->only(['create', 'store', 'destroy'])->scoped();
