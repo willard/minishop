@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ProductOptionController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\ShippingMethodController;
 use App\Http\Controllers\Admin\StoreSettingsController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\PaymentController;
@@ -57,6 +58,7 @@ Route::middleware(['auth', 'verified', 'role:super-admin|admin|manager'])->prefi
     Route::resource('orders', OrderController::class)->except(['create', 'store', 'edit']);
     Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
     Route::resource('customers', CustomerController::class)->only(['index', 'show']);
+    Route::resource('users', UserController::class)->except(['show']);
     Route::resource('coupons', CouponController::class)->except(['show']);
     Route::resource('shipping-methods', ShippingMethodController::class)->except(['show']);
     Route::get('settings', [StoreSettingsController::class, 'edit'])->name('settings.edit');
