@@ -2,7 +2,6 @@
 import { Form, Head, Link } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
 import { store } from '@/routes/login';
-import { store as registerStore } from '@/routes/register';
 
 defineProps<{
     status?: string;

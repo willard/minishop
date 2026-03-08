@@ -15,7 +15,7 @@ interface Address {
     country: string;
 }
 
-const props = defineProps<{
+defineProps<{
     address: Address | null;
 }>();
 </script>

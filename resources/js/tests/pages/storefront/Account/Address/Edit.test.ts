@@ -1,6 +1,6 @@
 import AddressEdit from '@/pages/storefront/Account/Address/Edit.vue';
 import { mount } from '@vue/test-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },

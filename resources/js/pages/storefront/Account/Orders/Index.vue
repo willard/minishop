@@ -81,7 +81,7 @@ function statusColor(status: string): string {
 
             <!-- Pagination -->
             <div v-if="orders.last_page > 1" class="mt-4 flex justify-center gap-1">
-                <Link
+                <a
                     v-for="link in orders.links"
                     :key="link.label"
                     :href="link.url ?? '#'"

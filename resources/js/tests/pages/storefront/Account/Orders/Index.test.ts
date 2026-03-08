@@ -1,6 +1,6 @@
 import OrdersIndex from '@/pages/storefront/Account/Orders/Index.vue';
 import { mount } from '@vue/test-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
