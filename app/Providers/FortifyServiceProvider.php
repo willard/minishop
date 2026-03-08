@@ -47,11 +47,15 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureViews(): void
     {
-        Fortify::loginView(fn (Request $request) => Inertia::render('auth/Login', [
-            'canResetPassword' => Features::enabled(Features::resetPasswords()),
-            'canRegister' => Features::enabled(Features::registration()),
-            'status' => $request->session()->get('status'),
-        ]));
+        Fortify::loginView(function (Request $request) {
+            $isStorefront = $this->isStorefrontContext($request);
+
+            return Inertia::render($isStorefront ? 'storefront/auth/Login' : 'auth/Login', [
+                'canResetPassword' => Features::enabled(Features::resetPasswords()),
+                'canRegister' => ! $isStorefront && Features::enabled(Features::registration()),
+                'status' => $request->session()->get('status'),
+            ]);
+        });
 
         Fortify::resetPasswordView(fn (Request $request) => Inertia::render('auth/ResetPassword', [
             'email' => $request->email,
@@ -66,11 +70,30 @@ class FortifyServiceProvider extends ServiceProvider
             'status' => $request->session()->get('status'),
         ]));
 
-        Fortify::registerView(fn () => Inertia::render('auth/Register'));
+        Fortify::registerView(function (Request $request) {
+            if ($this->isStorefrontContext($request)) {
+                return Inertia::render('storefront/auth/Register');
+            }
+
+            return Inertia::render('auth/Register');
+        });
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/TwoFactorChallenge'));
 
         Fortify::confirmPasswordView(fn () => Inertia::render('auth/ConfirmPassword'));
+    }
+
+    /**
+     * Determine if the current request is from a storefront context.
+     * Detects when the intended redirect is the /account area or when
+     * the user navigated from the storefront registration path.
+     */
+    private function isStorefrontContext(Request $request): bool
+    {
+        $intended = $request->session()->get('url.intended', '');
+
+        return str_starts_with($intended, '/account')
+            || $request->query('from') === 'storefront';
     }
 
     /**

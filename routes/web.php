@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\Account\AddressController;
+use App\Http\Controllers\Account\DashboardController as AccountDashboardController;
+use App\Http\Controllers\Account\OrdersController as AccountOrdersController;
+use App\Http\Controllers\Account\PaymentController as AccountPaymentController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CouponController;
@@ -20,6 +24,7 @@ use App\Http\Controllers\Storefront\ProductController as StorefrontProductContro
 use App\Http\Controllers\Webhooks\PayMongoWebhookController;
 use App\Http\Controllers\Webhooks\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', HomeController::class)->name('home');
 
@@ -64,6 +69,21 @@ Route::middleware(['auth', 'verified', 'role:super-admin|admin|manager'])->prefi
     Route::get('settings', [StoreSettingsController::class, 'edit'])->name('settings.edit');
     Route::put('settings', [StoreSettingsController::class, 'update'])->name('settings.update');
     Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
+});
+
+// Storefront registration page (separate from admin /register)
+Route::get('/register/customer', fn () => Inertia::render('storefront/auth/Register'))
+    ->middleware('guest')
+    ->name('storefront.register');
+
+// Customer account area
+Route::middleware(['auth', 'verified', 'role:customer'])->prefix('account')->name('account.')->group(function () {
+    Route::get('/', AccountDashboardController::class)->name('dashboard');
+    Route::get('/orders', [AccountOrdersController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [AccountOrdersController::class, 'show'])->name('orders.show');
+    Route::get('/address', [AddressController::class, 'edit'])->name('address.edit');
+    Route::put('/address', [AddressController::class, 'update'])->name('address.update');
+    Route::get('/payment', [AccountPaymentController::class, 'index'])->name('payment.index');
 });
 
 require __DIR__.'/settings.php';
