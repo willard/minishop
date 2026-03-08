@@ -78,4 +78,12 @@ class UserFactory extends Factory
             $user->assignRole('manager');
         });
     }
+
+    public function customer(): static
+    {
+        return $this->afterCreating(function (User $user): void {
+            $user->assignRole('customer');
+            $user->customer()->create(['is_active' => true]);
+        });
+    }
 }

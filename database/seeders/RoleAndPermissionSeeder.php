@@ -76,5 +76,8 @@ class RoleAndPermissionSeeder extends Seeder
             'orders.view', 'orders.update', 'orders.invoice',
             'customers.view',
         ]);
+
+        // customer role: no admin permissions — access scoped to own data via policies
+        Role::firstOrCreate(['name' => 'customer']);
     }
 }
