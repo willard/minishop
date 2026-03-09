@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import AccountLayout from '@/layouts/AccountLayout.vue';
 import { usePrice } from '@/composables/usePrice';
+import AccountLayout from '@/layouts/AccountLayout.vue';
 import { index as ordersIndex } from '@/routes/account/orders';
 
 interface OrderItem {

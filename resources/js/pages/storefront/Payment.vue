@@ -9,8 +9,8 @@ import {
     stripeIntent,
     paymongoCheckout,
 } from '@/actions/App/Http/Controllers/Storefront/PaymentController';
-import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 import { usePrice } from '@/composables/usePrice';
+import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 
 interface OrderItem {
     id: number;

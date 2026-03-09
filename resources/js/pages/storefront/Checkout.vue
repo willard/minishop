@@ -12,8 +12,8 @@ import { computed, ref } from 'vue';
 import { store } from '@/actions/App/Http/Controllers/Storefront/CheckoutController';
 import { index as productsIndex } from '@/actions/App/Http/Controllers/Storefront/ProductController';
 import { useCart } from '@/composables/useCart';
-import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 import { usePrice } from '@/composables/usePrice';
+import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 
 interface ShippingMethod {
     id: number;
@@ -94,8 +94,6 @@ const total = computed(
     () => subtotal.value + shippingAmount.value + taxAmount.value,
 );
 
-const currency = computed(() => storeSettings.value?.currency ?? 'PHP');
-const locale = computed(() => storeSettings.value?.currencyLocale ?? 'en-PH');
 
 function submit(): void {
     form.post(store().url, {
