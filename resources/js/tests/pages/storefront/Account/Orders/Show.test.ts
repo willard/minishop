@@ -109,4 +109,21 @@ describe('Account/Orders/Show', () => {
         const w = mount(OrdersShow, { props: { order: orderWithRemovedProduct } });
         expect(w.text()).toContain('Product removed');
     });
+
+    it('displays the payment status', () => {
+        expect(wrapper.text()).toContain('paid');
+    });
+
+    it('displays the payment gateway', () => {
+        expect(wrapper.text()).toContain('stripe');
+    });
+
+    it('displays the shipping method name', () => {
+        expect(wrapper.text()).toContain('Standard');
+    });
+
+    it('omits the gateway row when payment_gateway is null', () => {
+        const w = mount(OrdersShow, { props: { order: { ...baseOrder, payment_gateway: null } } });
+        expect(w.text()).not.toContain('Via');
+    });
 });

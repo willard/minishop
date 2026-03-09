@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import AccountLayout from '@/layouts/AccountLayout.vue';
-import { show as orderShow } from '@/routes/account/orders';
+import { index as ordersIndex, show as orderShow } from '@/routes/account/orders';
 import { formatPrice } from '@/lib/utils';
 
 interface OrderItem {
@@ -43,7 +43,7 @@ function statusColor(status: string): string {
         <Head title="My Account" />
 
         <!-- Stats row -->
-        <div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="mb-8 grid grid-cols-1 gap-4">
             <div class="rounded-xl border p-5" style="border-color: rgba(28, 26, 23, 0.12); background-color: #fff">
                 <p class="mb-1 text-xs font-semibold uppercase tracking-widest" style="color: rgba(28, 26, 23, 0.4)">Total Orders</p>
                 <p class="text-3xl font-semibold" style="color: #1c1a17">{{ totalOrders }}</p>
@@ -82,6 +82,16 @@ function statusColor(status: string): string {
                         <span class="text-sm font-semibold" style="color: #1c1a17">{{ formatPrice(order.total_amount) }}</span>
                     </div>
                 </Link>
+
+                <div class="mt-1 text-right">
+                    <Link
+                        :href="ordersIndex().url"
+                        class="text-sm underline underline-offset-4 transition-opacity hover:opacity-60"
+                        style="color: rgba(28, 26, 23, 0.6)"
+                    >
+                        View all orders &rarr;
+                    </Link>
+                </div>
             </div>
         </div>
     </AccountLayout>

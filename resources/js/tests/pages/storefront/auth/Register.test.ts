@@ -54,4 +54,8 @@ describe('storefront/auth/Register', () => {
     it('renders the Minishop brand', () => {
         expect(wrapper.text()).toContain('Minishop');
     });
+
+    it('shows the minimum password length hint', () => {
+        expect(wrapper.text()).toContain('Minimum 8 characters');
+    });
 });

@@ -50,7 +50,7 @@ import { store } from '@/routes/register';
                             autofocus
                             autocomplete="name"
                             placeholder="Jane Doe"
-                            class="rounded-lg border px-4 py-3 text-sm outline-none transition-colors"
+                            class="rounded-lg border px-4 py-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-black/20"
                             style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
                         />
                         <InputError :message="errors.name" />
@@ -65,7 +65,7 @@ import { store } from '@/routes/register';
                             required
                             autocomplete="email"
                             placeholder="you@example.com"
-                            class="rounded-lg border px-4 py-3 text-sm outline-none transition-colors"
+                            class="rounded-lg border px-4 py-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-black/20"
                             style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
                         />
                         <InputError :message="errors.email" />
@@ -80,10 +80,11 @@ import { store } from '@/routes/register';
                             required
                             autocomplete="new-password"
                             placeholder="Password"
-                            class="rounded-lg border px-4 py-3 text-sm outline-none transition-colors"
+                            class="rounded-lg border px-4 py-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-black/20"
                             style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
                         />
                         <InputError :message="errors.password" />
+                        <p class="text-xs" style="color: rgba(28, 26, 23, 0.4)">Minimum 8 characters</p>
                     </div>
 
                     <div class="flex flex-col gap-1.5">
@@ -95,7 +96,7 @@ import { store } from '@/routes/register';
                             required
                             autocomplete="new-password"
                             placeholder="Confirm password"
-                            class="rounded-lg border px-4 py-3 text-sm outline-none transition-colors"
+                            class="rounded-lg border px-4 py-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-black/20"
                             style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
                         />
                         <InputError :message="errors.password_confirmation" />

@@ -82,4 +82,26 @@ describe('AccountLayout', () => {
         const noTitle = mountLayout({ title: undefined });
         expect(noTitle.find('h1').exists()).toBe(false);
     });
+
+    it('highlights Overview as active only on the exact /account URL', () => {
+        const onOverview = mountLayout({}, '/account');
+        const links = onOverview.findAll('nav a');
+        const overviewLink = links.find((l) => l.text() === 'Overview');
+        // Vue serializes hex to rgb; check for the active background-color
+        expect(overviewLink?.attributes('style')).toContain('rgba(28, 26, 23, 0.06)');
+    });
+
+    it('does not highlight Overview as active on /account/orders', () => {
+        const onOrders = mountLayout({}, '/account/orders');
+        const links = onOrders.findAll('nav a');
+        const overviewLink = links.find((l) => l.text() === 'Overview');
+        expect(overviewLink?.attributes('style')).not.toContain('background-color: rgba(28, 26, 23, 0.06)');
+    });
+
+    it('highlights Orders as active on /account/orders', () => {
+        const onOrders = mountLayout({}, '/account/orders');
+        const links = onOrders.findAll('nav a');
+        const ordersLink = links.find((l) => l.text() === 'Orders');
+        expect(ordersLink?.attributes('style')).toContain('background-color: rgba(28, 26, 23, 0.06)');
+    });
 });

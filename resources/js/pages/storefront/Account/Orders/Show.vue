@@ -63,7 +63,7 @@ function statusColor(status: string): string {
             class="mb-6 inline-flex items-center gap-1 text-sm underline underline-offset-4 transition-opacity hover:opacity-60"
             style="color: rgba(28, 26, 23, 0.6)"
         >
-            ← Back to orders
+            &larr; Back to orders
         </Link>
 
         <div class="grid gap-6 lg:grid-cols-3">
@@ -145,6 +145,25 @@ function statusColor(status: string): string {
                         <p v-if="order.shipping_address_line2">{{ order.shipping_address_line2 }}</p>
                         <p>{{ order.shipping_city }}<span v-if="order.shipping_state">, {{ order.shipping_state }}</span> {{ order.shipping_postcode }}</p>
                         <p>{{ order.shipping_country }}</p>
+                    </div>
+                </div>
+
+                <!-- Payment & shipping method -->
+                <div class="rounded-xl border p-5" style="border-color: rgba(28, 26, 23, 0.12); background-color: #fff">
+                    <p class="mb-3 text-xs font-semibold uppercase tracking-widest" style="color: rgba(28, 26, 23, 0.4)">Payment & Delivery</p>
+                    <div class="flex flex-col gap-2 text-sm" style="color: rgba(28, 26, 23, 0.7)">
+                        <div class="flex justify-between">
+                            <span>Payment</span>
+                            <span class="font-medium capitalize" style="color: #1c1a17">{{ order.payment_status }}</span>
+                        </div>
+                        <div v-if="order.payment_gateway" class="flex justify-between">
+                            <span>Via</span>
+                            <span class="font-medium capitalize" style="color: #1c1a17">{{ order.payment_gateway }}</span>
+                        </div>
+                        <div v-if="order.shipping_method" class="flex justify-between">
+                            <span>Carrier</span>
+                            <span class="font-medium" style="color: #1c1a17">{{ order.shipping_method.name }}</span>
+                        </div>
                     </div>
                 </div>
             </div>

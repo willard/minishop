@@ -64,7 +64,7 @@ defineProps<{
                             autofocus
                             autocomplete="email"
                             placeholder="you@example.com"
-                            class="rounded-lg border px-4 py-3 text-sm outline-none transition-colors"
+                            class="rounded-lg border px-4 py-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-black/20"
                             style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
                         />
                         <InputError :message="errors.email" />
@@ -89,7 +89,7 @@ defineProps<{
                             required
                             autocomplete="current-password"
                             placeholder="Password"
-                            class="rounded-lg border px-4 py-3 text-sm outline-none transition-colors"
+                            class="rounded-lg border px-4 py-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-black/20"
                             style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
                         />
                         <InputError :message="errors.password" />
@@ -105,7 +105,7 @@ defineProps<{
                     </button>
                 </Form>
 
-                <p class="mt-6 text-center text-sm" style="color: rgba(28, 26, 23, 0.55)">
+                <p v-if="canRegister" class="mt-6 text-center text-sm" style="color: rgba(28, 26, 23, 0.55)">
                     Don't have an account?
                     <Link
                         href="/register/customer"

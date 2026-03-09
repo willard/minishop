@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { usePage } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { logout } from '@/routes';
 import { dashboard } from '@/routes/account';
 import { index as ordersIndex } from '@/routes/account/orders';
@@ -15,8 +14,8 @@ defineProps<{
 const page = usePage<{ auth: Auth }>();
 const user = page.props.auth.user;
 
-const navLinks = [
-    { label: 'Overview', href: dashboard().url },
+const navLinks: { label: string; href: string; exact?: boolean }[] = [
+    { label: 'Overview', href: dashboard().url, exact: true },
     { label: 'Orders', href: ordersIndex().url },
     { label: 'Billing Address', href: addressEdit().url },
     { label: 'Payment Methods', href: paymentIndex().url },
@@ -73,8 +72,8 @@ const navLinks = [
                             :href="link.href"
                             class="rounded-lg px-3 py-2 text-sm font-medium transition-colors"
                             :style="{
-                                color: $page.url.startsWith(link.href) ? '#1c1a17' : 'rgba(28, 26, 23, 0.55)',
-                                backgroundColor: $page.url.startsWith(link.href) ? 'rgba(28, 26, 23, 0.06)' : 'transparent',
+                                color: (link.exact ? $page.url === link.href : $page.url.startsWith(link.href)) ? '#1c1a17' : 'rgba(28, 26, 23, 0.55)',
+                                backgroundColor: (link.exact ? $page.url === link.href : $page.url.startsWith(link.href)) ? 'rgba(28, 26, 23, 0.06)' : 'transparent',
                             }"
                         >
                             {{ link.label }}

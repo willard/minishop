@@ -59,6 +59,11 @@ describe('storefront/auth/Login', () => {
         expect(wrapper.text()).toContain('Create one');
     });
 
+    it('hides the register link when canRegister is false', () => {
+        const noRegister = mount(LoginPage, { props: { ...baseProps, canRegister: false } });
+        expect(noRegister.text()).not.toContain('Create one');
+    });
+
     it('shows the status flash message when status is provided', () => {
         const withStatus = mount(LoginPage, { props: { ...baseProps, status: 'Password reset successfully.' } });
         expect(withStatus.text()).toContain('Password reset successfully.');

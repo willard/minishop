@@ -48,7 +48,7 @@ defineProps<{
                         required
                         autocomplete="name"
                         placeholder="Jane Doe"
-                        class="rounded-lg border px-4 py-3 text-sm outline-none"
+                        class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
                         style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
                     />
                     <InputError :message="errors.name" />
@@ -64,7 +64,7 @@ defineProps<{
                         required
                         autocomplete="address-line1"
                         placeholder="123 Main St"
-                        class="rounded-lg border px-4 py-3 text-sm outline-none"
+                        class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
                         style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
                     />
                     <InputError :message="errors.line1" />
@@ -82,7 +82,7 @@ defineProps<{
                         :value="address?.line2"
                         autocomplete="address-line2"
                         placeholder="Apt, suite, unit, etc."
-                        class="rounded-lg border px-4 py-3 text-sm outline-none"
+                        class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
                         style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
                     />
                     <InputError :message="errors.line2" />
@@ -99,7 +99,7 @@ defineProps<{
                             required
                             autocomplete="address-level2"
                             placeholder="Manila"
-                            class="rounded-lg border px-4 py-3 text-sm outline-none"
+                            class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
                             style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
                         />
                         <InputError :message="errors.city" />
@@ -117,7 +117,7 @@ defineProps<{
                             :value="address?.state"
                             autocomplete="address-level1"
                             placeholder="Metro Manila"
-                            class="rounded-lg border px-4 py-3 text-sm outline-none"
+                            class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
                             style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
                         />
                         <InputError :message="errors.state" />
@@ -135,7 +135,7 @@ defineProps<{
                             required
                             autocomplete="postal-code"
                             placeholder="1000"
-                            class="rounded-lg border px-4 py-3 text-sm outline-none"
+                            class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
                             style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
                         />
                         <InputError :message="errors.postal_code" />
@@ -146,15 +146,14 @@ defineProps<{
                         <select
                             id="country"
                             name="country"
-                            :value="address?.country ?? 'PH'"
-                            class="rounded-lg border px-4 py-3 text-sm outline-none"
+                            class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
                             style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
                         >
-                            <option value="PH">Philippines</option>
-                            <option value="US">United States</option>
-                            <option value="SG">Singapore</option>
-                            <option value="AU">Australia</option>
-                            <option value="GB">United Kingdom</option>
+                            <option value="PH" :selected="(address?.country ?? 'PH') === 'PH'">Philippines</option>
+                            <option value="US" :selected="address?.country === 'US'">United States</option>
+                            <option value="SG" :selected="address?.country === 'SG'">Singapore</option>
+                            <option value="AU" :selected="address?.country === 'AU'">Australia</option>
+                            <option value="GB" :selected="address?.country === 'GB'">United Kingdom</option>
                         </select>
                         <InputError :message="errors.country" />
                     </div>

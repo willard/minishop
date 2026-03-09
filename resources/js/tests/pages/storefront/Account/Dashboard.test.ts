@@ -12,6 +12,7 @@ vi.mock('@/layouts/AccountLayout.vue', () => ({
 }));
 
 vi.mock('@/routes/account/orders', () => ({
+    index: vi.fn(() => ({ url: '/account/orders' })),
     show: vi.fn((params: { order: string }) => ({ url: `/account/orders/${params.order}` })),
 }));
 
@@ -69,5 +70,14 @@ describe('Account/Dashboard', () => {
     it('shows empty state when no orders', () => {
         const empty = mount(AccountDashboard, { props: { ...baseProps, recentOrders: [] } });
         expect(empty.text()).toContain('No orders yet');
+    });
+
+    it('shows "View all orders" link when there are recent orders', () => {
+        expect(wrapper.text()).toContain('View all orders');
+    });
+
+    it('does not show "View all orders" link when no recent orders', () => {
+        const empty = mount(AccountDashboard, { props: { ...baseProps, recentOrders: [] } });
+        expect(empty.text()).not.toContain('View all orders');
     });
 });
