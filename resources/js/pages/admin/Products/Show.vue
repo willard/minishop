@@ -1,8 +1,21 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, ChevronDown, ChevronUp, Pencil, Plus, Trash2, Upload, X } from 'lucide-vue-next';
+import {
+    ArrowLeft,
+    ChevronDown,
+    ChevronUp,
+    Pencil,
+    Plus,
+    Trash2,
+    Upload,
+    X,
+} from 'lucide-vue-next';
 import { ref } from 'vue';
-import { index, edit, destroy } from '@/actions/App/Http/Controllers/Admin/ProductController';
+import {
+    index,
+    edit,
+    destroy,
+} from '@/actions/App/Http/Controllers/Admin/ProductController';
 import {
     store as storeImage,
     destroy as destroyImage,
@@ -105,7 +118,11 @@ function confirmDeleteVariant(variant: ProductVariant): void {
 }
 
 function confirmDeleteOption(option: ProductOption): void {
-    if (confirm(`Delete option "${option.name}" and all its values? Variants using these values will also be affected.`)) {
+    if (
+        confirm(
+            `Delete option "${option.name}" and all its values? Variants using these values will also be affected.`,
+        )
+    ) {
         router.delete(destroyOption({ product: props.product, option }).url);
     }
 }
@@ -148,11 +165,15 @@ function moveImage(fromIndex: number, toIndex: number): void {
     const [moved] = ids.splice(fromIndex, 1);
     ids.splice(toIndex, 0, moved);
 
-    router.put(reorderImages(props.product).url, {
-        image_ids: ids,
-    } as Record<string, unknown>, {
-        preserveScroll: true,
-    });
+    router.put(
+        reorderImages(props.product).url,
+        {
+            image_ids: ids,
+        } as Record<string, unknown>,
+        {
+            preserveScroll: true,
+        },
+    );
 }
 </script>
 
@@ -160,7 +181,7 @@ function moveImage(fromIndex: number, toIndex: number): void {
     <Head :title="product.name" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-col gap-6 p-4 max-w-3xl">
+        <div class="flex max-w-3xl flex-col gap-6 p-4">
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
@@ -170,8 +191,12 @@ function moveImage(fromIndex: number, toIndex: number): void {
                         </Button>
                     </Link>
                     <div>
-                        <h1 class="text-2xl font-semibold">{{ product.name }}</h1>
-                        <p class="text-sm text-muted-foreground font-mono">{{ product.slug }}</p>
+                        <h1 class="text-2xl font-semibold">
+                            {{ product.name }}
+                        </h1>
+                        <p class="font-mono text-sm text-muted-foreground">
+                            {{ product.slug }}
+                        </p>
                     </div>
                 </div>
                 <div class="flex gap-2">
@@ -193,17 +218,31 @@ function moveImage(fromIndex: number, toIndex: number): void {
             </div>
 
             <!-- Details -->
-            <div class="rounded-lg border border-sidebar-border divide-y divide-sidebar-border">
+            <div
+                class="divide-y divide-sidebar-border rounded-lg border border-sidebar-border"
+            >
                 <!-- Status & Categories -->
                 <div class="grid grid-cols-2 gap-4 px-4 py-3">
                     <div>
-                        <p class="text-xs text-muted-foreground uppercase tracking-wide mb-1">Status</p>
-                        <Badge :variant="product.is_active ? 'default' : 'secondary'">
+                        <p
+                            class="mb-1 text-xs tracking-wide text-muted-foreground uppercase"
+                        >
+                            Status
+                        </p>
+                        <Badge
+                            :variant="
+                                product.is_active ? 'default' : 'secondary'
+                            "
+                        >
                             {{ product.is_active ? 'Active' : 'Inactive' }}
                         </Badge>
                     </div>
                     <div>
-                        <p class="text-xs text-muted-foreground uppercase tracking-wide mb-1">Categories</p>
+                        <p
+                            class="mb-1 text-xs tracking-wide text-muted-foreground uppercase"
+                        >
+                            Categories
+                        </p>
                         <div class="flex flex-wrap gap-1">
                             <Badge
                                 v-for="cat in product.categories"
@@ -213,7 +252,11 @@ function moveImage(fromIndex: number, toIndex: number): void {
                             >
                                 {{ cat.name }}
                             </Badge>
-                            <span v-if="product.categories.length === 0" class="text-sm text-muted-foreground">—</span>
+                            <span
+                                v-if="product.categories.length === 0"
+                                class="text-sm text-muted-foreground"
+                                >—</span
+                            >
                         </div>
                     </div>
                 </div>
@@ -221,24 +264,54 @@ function moveImage(fromIndex: number, toIndex: number): void {
                 <!-- Pricing -->
                 <div class="grid grid-cols-2 gap-4 px-4 py-3">
                     <div>
-                        <p class="text-xs text-muted-foreground uppercase tracking-wide mb-1">Price</p>
-                        <p class="font-medium">${{ formatPrice(product.price) }}</p>
+                        <p
+                            class="mb-1 text-xs tracking-wide text-muted-foreground uppercase"
+                        >
+                            Price
+                        </p>
+                        <p class="font-medium">
+                            ${{ formatPrice(product.price) }}
+                        </p>
                     </div>
                     <div v-if="product.compare_price">
-                        <p class="text-xs text-muted-foreground uppercase tracking-wide mb-1">Compare Price</p>
-                        <p class="font-medium line-through text-muted-foreground">${{ formatPrice(product.compare_price) }}</p>
+                        <p
+                            class="mb-1 text-xs tracking-wide text-muted-foreground uppercase"
+                        >
+                            Compare Price
+                        </p>
+                        <p
+                            class="font-medium text-muted-foreground line-through"
+                        >
+                            ${{ formatPrice(product.compare_price) }}
+                        </p>
                     </div>
                 </div>
 
                 <!-- SKU & Stock -->
                 <div class="grid grid-cols-2 gap-4 px-4 py-3">
                     <div>
-                        <p class="text-xs text-muted-foreground uppercase tracking-wide mb-1">SKU</p>
-                        <p class="font-mono text-sm">{{ product.sku ?? '—' }}</p>
+                        <p
+                            class="mb-1 text-xs tracking-wide text-muted-foreground uppercase"
+                        >
+                            SKU
+                        </p>
+                        <p class="font-mono text-sm">
+                            {{ product.sku ?? '—' }}
+                        </p>
                     </div>
                     <div>
-                        <p class="text-xs text-muted-foreground uppercase tracking-wide mb-1">Stock</p>
-                        <p :class="product.stock_quantity === 0 ? 'text-destructive font-medium' : ''">
+                        <p
+                            class="mb-1 text-xs tracking-wide text-muted-foreground uppercase"
+                        >
+                            Stock
+                        </p>
+                        <p
+                            :class="
+                                product.stock_quantity === 0
+                                    ? 'font-medium text-destructive'
+                                    : ''
+                            "
+                        >
                             {{ product.stock_quantity }} units
                         </p>
                     </div>
@@ -246,18 +319,31 @@ function moveImage(fromIndex: number, toIndex: number): void {
 
                 <!-- Description -->
                 <div v-if="product.description" class="px-4 py-3">
-                    <p class="text-xs text-muted-foreground uppercase tracking-wide mb-1">Description</p>
-                    <p class="text-sm whitespace-pre-wrap">{{ product.description }}</p>
+                    <p
+                        class="mb-1 text-xs tracking-wide text-muted-foreground uppercase"
+                    >
+                        Description
+                    </p>
+                    <p class="text-sm whitespace-pre-wrap">
+                        {{ product.description }}
+                    </p>
                 </div>
             </div>
 
             <!-- Images -->
-            <div class="rounded-lg border border-sidebar-border overflow-hidden">
-                <div class="px-4 py-3 border-b border-sidebar-border bg-muted/50">
-                    <h2 class="font-semibold text-sm">Images</h2>
+            <div
+                class="overflow-hidden rounded-lg border border-sidebar-border"
+            >
+                <div
+                    class="border-b border-sidebar-border bg-muted/50 px-4 py-3"
+                >
+                    <h2 class="text-sm font-semibold">Images</h2>
                 </div>
 
-                <div v-if="product.images.length === 0" class="px-4 py-6 text-center text-sm text-muted-foreground">
+                <div
+                    v-if="product.images.length === 0"
+                    class="px-4 py-6 text-center text-sm text-muted-foreground"
+                >
                     No images yet. Upload images below.
                 </div>
 
@@ -266,7 +352,7 @@ function moveImage(fromIndex: number, toIndex: number): void {
                         <div
                             v-for="(image, idx) in product.images"
                             :key="image.id"
-                            class="group relative rounded-md border border-sidebar-border overflow-hidden"
+                            class="group relative overflow-hidden rounded-md border border-sidebar-border"
                         >
                             <img
                                 :src="`/storage/${image.path}`"
@@ -280,7 +366,9 @@ function moveImage(fromIndex: number, toIndex: number): void {
                             >
                                 Primary
                             </Badge>
-                            <div class="absolute top-1.5 right-1.5 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div
+                                class="absolute top-1.5 right-1.5 flex flex-col gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+                            >
                                 <Button
                                     v-if="idx > 0"
                                     variant="secondary"
@@ -313,9 +401,15 @@ function moveImage(fromIndex: number, toIndex: number): void {
                 </div>
 
                 <div class="border-t border-sidebar-border px-4 py-3">
-                    <form class="flex items-end gap-3" @submit.prevent="uploadImages">
+                    <form
+                        class="flex items-end gap-3"
+                        @submit.prevent="uploadImages"
+                    >
                         <div class="flex-1">
-                            <label class="text-xs text-muted-foreground mb-1 block">Upload Images</label>
+                            <label
+                                class="mb-1 block text-xs text-muted-foreground"
+                                >Upload Images</label
+                            >
                             <input
                                 ref="fileInput"
                                 type="file"
@@ -324,15 +418,30 @@ function moveImage(fromIndex: number, toIndex: number): void {
                                 class="text-sm file:mr-3 file:rounded file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-xs file:font-medium"
                                 @change="onFileChange"
                             />
-                            <p v-if="imageForm.errors.images" class="text-xs text-destructive mt-1">{{ imageForm.errors.images }}</p>
-                            <template v-for="(error, key) in imageForm.errors" :key="key">
-                                <p v-if="String(key).startsWith('images.')" class="text-xs text-destructive mt-1">{{ error }}</p>
+                            <p
+                                v-if="imageForm.errors.images"
+                                class="mt-1 text-xs text-destructive"
+                            >
+                                {{ imageForm.errors.images }}
+                            </p>
+                            <template
+                                v-for="(error, key) in imageForm.errors"
+                                :key="key"
+                            >
+                                <p
+                                    v-if="String(key).startsWith('images.')"
+                                    class="mt-1 text-xs text-destructive"
+                                >
+                                    {{ error }}
+                                </p>
                             </template>
                         </div>
                         <Button
                             type="submit"
                             size="sm"
-                            :disabled="!imageForm.images || imageForm.processing"
+                            :disabled="
+                                !imageForm.images || imageForm.processing
+                            "
                         >
                             <Upload class="mr-1 size-3" />
                             Upload
@@ -342,19 +451,27 @@ function moveImage(fromIndex: number, toIndex: number): void {
             </div>
 
             <!-- Options -->
-            <div class="rounded-lg border border-sidebar-border overflow-hidden">
-                <div class="flex items-center justify-between px-4 py-3 border-b border-sidebar-border bg-muted/50">
-                    <h2 class="font-semibold text-sm">Option Types</h2>
+            <div
+                class="overflow-hidden rounded-lg border border-sidebar-border"
+            >
+                <div
+                    class="flex items-center justify-between border-b border-sidebar-border bg-muted/50 px-4 py-3"
+                >
+                    <h2 class="text-sm font-semibold">Option Types</h2>
                     <Link :href="createOption(product).url">
-                        <Button variant="outline" size="sm" class="text-xs h-7">
+                        <Button variant="outline" size="sm" class="h-7 text-xs">
                             <Plus class="mr-1 size-3" />
                             Add Option Type
                         </Button>
                     </Link>
                 </div>
 
-                <div v-if="product.options.length === 0" class="px-4 py-6 text-center text-sm text-muted-foreground">
-                    No option types yet. Add one (e.g. Size, Color) before creating variants.
+                <div
+                    v-if="product.options.length === 0"
+                    class="px-4 py-6 text-center text-sm text-muted-foreground"
+                >
+                    No option types yet. Add one (e.g. Size, Color) before
+                    creating variants.
                 </div>
 
                 <div v-else class="divide-y divide-sidebar-border">
@@ -364,7 +481,9 @@ function moveImage(fromIndex: number, toIndex: number): void {
                         class="flex items-center justify-between px-4 py-3"
                     >
                         <div class="flex items-center gap-3">
-                            <span class="text-sm font-medium w-20 shrink-0">{{ option.name }}</span>
+                            <span class="w-20 shrink-0 text-sm font-medium">{{
+                                option.name
+                            }}</span>
                             <div class="flex flex-wrap gap-1">
                                 <Badge
                                     v-for="val in option.values"
@@ -374,7 +493,11 @@ function moveImage(fromIndex: number, toIndex: number): void {
                                 >
                                     {{ val.value }}
                                 </Badge>
-                                <span v-if="option.values.length === 0" class="text-xs text-muted-foreground italic">No values</span>
+                                <span
+                                    v-if="option.values.length === 0"
+                                    class="text-xs text-muted-foreground italic"
+                                    >No values</span
+                                >
                             </div>
                         </div>
                         <Button
@@ -390,33 +513,69 @@ function moveImage(fromIndex: number, toIndex: number): void {
             </div>
 
             <!-- Variants -->
-            <div class="rounded-lg border border-sidebar-border overflow-hidden">
-                <div class="flex items-center justify-between px-4 py-3 border-b border-sidebar-border bg-muted/50">
-                    <h2 class="font-semibold text-sm">Variants</h2>
+            <div
+                class="overflow-hidden rounded-lg border border-sidebar-border"
+            >
+                <div
+                    class="flex items-center justify-between border-b border-sidebar-border bg-muted/50 px-4 py-3"
+                >
+                    <h2 class="text-sm font-semibold">Variants</h2>
                     <Link :href="createVariant(product).url">
-                        <Button variant="outline" size="sm" class="text-xs h-7" :disabled="product.options.length === 0">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            class="h-7 text-xs"
+                            :disabled="product.options.length === 0"
+                        >
                             <Plus class="mr-1 size-3" />
                             Add Variant
                         </Button>
                     </Link>
                 </div>
 
-                <div v-if="product.options.length === 0" class="px-4 py-6 text-center text-sm text-muted-foreground">
+                <div
+                    v-if="product.options.length === 0"
+                    class="px-4 py-6 text-center text-sm text-muted-foreground"
+                >
                     Define option types above before adding variants.
                 </div>
 
-                <div v-else-if="product.variants.length === 0" class="px-4 py-8 text-center text-sm text-muted-foreground">
-                    No variants yet. Add one to offer size, color, or other options.
+                <div
+                    v-else-if="product.variants.length === 0"
+                    class="px-4 py-8 text-center text-sm text-muted-foreground"
+                >
+                    No variants yet. Add one to offer size, color, or other
+                    options.
                 </div>
 
                 <table v-else class="w-full text-sm">
                     <thead class="border-b border-sidebar-border bg-muted/20">
                         <tr>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Options</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-muted-foreground">SKU</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Price</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Stock</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Status</th>
+                            <th
+                                class="px-4 py-2 text-left text-xs font-medium text-muted-foreground"
+                            >
+                                Options
+                            </th>
+                            <th
+                                class="px-4 py-2 text-left text-xs font-medium text-muted-foreground"
+                            >
+                                SKU
+                            </th>
+                            <th
+                                class="px-4 py-2 text-left text-xs font-medium text-muted-foreground"
+                            >
+                                Price
+                            </th>
+                            <th
+                                class="px-4 py-2 text-left text-xs font-medium text-muted-foreground"
+                            >
+                                Stock
+                            </th>
+                            <th
+                                class="px-4 py-2 text-left text-xs font-medium text-muted-foreground"
+                            >
+                                Status
+                            </th>
                             <th class="px-4 py-2" />
                         </tr>
                     </thead>
@@ -424,7 +583,7 @@ function moveImage(fromIndex: number, toIndex: number): void {
                         <tr
                             v-for="variant in product.variants"
                             :key="variant.id"
-                            class="hover:bg-muted/30 transition-colors"
+                            class="transition-colors hover:bg-muted/30"
                         >
                             <td class="px-4 py-2.5">
                                 <div class="flex flex-wrap gap-1">
@@ -436,28 +595,71 @@ function moveImage(fromIndex: number, toIndex: number): void {
                                     >
                                         {{ ov.option.name }}: {{ ov.value }}
                                     </Badge>
-                                    <span v-if="variant.option_values.length === 0" class="text-xs text-muted-foreground italic">No options</span>
+                                    <span
+                                        v-if="
+                                            variant.option_values.length === 0
+                                        "
+                                        class="text-xs text-muted-foreground italic"
+                                        >No options</span
+                                    >
                                 </div>
                             </td>
-                            <td class="px-4 py-2.5 font-mono text-xs text-muted-foreground">
+                            <td
+                                class="px-4 py-2.5 font-mono text-xs text-muted-foreground"
+                            >
                                 {{ variant.sku ?? '—' }}
                             </td>
                             <td class="px-4 py-2.5">
-                                <span v-if="variant.price !== null">${{ formatPrice(variant.price) }}</span>
-                                <span v-else class="text-xs text-muted-foreground italic">Inherited</span>
+                                <span v-if="variant.price !== null"
+                                    >${{ formatPrice(variant.price) }}</span
+                                >
+                                <span
+                                    v-else
+                                    class="text-xs text-muted-foreground italic"
+                                    >Inherited</span
+                                >
                             </td>
-                            <td class="px-4 py-2.5" :class="variant.stock_quantity === 0 ? 'text-destructive font-medium' : ''">
+                            <td
+                                class="px-4 py-2.5"
+                                :class="
+                                    variant.stock_quantity === 0
+                                        ? 'font-medium text-destructive'
+                                        : ''
+                                "
+                            >
                                 {{ variant.stock_quantity }}
                             </td>
                             <td class="px-4 py-2.5">
-                                <Badge :variant="variant.is_active ? 'default' : 'secondary'" class="text-xs">
-                                    {{ variant.is_active ? 'Active' : 'Inactive' }}
+                                <Badge
+                                    :variant="
+                                        variant.is_active
+                                            ? 'default'
+                                            : 'secondary'
+                                    "
+                                    class="text-xs"
+                                >
+                                    {{
+                                        variant.is_active
+                                            ? 'Active'
+                                            : 'Inactive'
+                                    }}
                                 </Badge>
                             </td>
                             <td class="px-4 py-2.5 text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <Link :href="editVariant({ product, variant }).url">
-                                        <Button variant="ghost" size="sm" class="h-7 w-7 p-0">
+                                <div
+                                    class="flex items-center justify-end gap-1"
+                                >
+                                    <Link
+                                        :href="
+                                            editVariant({ product, variant })
+                                                .url
+                                        "
+                                    >
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            class="h-7 w-7 p-0"
+                                        >
                                             <Pencil class="size-3" />
                                         </Button>
                                     </Link>

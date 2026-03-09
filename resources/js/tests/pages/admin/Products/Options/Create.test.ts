@@ -1,10 +1,14 @@
-import CreateOptionPage from '@/pages/admin/Products/Options/Create.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import CreateOptionPage from '@/pages/admin/Products/Options/Create.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a :href="href"><slot /></a>', props: ['href'] },
+    Link: {
+        name: 'Link',
+        template: '<a :href="href"><slot /></a>',
+        props: ['href'],
+    },
     useForm: vi.fn(() => ({
         name: '',
         values: [''],
@@ -15,19 +19,35 @@ vi.mock('@inertiajs/vue3', () => ({
 }));
 
 vi.mock('@/layouts/AppLayout.vue', () => ({
-    default: { name: 'AppLayout', template: '<div><slot /></div>', props: ['breadcrumbs'] },
+    default: {
+        name: 'AppLayout',
+        template: '<div><slot /></div>',
+        props: ['breadcrumbs'],
+    },
 }));
 
 vi.mock('@/components/ui/button', () => ({
-    Button: { name: 'Button', template: '<button @click="$emit(\'click\')"><slot /></button>', props: ['variant', 'size', 'type', 'disabled'] },
+    Button: {
+        name: 'Button',
+        template: '<button @click="$emit(\'click\')"><slot /></button>',
+        props: ['variant', 'size', 'type', 'disabled'],
+    },
 }));
 
 vi.mock('@/components/ui/input', () => ({
-    Input: { name: 'Input', template: '<input />', props: ['id', 'modelValue', 'placeholder', 'class', 'autofocus'] },
+    Input: {
+        name: 'Input',
+        template: '<input />',
+        props: ['id', 'modelValue', 'placeholder', 'class', 'autofocus'],
+    },
 }));
 
 vi.mock('@/components/ui/label', () => ({
-    Label: { name: 'Label', template: '<label><slot /></label>', props: ['for'] },
+    Label: {
+        name: 'Label',
+        template: '<label><slot /></label>',
+        props: ['for'],
+    },
 }));
 
 vi.mock('@/components/InputError.vue', () => ({
@@ -36,11 +56,15 @@ vi.mock('@/components/InputError.vue', () => ({
 
 vi.mock('@/actions/App/Http/Controllers/Admin/ProductController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/products' })),
-    show: vi.fn((product: { slug: string }) => ({ url: `/dashboard/products/${product.slug}` })),
+    show: vi.fn((product: { slug: string }) => ({
+        url: `/dashboard/products/${product.slug}`,
+    })),
 }));
 
 vi.mock('@/actions/App/Http/Controllers/Admin/ProductOptionController', () => ({
-    store: vi.fn((product: { slug: string }) => ({ url: `/dashboard/products/${product.slug}/options` })),
+    store: vi.fn((product: { slug: string }) => ({
+        url: `/dashboard/products/${product.slug}/options`,
+    })),
 }));
 
 const baseProduct = {

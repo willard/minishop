@@ -1,27 +1,45 @@
-import IndexPage from '@/pages/admin/Customers/Index.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import IndexPage from '@/pages/admin/Customers/Index.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a href="#"><slot /></a>', props: ['href'] },
+    Link: {
+        name: 'Link',
+        template: '<a href="#"><slot /></a>',
+        props: ['href'],
+    },
 }));
 
 vi.mock('@/layouts/AppLayout.vue', () => ({
-    default: { name: 'AppLayout', template: '<div><slot /></div>', props: ['breadcrumbs'] },
+    default: {
+        name: 'AppLayout',
+        template: '<div><slot /></div>',
+        props: ['breadcrumbs'],
+    },
 }));
 
 vi.mock('@/components/ui/button', () => ({
-    Button: { name: 'Button', template: '<button><slot /></button>', props: ['variant', 'size', 'type', 'disabled'] },
+    Button: {
+        name: 'Button',
+        template: '<button><slot /></button>',
+        props: ['variant', 'size', 'type', 'disabled'],
+    },
 }));
 
 vi.mock('@/components/ui/badge', () => ({
-    Badge: { name: 'Badge', template: '<span class="badge"><slot /></span>', props: ['variant'] },
+    Badge: {
+        name: 'Badge',
+        template: '<span class="badge"><slot /></span>',
+        props: ['variant'],
+    },
 }));
 
 vi.mock('@/actions/App/Http/Controllers/Admin/CustomerController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/customers' })),
-    show: vi.fn((customer: { id: number }) => ({ url: `/dashboard/customers/${customer.id}` })),
+    show: vi.fn((customer: { id: number }) => ({
+        url: `/dashboard/customers/${customer.id}`,
+    })),
 }));
 
 const baseCustomers = {

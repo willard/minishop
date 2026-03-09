@@ -10,11 +10,17 @@ import AccountLayout from '@/layouts/AccountLayout.vue';
         <div class="max-w-lg">
             <div
                 class="rounded-xl border p-8 text-center"
-                style="border-color: rgba(28, 26, 23, 0.12); background-color: #fff"
+                style="
+                    border-color: rgba(28, 26, 23, 0.12);
+                    background-color: #fff;
+                "
             >
-                <p class="mb-1 text-sm font-medium" style="color: #1c1a17">No saved payment methods</p>
+                <p class="mb-1 text-sm font-medium" style="color: #1c1a17">
+                    No saved payment methods
+                </p>
                 <p class="text-sm" style="color: rgba(28, 26, 23, 0.5)">
-                    Saved payment methods will appear here once Stripe billing is configured.
+                    Saved payment methods will appear here once Stripe billing
+                    is configured.
                 </p>
             </div>
         </div>

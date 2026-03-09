@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import {
+    index,
+    create,
+    store,
+} from '@/actions/App/Http/Controllers/Admin/ProductController';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { index, create, store } from '@/actions/App/Http/Controllers/Admin/ProductController';
 
 interface Category {
     id: number;
@@ -30,7 +34,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     <Head title="Add Product" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-col gap-6 p-4 max-w-2xl">
+        <div class="flex max-w-2xl flex-col gap-6 p-4">
             <!-- Header -->
             <div class="flex items-center gap-4">
                 <Link :href="index().url">
@@ -40,7 +44,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                 </Link>
                 <div>
                     <h1 class="text-2xl font-semibold">Add Product</h1>
-                    <p class="text-sm text-muted-foreground">Create a new product in your store</p>
+                    <p class="text-sm text-muted-foreground">
+                        Create a new product in your store
+                    </p>
                 </div>
             </div>
 
@@ -52,8 +58,15 @@ const breadcrumbs: BreadcrumbItem[] = [
             >
                 <!-- Name -->
                 <div class="grid gap-2">
-                    <Label for="name">Name <span class="text-destructive">*</span></Label>
-                    <Input id="name" name="name" placeholder="Product name" required />
+                    <Label for="name"
+                        >Name <span class="text-destructive">*</span></Label
+                    >
+                    <Input
+                        id="name"
+                        name="name"
+                        placeholder="Product name"
+                        required
+                    />
                     <InputError :message="errors.name" />
                 </div>
 
@@ -65,7 +78,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                         name="description"
                         rows="4"
                         placeholder="Product description"
-                        class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                        class="flex w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     />
                     <InputError :message="errors.description" />
                 </div>
@@ -73,15 +86,34 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <!-- Price & Compare Price -->
                 <div class="grid grid-cols-2 gap-4">
                     <div class="grid gap-2">
-                        <Label for="price">Price (cents) <span class="text-destructive">*</span></Label>
-                        <Input id="price" name="price" type="number" min="0" placeholder="e.g. 1999" />
-                        <p class="text-xs text-muted-foreground">Enter amount in cents (e.g. 1999 = $19.99)</p>
+                        <Label for="price"
+                            >Price (cents)
+                            <span class="text-destructive">*</span></Label
+                        >
+                        <Input
+                            id="price"
+                            name="price"
+                            type="number"
+                            min="0"
+                            placeholder="e.g. 1999"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            Enter amount in cents (e.g. 1999 = $19.99)
+                        </p>
                         <InputError :message="errors.price" />
                     </div>
                     <div class="grid gap-2">
                         <Label for="compare_price">Compare Price (cents)</Label>
-                        <Input id="compare_price" name="compare_price" type="number" min="0" placeholder="e.g. 2999" />
-                        <p class="text-xs text-muted-foreground">Must be greater than price</p>
+                        <Input
+                            id="compare_price"
+                            name="compare_price"
+                            type="number"
+                            min="0"
+                            placeholder="e.g. 2999"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            Must be greater than price
+                        </p>
                         <InputError :message="errors.compare_price" />
                     </div>
                 </div>
@@ -90,12 +122,22 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <div class="grid grid-cols-2 gap-4">
                     <div class="grid gap-2">
                         <Label for="sku">SKU</Label>
-                        <Input id="sku" name="sku" placeholder="e.g. ABC-1234" />
+                        <Input
+                            id="sku"
+                            name="sku"
+                            placeholder="e.g. ABC-1234"
+                        />
                         <InputError :message="errors.sku" />
                     </div>
                     <div class="grid gap-2">
                         <Label for="stock_quantity">Stock Quantity</Label>
-                        <Input id="stock_quantity" name="stock_quantity" type="number" min="0" placeholder="0" />
+                        <Input
+                            id="stock_quantity"
+                            name="stock_quantity"
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                        />
                         <InputError :message="errors.stock_quantity" />
                     </div>
                 </div>
@@ -107,7 +149,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <label
                             v-for="category in categories"
                             :key="category.id"
-                            class="flex items-center gap-2 cursor-pointer"
+                            class="flex cursor-pointer items-center gap-2"
                         >
                             <Checkbox
                                 :name="`category_ids[]`"
@@ -121,7 +163,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                 <!-- Active Status -->
                 <div class="flex items-center gap-2">
-                    <Checkbox id="is_active" name="is_active" value="1" :default-value="true" />
+                    <Checkbox
+                        id="is_active"
+                        name="is_active"
+                        value="1"
+                        :default-value="true"
+                    />
                     <Label for="is_active">Active (visible in store)</Label>
                 </div>
 

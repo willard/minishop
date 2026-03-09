@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import {
+    index,
+    create,
+    store,
+} from '@/actions/App/Http/Controllers/Admin/CouponController';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { index, create, store } from '@/actions/App/Http/Controllers/Admin/CouponController';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -21,7 +25,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     <Head title="Add Coupon" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-col gap-6 p-4 max-w-2xl">
+        <div class="flex max-w-2xl flex-col gap-6 p-4">
             <!-- Header -->
             <div class="flex items-center gap-4">
                 <Link :href="index().url">
@@ -31,7 +35,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                 </Link>
                 <div>
                     <h1 class="text-2xl font-semibold">Add Coupon</h1>
-                    <p class="text-sm text-muted-foreground">Create a new discount code</p>
+                    <p class="text-sm text-muted-foreground">
+                        Create a new discount code
+                    </p>
                 </div>
             </div>
 
@@ -43,15 +49,20 @@ const breadcrumbs: BreadcrumbItem[] = [
             >
                 <!-- Code -->
                 <div class="grid gap-2">
-                    <Label for="code">Code <span class="text-destructive">*</span></Label>
+                    <Label for="code"
+                        >Code <span class="text-destructive">*</span></Label
+                    >
                     <Input
                         id="code"
                         name="code"
                         placeholder="e.g. SAVE10"
-                        class="uppercase font-mono tracking-wider"
+                        class="font-mono tracking-wider uppercase"
                         required
                     />
-                    <p class="text-xs text-muted-foreground">Letters, numbers, dashes, and underscores only. Will be uppercased automatically.</p>
+                    <p class="text-xs text-muted-foreground">
+                        Letters, numbers, dashes, and underscores only. Will be
+                        uppercased automatically.
+                    </p>
                     <InputError :message="errors.code" />
                 </div>
 
@@ -63,7 +74,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                         name="description"
                         rows="2"
                         placeholder="Short description of this coupon"
-                        class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                        class="flex w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     />
                     <InputError :message="errors.description" />
                 </div>
@@ -71,11 +82,13 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <!-- Type + Value side by side -->
                 <div class="grid grid-cols-2 gap-4">
                     <div class="grid gap-2">
-                        <Label for="type">Type <span class="text-destructive">*</span></Label>
+                        <Label for="type"
+                            >Type <span class="text-destructive">*</span></Label
+                        >
                         <select
                             id="type"
                             name="type"
-                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                             required
                         >
                             <option value="percentage">Percentage (%)</option>
@@ -84,7 +97,10 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <InputError :message="errors.type" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="value">Value <span class="text-destructive">*</span></Label>
+                        <Label for="value"
+                            >Value
+                            <span class="text-destructive">*</span></Label
+                        >
                         <Input
                             id="value"
                             name="value"
@@ -93,7 +109,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                             placeholder="e.g. 10"
                             required
                         />
-                        <p class="text-xs text-muted-foreground">% for percentage; cents (100 = ₱1) for fixed</p>
+                        <p class="text-xs text-muted-foreground">
+                            % for percentage; cents (100 = ₱1) for fixed
+                        </p>
                         <InputError :message="errors.value" />
                     </div>
                 </div>
@@ -101,7 +119,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <!-- Min Order Amount + Usage Limit side by side -->
                 <div class="grid grid-cols-2 gap-4">
                     <div class="grid gap-2">
-                        <Label for="minimum_order_amount">Min. Order Amount (cents)</Label>
+                        <Label for="minimum_order_amount"
+                            >Min. Order Amount (cents)</Label
+                        >
                         <Input
                             id="minimum_order_amount"
                             name="minimum_order_amount"
@@ -109,7 +129,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                             min="0"
                             placeholder="Leave empty for none"
                         />
-                        <p class="text-xs text-muted-foreground">e.g. 20000 = ₱200 minimum</p>
+                        <p class="text-xs text-muted-foreground">
+                            e.g. 20000 = ₱200 minimum
+                        </p>
                         <InputError :message="errors.minimum_order_amount" />
                     </div>
                     <div class="grid gap-2">
@@ -121,7 +143,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                             min="1"
                             placeholder="Leave empty for unlimited"
                         />
-                        <p class="text-xs text-muted-foreground">Total times this code can be used</p>
+                        <p class="text-xs text-muted-foreground">
+                            Total times this code can be used
+                        </p>
                         <InputError :message="errors.usage_limit" />
                     </div>
                 </div>
@@ -135,14 +159,23 @@ const breadcrumbs: BreadcrumbItem[] = [
                         type="date"
                         class="max-w-xs"
                     />
-                    <p class="text-xs text-muted-foreground">Leave empty for no expiry</p>
+                    <p class="text-xs text-muted-foreground">
+                        Leave empty for no expiry
+                    </p>
                     <InputError :message="errors.expiry_date" />
                 </div>
 
                 <!-- Active Status -->
                 <div class="flex items-center gap-2">
-                    <Checkbox id="is_active" name="is_active" value="1" :default-value="true" />
-                    <Label for="is_active">Active (visible and usable in store)</Label>
+                    <Checkbox
+                        id="is_active"
+                        name="is_active"
+                        value="1"
+                        :default-value="true"
+                    />
+                    <Label for="is_active"
+                        >Active (visible and usable in store)</Label
+                    >
                 </div>
 
                 <!-- Submit -->

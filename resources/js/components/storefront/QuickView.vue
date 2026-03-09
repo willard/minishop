@@ -9,7 +9,7 @@ import {
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { show as productShow } from '@/actions/App/Http/Controllers/Storefront/ProductController';
-import { Dialog, DialogContent, DialogOverlay } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';
 import type { StorefrontProduct, StorefrontVariant } from '@/types/storefront';
@@ -234,12 +234,12 @@ function handleAddToCart(): void {
                         </span>
                     </div>
 
-                    <h2
+                    <DialogTitle
                         class="mb-2 text-3xl leading-tight font-semibold"
                         style="font-family: 'Cormorant Garamond', serif"
                     >
                         {{ product.name }}
-                    </h2>
+                    </DialogTitle>
 
                     <div class="mb-6 flex items-baseline gap-3">
                         <span class="text-xl font-semibold">
@@ -256,9 +256,9 @@ function handleAddToCart(): void {
                         </span>
                     </div>
 
-                    <p class="mb-8 text-sm leading-relaxed opacity-70">
+                    <DialogDescription class="mb-8 text-sm leading-relaxed opacity-70">
                         {{ product.description?.substring(0, 180) }}...
-                    </p>
+                    </DialogDescription>
 
                     <!-- Variants -->
                     <div v-if="hasVariants" class="mb-8 space-y-6">

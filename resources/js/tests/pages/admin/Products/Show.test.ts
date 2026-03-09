@@ -4,7 +4,11 @@ import ShowPage from '@/pages/admin/Products/Show.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a href="#"><slot /></a>', props: ['href'] },
+    Link: {
+        name: 'Link',
+        template: '<a href="#"><slot /></a>',
+        props: ['href'],
+    },
     router: { delete: vi.fn(), put: vi.fn() },
     useForm: vi.fn((initial: Record<string, unknown>) => ({
         ...initial,
@@ -16,15 +20,27 @@ vi.mock('@inertiajs/vue3', () => ({
 }));
 
 vi.mock('@/layouts/AppLayout.vue', () => ({
-    default: { name: 'AppLayout', template: '<div><slot /></div>', props: ['breadcrumbs'] },
+    default: {
+        name: 'AppLayout',
+        template: '<div><slot /></div>',
+        props: ['breadcrumbs'],
+    },
 }));
 
 vi.mock('@/components/ui/button', () => ({
-    Button: { name: 'Button', template: '<button :disabled="disabled"><slot /></button>', props: ['variant', 'size', 'type', 'disabled'] },
+    Button: {
+        name: 'Button',
+        template: '<button :disabled="disabled"><slot /></button>',
+        props: ['variant', 'size', 'type', 'disabled'],
+    },
 }));
 
 vi.mock('@/components/ui/badge', () => ({
-    Badge: { name: 'Badge', template: '<span><slot /></span>', props: ['variant', 'class'] },
+    Badge: {
+        name: 'Badge',
+        template: '<span><slot /></span>',
+        props: ['variant', 'class'],
+    },
 }));
 
 vi.mock('@/actions/App/Http/Controllers/Admin/ProductController', () => ({
@@ -33,21 +49,38 @@ vi.mock('@/actions/App/Http/Controllers/Admin/ProductController', () => ({
     destroy: vi.fn(() => ({ url: '/dashboard/products/test-product' })),
 }));
 
-vi.mock('@/actions/App/Http/Controllers/Admin/ProductVariantController', () => ({
-    create: vi.fn(() => ({ url: '/dashboard/products/test-product/variants/create' })),
-    edit: vi.fn(() => ({ url: '/dashboard/products/test-product/variants/1/edit' })),
-    destroy: vi.fn(() => ({ url: '/dashboard/products/test-product/variants/1' })),
-}));
+vi.mock(
+    '@/actions/App/Http/Controllers/Admin/ProductVariantController',
+    () => ({
+        create: vi.fn(() => ({
+            url: '/dashboard/products/test-product/variants/create',
+        })),
+        edit: vi.fn(() => ({
+            url: '/dashboard/products/test-product/variants/1/edit',
+        })),
+        destroy: vi.fn(() => ({
+            url: '/dashboard/products/test-product/variants/1',
+        })),
+    }),
+);
 
 vi.mock('@/actions/App/Http/Controllers/Admin/ProductOptionController', () => ({
-    create: vi.fn(() => ({ url: '/dashboard/products/test-product/options/create' })),
-    destroy: vi.fn(() => ({ url: '/dashboard/products/test-product/options/1' })),
+    create: vi.fn(() => ({
+        url: '/dashboard/products/test-product/options/create',
+    })),
+    destroy: vi.fn(() => ({
+        url: '/dashboard/products/test-product/options/1',
+    })),
 }));
 
 vi.mock('@/actions/App/Http/Controllers/Admin/ProductImageController', () => ({
     store: vi.fn(() => ({ url: '/dashboard/products/test-product/images' })),
-    destroy: vi.fn(() => ({ url: '/dashboard/products/test-product/images/1' })),
-    reorder: vi.fn(() => ({ url: '/dashboard/products/test-product/images/reorder' })),
+    destroy: vi.fn(() => ({
+        url: '/dashboard/products/test-product/images/1',
+    })),
+    reorder: vi.fn(() => ({
+        url: '/dashboard/products/test-product/images/reorder',
+    })),
 }));
 
 const baseProduct = {
@@ -61,7 +94,12 @@ const baseProduct = {
     is_active: true,
     sku: 'ABC-1234',
     categories: [{ id: 1, name: 'Electronics' }],
-    images: [] as Array<{ id: number; path: string; alt_text: string | null; sort_order: number }>,
+    images: [] as Array<{
+        id: number;
+        path: string;
+        alt_text: string | null;
+        sort_order: number;
+    }>,
     options: [],
     variants: [],
 };
@@ -81,8 +119,18 @@ describe('admin/Products/Show — Images section', () => {
         const product = {
             ...baseProduct,
             images: [
-                { id: 1, path: 'products/1/a.jpg', alt_text: 'Photo A', sort_order: 0 },
-                { id: 2, path: 'products/1/b.jpg', alt_text: null, sort_order: 1 },
+                {
+                    id: 1,
+                    path: 'products/1/a.jpg',
+                    alt_text: 'Photo A',
+                    sort_order: 0,
+                },
+                {
+                    id: 2,
+                    path: 'products/1/b.jpg',
+                    alt_text: null,
+                    sort_order: 1,
+                },
             ],
         };
         const wrapper = mount(ShowPage, { props: { product } });
@@ -97,8 +145,18 @@ describe('admin/Products/Show — Images section', () => {
         const product = {
             ...baseProduct,
             images: [
-                { id: 1, path: 'products/1/a.jpg', alt_text: null, sort_order: 0 },
-                { id: 2, path: 'products/1/b.jpg', alt_text: null, sort_order: 1 },
+                {
+                    id: 1,
+                    path: 'products/1/a.jpg',
+                    alt_text: null,
+                    sort_order: 0,
+                },
+                {
+                    id: 2,
+                    path: 'products/1/b.jpg',
+                    alt_text: null,
+                    sort_order: 1,
+                },
             ],
         };
         const wrapper = mount(ShowPage, { props: { product } });
@@ -122,8 +180,18 @@ describe('admin/Products/Show — Images section', () => {
         const product = {
             ...baseProduct,
             images: [
-                { id: 1, path: 'products/1/a.jpg', alt_text: null, sort_order: 0 },
-                { id: 2, path: 'products/1/b.jpg', alt_text: null, sort_order: 1 },
+                {
+                    id: 1,
+                    path: 'products/1/a.jpg',
+                    alt_text: null,
+                    sort_order: 0,
+                },
+                {
+                    id: 2,
+                    path: 'products/1/b.jpg',
+                    alt_text: null,
+                    sort_order: 1,
+                },
             ],
         };
         const wrapper = mount(ShowPage, { props: { product } });
@@ -136,9 +204,24 @@ describe('admin/Products/Show — Images section', () => {
         const product = {
             ...baseProduct,
             images: [
-                { id: 1, path: 'products/1/a.jpg', alt_text: null, sort_order: 0 },
-                { id: 2, path: 'products/1/b.jpg', alt_text: null, sort_order: 1 },
-                { id: 3, path: 'products/1/c.jpg', alt_text: null, sort_order: 2 },
+                {
+                    id: 1,
+                    path: 'products/1/a.jpg',
+                    alt_text: null,
+                    sort_order: 0,
+                },
+                {
+                    id: 2,
+                    path: 'products/1/b.jpg',
+                    alt_text: null,
+                    sort_order: 1,
+                },
+                {
+                    id: 3,
+                    path: 'products/1/c.jpg',
+                    alt_text: null,
+                    sort_order: 2,
+                },
             ],
         };
         const wrapper = mount(ShowPage, { props: { product } });

@@ -1,6 +1,6 @@
-import EditPage from '@/pages/admin/Products/Edit.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import EditPage from '@/pages/admin/Products/Edit.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Form: {
@@ -9,11 +9,19 @@ vi.mock('@inertiajs/vue3', () => ({
         props: ['action', 'method'],
     },
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a href="#"><slot /></a>', props: ['href'] },
+    Link: {
+        name: 'Link',
+        template: '<a href="#"><slot /></a>',
+        props: ['href'],
+    },
 }));
 
 vi.mock('@/layouts/AppLayout.vue', () => ({
-    default: { name: 'AppLayout', template: '<div><slot /></div>', props: ['breadcrumbs'] },
+    default: {
+        name: 'AppLayout',
+        template: '<div><slot /></div>',
+        props: ['breadcrumbs'],
+    },
 }));
 
 vi.mock('@/components/ui/checkbox', () => ({
@@ -21,22 +29,37 @@ vi.mock('@/components/ui/checkbox', () => ({
         name: 'Checkbox',
         // Maps defaultValue → checked so we can assert .checked in the DOM.
         // This means tests will FAIL if the code regresses to :default-checked.
-        template: '<input type="checkbox" :id="id" :name="name" :value="value" :checked="defaultValue" />',
+        template:
+            '<input type="checkbox" :id="id" :name="name" :value="value" :checked="defaultValue" />',
         props: ['id', 'name', 'value', 'defaultValue'],
     },
 }));
 
 vi.mock('@/components/ui/button', () => ({
-    Button: { name: 'Button', template: '<button><slot /></button>', props: ['variant', 'size', 'type', 'disabled'] },
+    Button: {
+        name: 'Button',
+        template: '<button><slot /></button>',
+        props: ['variant', 'size', 'type', 'disabled'],
+    },
 }));
 
 vi.mock('@/components/ui/label', () => ({
-    Label: { name: 'Label', template: '<label><slot /></label>', props: ['for'] },
+    Label: {
+        name: 'Label',
+        template: '<label><slot /></label>',
+        props: ['for'],
+    },
 }));
 
 vi.mock('@/actions/App/Http/Controllers/Admin/ProductController', () => {
-    const update = vi.fn(() => ({ url: '/dashboard/products/test-product', method: 'put' }));
-    update.form = vi.fn(() => ({ action: '/dashboard/products/test-product?_method=PUT', method: 'post' }));
+    const update = vi.fn(() => ({
+        url: '/dashboard/products/test-product',
+        method: 'put',
+    }));
+    update.form = vi.fn(() => ({
+        action: '/dashboard/products/test-product?_method=PUT',
+        method: 'post',
+    }));
     return {
         index: vi.fn(() => ({ url: '/dashboard/products' })),
         show: vi.fn(() => ({ url: '/dashboard/products/test-product' })),
@@ -107,20 +130,29 @@ describe('admin/Products/Edit', () => {
     });
 
     it('pre-checks is_active checkbox when product is active', () => {
-        const checkbox = wrapper.find('input[name="is_active"]') as { element: HTMLInputElement };
+        const checkbox = wrapper.find('input[name="is_active"]') as {
+            element: HTMLInputElement;
+        };
         expect(checkbox.element.checked).toBe(true);
     });
 
     it('leaves is_active unchecked when product is inactive', async () => {
         const inactiveWrapper = mount(EditPage, {
-            props: { product: { ...baseProduct, is_active: false }, categories: availableCategories },
+            props: {
+                product: { ...baseProduct, is_active: false },
+                categories: availableCategories,
+            },
         });
-        const checkbox = inactiveWrapper.find('input[name="is_active"]') as { element: HTMLInputElement };
+        const checkbox = inactiveWrapper.find('input[name="is_active"]') as {
+            element: HTMLInputElement;
+        };
         expect(checkbox.element.checked).toBe(false);
     });
 
     it('pre-checks only categories the product belongs to', () => {
-        const checkboxes = wrapper.findAll('input[name="category_ids[]"]') as { element: HTMLInputElement }[];
+        const checkboxes = wrapper.findAll('input[name="category_ids[]"]') as {
+            element: HTMLInputElement;
+        }[];
         expect(checkboxes).toHaveLength(3);
 
         // Clothing (id:1) — not in product.categories
@@ -135,6 +167,8 @@ describe('admin/Products/Edit', () => {
         const noCategWrapper = mount(EditPage, {
             props: { product: baseProduct, categories: [] },
         });
-        expect(noCategWrapper.findAll('input[name="category_ids[]"]')).toHaveLength(0);
+        expect(
+            noCategWrapper.findAll('input[name="category_ids[]"]'),
+        ).toHaveLength(0);
     });
 });

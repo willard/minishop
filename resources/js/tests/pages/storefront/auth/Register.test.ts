@@ -1,11 +1,19 @@
-import RegisterPage from '@/pages/storefront/auth/Register.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import RegisterPage from '@/pages/storefront/auth/Register.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a href="#"><slot /></a>', props: ['href'] },
-    Form: { name: 'Form', template: '<form><slot :errors="{}" :processing="false" /></form>', props: ['action', 'method', 'resetOnSuccess'] },
+    Link: {
+        name: 'Link',
+        template: '<a href="#"><slot /></a>',
+        props: ['href'],
+    },
+    Form: {
+        name: 'Form',
+        template: '<form><slot :errors="{}" :processing="false" /></form>',
+        props: ['action', 'method', 'resetOnSuccess'],
+    },
 }));
 
 vi.mock('@/components/InputError.vue', () => ({
@@ -40,7 +48,9 @@ describe('storefront/auth/Register', () => {
     });
 
     it('renders the password confirmation input', () => {
-        expect(wrapper.find('input[name="password_confirmation"]').exists()).toBe(true);
+        expect(
+            wrapper.find('input[name="password_confirmation"]').exists(),
+        ).toBe(true);
     });
 
     it('renders the create account submit button', () => {

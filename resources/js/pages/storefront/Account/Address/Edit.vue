@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
-import AccountLayout from '@/layouts/AccountLayout.vue';
 import InputError from '@/components/InputError.vue';
+import AccountLayout from '@/layouts/AccountLayout.vue';
 import { update } from '@/routes/account/address';
 
 interface Address {
@@ -39,7 +39,12 @@ defineProps<{
                 <input type="hidden" name="_method" value="PUT" />
 
                 <div class="flex flex-col gap-1.5">
-                    <label class="text-sm font-medium" style="color: #1c1a17" for="name">Full name</label>
+                    <label
+                        class="text-sm font-medium"
+                        style="color: #1c1a17"
+                        for="name"
+                        >Full name</label
+                    >
                     <input
                         id="name"
                         type="text"
@@ -49,13 +54,22 @@ defineProps<{
                         autocomplete="name"
                         placeholder="Jane Doe"
                         class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
-                        style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
+                        style="
+                            border-color: rgba(28, 26, 23, 0.2);
+                            background-color: #fff;
+                            color: #1c1a17;
+                        "
                     />
                     <InputError :message="errors.name" />
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <label class="text-sm font-medium" style="color: #1c1a17" for="line1">Address line 1</label>
+                    <label
+                        class="text-sm font-medium"
+                        style="color: #1c1a17"
+                        for="line1"
+                        >Address line 1</label
+                    >
                     <input
                         id="line1"
                         type="text"
@@ -65,15 +79,27 @@ defineProps<{
                         autocomplete="address-line1"
                         placeholder="123 Main St"
                         class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
-                        style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
+                        style="
+                            border-color: rgba(28, 26, 23, 0.2);
+                            background-color: #fff;
+                            color: #1c1a17;
+                        "
                     />
                     <InputError :message="errors.line1" />
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <label class="text-sm font-medium" style="color: #1c1a17" for="line2">
+                    <label
+                        class="text-sm font-medium"
+                        style="color: #1c1a17"
+                        for="line2"
+                    >
                         Address line 2
-                        <span class="font-normal" style="color: rgba(28, 26, 23, 0.4)">(optional)</span>
+                        <span
+                            class="font-normal"
+                            style="color: rgba(28, 26, 23, 0.4)"
+                            >(optional)</span
+                        >
                     </label>
                     <input
                         id="line2"
@@ -83,14 +109,23 @@ defineProps<{
                         autocomplete="address-line2"
                         placeholder="Apt, suite, unit, etc."
                         class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
-                        style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
+                        style="
+                            border-color: rgba(28, 26, 23, 0.2);
+                            background-color: #fff;
+                            color: #1c1a17;
+                        "
                     />
                     <InputError :message="errors.line2" />
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="flex flex-col gap-1.5">
-                        <label class="text-sm font-medium" style="color: #1c1a17" for="city">City</label>
+                        <label
+                            class="text-sm font-medium"
+                            style="color: #1c1a17"
+                            for="city"
+                            >City</label
+                        >
                         <input
                             id="city"
                             type="text"
@@ -100,15 +135,27 @@ defineProps<{
                             autocomplete="address-level2"
                             placeholder="Manila"
                             class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
-                            style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
+                            style="
+                                border-color: rgba(28, 26, 23, 0.2);
+                                background-color: #fff;
+                                color: #1c1a17;
+                            "
                         />
                         <InputError :message="errors.city" />
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <label class="text-sm font-medium" style="color: #1c1a17" for="state">
+                        <label
+                            class="text-sm font-medium"
+                            style="color: #1c1a17"
+                            for="state"
+                        >
                             Province
-                            <span class="font-normal" style="color: rgba(28, 26, 23, 0.4)">(optional)</span>
+                            <span
+                                class="font-normal"
+                                style="color: rgba(28, 26, 23, 0.4)"
+                                >(optional)</span
+                            >
                         </label>
                         <input
                             id="state"
@@ -118,7 +165,11 @@ defineProps<{
                             autocomplete="address-level1"
                             placeholder="Metro Manila"
                             class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
-                            style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
+                            style="
+                                border-color: rgba(28, 26, 23, 0.2);
+                                background-color: #fff;
+                                color: #1c1a17;
+                            "
                         />
                         <InputError :message="errors.state" />
                     </div>
@@ -126,7 +177,12 @@ defineProps<{
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="flex flex-col gap-1.5">
-                        <label class="text-sm font-medium" style="color: #1c1a17" for="postal_code">Postal code</label>
+                        <label
+                            class="text-sm font-medium"
+                            style="color: #1c1a17"
+                            for="postal_code"
+                            >Postal code</label
+                        >
                         <input
                             id="postal_code"
                             type="text"
@@ -136,24 +192,62 @@ defineProps<{
                             autocomplete="postal-code"
                             placeholder="1000"
                             class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
-                            style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
+                            style="
+                                border-color: rgba(28, 26, 23, 0.2);
+                                background-color: #fff;
+                                color: #1c1a17;
+                            "
                         />
                         <InputError :message="errors.postal_code" />
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <label class="text-sm font-medium" style="color: #1c1a17" for="country">Country</label>
+                        <label
+                            class="text-sm font-medium"
+                            style="color: #1c1a17"
+                            for="country"
+                            >Country</label
+                        >
                         <select
                             id="country"
                             name="country"
                             class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
-                            style="border-color: rgba(28, 26, 23, 0.2); background-color: #fff; color: #1c1a17"
+                            style="
+                                border-color: rgba(28, 26, 23, 0.2);
+                                background-color: #fff;
+                                color: #1c1a17;
+                            "
                         >
-                            <option value="PH" :selected="(address?.country ?? 'PH') === 'PH'">Philippines</option>
-                            <option value="US" :selected="address?.country === 'US'">United States</option>
-                            <option value="SG" :selected="address?.country === 'SG'">Singapore</option>
-                            <option value="AU" :selected="address?.country === 'AU'">Australia</option>
-                            <option value="GB" :selected="address?.country === 'GB'">United Kingdom</option>
+                            <option
+                                value="PH"
+                                :selected="(address?.country ?? 'PH') === 'PH'"
+                            >
+                                Philippines
+                            </option>
+                            <option
+                                value="US"
+                                :selected="address?.country === 'US'"
+                            >
+                                United States
+                            </option>
+                            <option
+                                value="SG"
+                                :selected="address?.country === 'SG'"
+                            >
+                                Singapore
+                            </option>
+                            <option
+                                value="AU"
+                                :selected="address?.country === 'AU'"
+                            >
+                                Australia
+                            </option>
+                            <option
+                                value="GB"
+                                :selected="address?.country === 'GB'"
+                            >
+                                United Kingdom
+                            </option>
                         </select>
                         <InputError :message="errors.country" />
                     </div>
@@ -163,7 +257,7 @@ defineProps<{
                     <button
                         type="submit"
                         :disabled="processing"
-                        class="rounded-lg px-6 py-3 text-sm font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-80 disabled:opacity-50"
+                        class="rounded-lg px-6 py-3 text-sm font-semibold tracking-widest text-white uppercase transition-opacity hover:opacity-80 disabled:opacity-50"
                         style="background-color: #1c1a17"
                     >
                         {{ processing ? 'Saving…' : 'Save address' }}

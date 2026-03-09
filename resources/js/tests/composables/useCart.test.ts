@@ -14,10 +14,11 @@ const baseItem: Omit<CartItem, 'quantity'> = {
 };
 
 beforeEach(() => {
-    localStorage.clear();
+    // localStorage.clear();
     // Reset the singleton reactive ref so tests are isolated
-    const { clearCart } = useCart();
+    const { clearCart, closeDrawer } = useCart();
     clearCart();
+    closeDrawer();
 });
 
 describe('useCart', () => {
@@ -105,7 +106,36 @@ describe('useCart', () => {
     it('subtotal accounts for multiple different items', () => {
         const { addItem, subtotal } = useCart();
         addItem({ ...baseItem, price: 10000, quantity: 1 });
-        addItem({ ...baseItem, productId: 2, name: 'Bowl', price: 5000, quantity: 3 });
+        addItem({
+            ...baseItem,
+            productId: 2,
+            name: 'Bowl',
+            price: 5000,
+            quantity: 3,
+        });
         expect(subtotal.value).toBe(25000);
+    });
+
+    it('sets lastAddedItem when adding an item', () => {
+        const { addItem, lastAddedItem } = useCart();
+        addItem(baseItem);
+        expect(lastAddedItem.value).not.toBeNull();
+        expect(lastAddedItem.value?.productId).toBe(baseItem.productId);
+    });
+
+    it('opens the drawer automatically when adding an item', () => {
+        const { addItem, isDrawerOpen } = useCart();
+        expect(isDrawerOpen.value).toBe(false);
+        addItem(baseItem);
+        expect(isDrawerOpen.value).toBe(true);
+    });
+
+    it('manually opens and closes the drawer', () => {
+        const { isDrawerOpen, openDrawer, closeDrawer } = useCart();
+        expect(isDrawerOpen.value).toBe(false);
+        openDrawer();
+        expect(isDrawerOpen.value).toBe(true);
+        closeDrawer();
+        expect(isDrawerOpen.value).toBe(false);
     });
 });

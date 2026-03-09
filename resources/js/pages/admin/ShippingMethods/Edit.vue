@@ -2,14 +2,17 @@
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
 import { ref } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
+import {
+    index,
+    update,
+} from '@/actions/App/Http/Controllers/Admin/ShippingMethodController';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { index, update } from '@/actions/App/Http/Controllers/Admin/ShippingMethodController';
 
 interface ShippingMethod {
     id: number;
@@ -39,7 +42,7 @@ const isFree = ref(props.shippingMethod.is_free);
     <Head :title="`Edit ${shippingMethod.name}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-col gap-6 p-4 max-w-2xl">
+        <div class="flex max-w-2xl flex-col gap-6 p-4">
             <!-- Header -->
             <div class="flex items-center gap-4">
                 <Link :href="index().url">
@@ -49,7 +52,9 @@ const isFree = ref(props.shippingMethod.is_free);
                 </Link>
                 <div>
                     <h1 class="text-2xl font-semibold">Edit Shipping Method</h1>
-                    <p class="text-sm text-muted-foreground">{{ shippingMethod.name }}</p>
+                    <p class="text-sm text-muted-foreground">
+                        {{ shippingMethod.name }}
+                    </p>
                 </div>
             </div>
 
@@ -61,7 +66,9 @@ const isFree = ref(props.shippingMethod.is_free);
             >
                 <!-- Name -->
                 <div class="grid gap-2">
-                    <Label for="name">Name <span class="text-destructive">*</span></Label>
+                    <Label for="name"
+                        >Name <span class="text-destructive">*</span></Label
+                    >
                     <Input
                         id="name"
                         name="name"
@@ -81,7 +88,7 @@ const isFree = ref(props.shippingMethod.is_free);
                         rows="2"
                         :value="shippingMethod.description ?? ''"
                         placeholder="e.g. Delivered in 3–5 business days."
-                        class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                        class="flex w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     />
                     <InputError :message="errors.description" />
                 </div>
@@ -95,12 +102,17 @@ const isFree = ref(props.shippingMethod.is_free);
                         :default-value="shippingMethod.is_free"
                         @update:checked="(v) => (isFree = !!v)"
                     />
-                    <Label for="is_free">Free shipping (no charge to customer)</Label>
+                    <Label for="is_free"
+                        >Free shipping (no charge to customer)</Label
+                    >
                 </div>
 
                 <!-- Price (hidden when free) -->
-                <div v-if="!isFree" class="grid gap-2 max-w-xs">
-                    <Label for="price">Price (cents) <span class="text-destructive">*</span></Label>
+                <div v-if="!isFree" class="grid max-w-xs gap-2">
+                    <Label for="price"
+                        >Price (cents)
+                        <span class="text-destructive">*</span></Label
+                    >
                     <Input
                         id="price"
                         name="price"
@@ -108,7 +120,9 @@ const isFree = ref(props.shippingMethod.is_free);
                         min="0"
                         :default-value="shippingMethod.price"
                     />
-                    <p class="text-xs text-muted-foreground">In cents — e.g. 20000 = ₱200.00</p>
+                    <p class="text-xs text-muted-foreground">
+                        In cents — e.g. 20000 = ₱200.00
+                    </p>
                     <InputError :message="errors.price" />
                 </div>
 
@@ -123,14 +137,23 @@ const isFree = ref(props.shippingMethod.is_free);
                             min="0"
                             :default-value="shippingMethod.sort_order"
                         />
-                        <p class="text-xs text-muted-foreground">Lower numbers appear first</p>
+                        <p class="text-xs text-muted-foreground">
+                            Lower numbers appear first
+                        </p>
                         <InputError :message="errors.sort_order" />
                     </div>
                     <div class="flex flex-col gap-2 pt-1">
                         <Label>Visibility</Label>
-                        <div class="flex items-center gap-2 mt-1">
-                            <Checkbox id="is_active" name="is_active" value="1" :default-value="shippingMethod.is_active" />
-                            <Label for="is_active">Active (shown to customers)</Label>
+                        <div class="mt-1 flex items-center gap-2">
+                            <Checkbox
+                                id="is_active"
+                                name="is_active"
+                                value="1"
+                                :default-value="shippingMethod.is_active"
+                            />
+                            <Label for="is_active"
+                                >Active (shown to customers)</Label
+                            >
                         </div>
                     </div>
                 </div>

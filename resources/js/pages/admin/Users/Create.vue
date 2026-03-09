@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import {
+    index,
+    create,
+    store,
+} from '@/actions/App/Http/Controllers/Admin/UserController';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { index, create, store } from '@/actions/App/Http/Controllers/Admin/UserController';
 
 defineProps<{
     roles: string[];
@@ -24,7 +28,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     <Head title="Add User" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-col gap-6 p-4 max-w-2xl">
+        <div class="flex max-w-2xl flex-col gap-6 p-4">
             <!-- Header -->
             <div class="flex items-center gap-4">
                 <Link :href="index().url">
@@ -34,7 +38,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                 </Link>
                 <div>
                     <h1 class="text-2xl font-semibold">Add User</h1>
-                    <p class="text-sm text-muted-foreground">Create a new staff member</p>
+                    <p class="text-sm text-muted-foreground">
+                        Create a new staff member
+                    </p>
                 </div>
             </div>
 
@@ -46,7 +52,9 @@ const breadcrumbs: BreadcrumbItem[] = [
             >
                 <!-- Name -->
                 <div class="grid gap-2">
-                    <Label for="name">Name <span class="text-destructive">*</span></Label>
+                    <Label for="name"
+                        >Name <span class="text-destructive">*</span></Label
+                    >
                     <Input
                         id="name"
                         name="name"
@@ -58,7 +66,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                 <!-- Email -->
                 <div class="grid gap-2">
-                    <Label for="email">Email <span class="text-destructive">*</span></Label>
+                    <Label for="email"
+                        >Email <span class="text-destructive">*</span></Label
+                    >
                     <Input
                         id="email"
                         name="email"
@@ -72,7 +82,10 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <!-- Password + Confirm side by side -->
                 <div class="grid grid-cols-2 gap-4">
                     <div class="grid gap-2">
-                        <Label for="password">Password <span class="text-destructive">*</span></Label>
+                        <Label for="password"
+                            >Password
+                            <span class="text-destructive">*</span></Label
+                        >
                         <Input
                             id="password"
                             name="password"
@@ -83,7 +96,10 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <InputError :message="errors.password" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="password_confirmation">Confirm Password <span class="text-destructive">*</span></Label>
+                        <Label for="password_confirmation"
+                            >Confirm Password
+                            <span class="text-destructive">*</span></Label
+                        >
                         <Input
                             id="password_confirmation"
                             name="password_confirmation"
@@ -96,17 +112,25 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                 <!-- Role -->
                 <div class="grid gap-2">
-                    <Label for="role">Role <span class="text-destructive">*</span></Label>
+                    <Label for="role"
+                        >Role <span class="text-destructive">*</span></Label
+                    >
                     <select
                         id="role"
                         name="role"
-                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 max-w-xs"
+                        class="flex h-10 w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                         required
                     >
-                        <option value="" disabled selected>Select a role</option>
-                        <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
+                        <option value="" disabled selected>
+                            Select a role
+                        </option>
+                        <option v-for="role in roles" :key="role" :value="role">
+                            {{ role }}
+                        </option>
                     </select>
-                    <p class="text-xs text-muted-foreground">Determines what the user can access in the dashboard</p>
+                    <p class="text-xs text-muted-foreground">
+                        Determines what the user can access in the dashboard
+                    </p>
                     <InputError :message="errors.role" />
                 </div>
 

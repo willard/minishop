@@ -1,11 +1,19 @@
-import LoginPage from '@/pages/storefront/auth/Login.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import LoginPage from '@/pages/storefront/auth/Login.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a href="#"><slot /></a>', props: ['href'] },
-    Form: { name: 'Form', template: '<form><slot :errors="{}" :processing="false" /></form>', props: ['action', 'method', 'resetOnSuccess'] },
+    Link: {
+        name: 'Link',
+        template: '<a href="#"><slot /></a>',
+        props: ['href'],
+    },
+    Form: {
+        name: 'Form',
+        template: '<form><slot :errors="{}" :processing="false" /></form>',
+        props: ['action', 'method', 'resetOnSuccess'],
+    },
 }));
 
 vi.mock('@/components/InputError.vue', () => ({
@@ -51,7 +59,9 @@ describe('storefront/auth/Login', () => {
     });
 
     it('hides the forgot password link when canResetPassword is false', () => {
-        const noReset = mount(LoginPage, { props: { ...baseProps, canResetPassword: false } });
+        const noReset = mount(LoginPage, {
+            props: { ...baseProps, canResetPassword: false },
+        });
         expect(noReset.text()).not.toContain('Forgot password?');
     });
 
@@ -60,12 +70,16 @@ describe('storefront/auth/Login', () => {
     });
 
     it('hides the register link when canRegister is false', () => {
-        const noRegister = mount(LoginPage, { props: { ...baseProps, canRegister: false } });
+        const noRegister = mount(LoginPage, {
+            props: { ...baseProps, canRegister: false },
+        });
         expect(noRegister.text()).not.toContain('Create one');
     });
 
     it('shows the status flash message when status is provided', () => {
-        const withStatus = mount(LoginPage, { props: { ...baseProps, status: 'Password reset successfully.' } });
+        const withStatus = mount(LoginPage, {
+            props: { ...baseProps, status: 'Password reset successfully.' },
+        });
         expect(withStatus.text()).toContain('Password reset successfully.');
     });
 

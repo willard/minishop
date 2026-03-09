@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import {
+    index,
+    show,
+} from '@/actions/App/Http/Controllers/Admin/ProductController';
+import { update } from '@/actions/App/Http/Controllers/Admin/ProductVariantController';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { index, show } from '@/actions/App/Http/Controllers/Admin/ProductController';
-import { update } from '@/actions/App/Http/Controllers/Admin/ProductVariantController';
 
 interface OptionValue {
     id: number;
@@ -59,7 +62,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 function initialOptionValueIds(): (number | null)[] {
     return props.optionTypes.map((optionType) => {
-        const existing = props.variant.option_values.find((ov) => ov.option.id === optionType.id);
+        const existing = props.variant.option_values.find(
+            (ov) => ov.option.id === optionType.id,
+        );
         return existing?.id ?? optionType.values[0]?.id ?? null;
     });
 }
@@ -81,7 +86,7 @@ function submit(): void {
     <Head title="Edit Variant" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-col gap-6 p-4 max-w-2xl">
+        <div class="flex max-w-2xl flex-col gap-6 p-4">
             <!-- Header -->
             <div class="flex items-center gap-4">
                 <Link :href="show(product).url">
@@ -91,7 +96,9 @@ function submit(): void {
                 </Link>
                 <div>
                     <h1 class="text-2xl font-semibold">Edit Variant</h1>
-                    <p class="text-sm text-muted-foreground">{{ product.name }}</p>
+                    <p class="text-sm text-muted-foreground">
+                        {{ product.name }}
+                    </p>
                 </div>
             </div>
 
@@ -105,12 +112,13 @@ function submit(): void {
                         class="grid gap-2"
                     >
                         <Label :for="`option-${optionType.id}`">
-                            {{ optionType.name }} <span class="text-destructive">*</span>
+                            {{ optionType.name }}
+                            <span class="text-destructive">*</span>
                         </Label>
                         <select
                             :id="`option-${optionType.id}`"
                             v-model="form.option_value_ids[idx]"
-                            class="h-9 w-full max-w-xs rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                            class="h-9 w-full max-w-xs rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                         >
                             <option
                                 v-for="val in optionType.values"
@@ -120,16 +128,28 @@ function submit(): void {
                                 {{ val.value }}
                             </option>
                         </select>
-                        <InputError :message="(form.errors as Record<string, string>)[`option_value_ids.${idx}`]" />
+                        <InputError
+                            :message="
+                                (form.errors as Record<string, string>)[
+                                    `option_value_ids.${idx}`
+                                ]
+                            "
+                        />
                     </div>
-                    <InputError :message="form.errors.option_value_ids as string" />
+                    <InputError
+                        :message="form.errors.option_value_ids as string"
+                    />
                 </div>
 
                 <!-- SKU & Price -->
                 <div class="grid grid-cols-2 gap-4">
                     <div class="grid gap-2">
                         <Label for="sku">SKU</Label>
-                        <Input id="sku" v-model="form.sku" placeholder="e.g. TSH-M-RED" />
+                        <Input
+                            id="sku"
+                            v-model="form.sku"
+                            placeholder="e.g. TSH-M-RED"
+                        />
                         <InputError :message="form.errors.sku" />
                     </div>
                     <div class="grid gap-2">
@@ -141,14 +161,19 @@ function submit(): void {
                             min="0"
                             placeholder="Leave empty to inherit"
                         />
-                        <p class="text-xs text-muted-foreground">Leave empty to use the product price</p>
+                        <p class="text-xs text-muted-foreground">
+                            Leave empty to use the product price
+                        </p>
                         <InputError :message="form.errors.price" />
                     </div>
                 </div>
 
                 <!-- Stock -->
                 <div class="grid gap-2">
-                    <Label for="stock_quantity">Stock Quantity <span class="text-destructive">*</span></Label>
+                    <Label for="stock_quantity"
+                        >Stock Quantity
+                        <span class="text-destructive">*</span></Label
+                    >
                     <Input
                         id="stock_quantity"
                         v-model.number="form.stock_quantity"

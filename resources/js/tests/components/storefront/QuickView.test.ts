@@ -10,12 +10,13 @@ vi.mock('@/composables/useCart', () => ({
 }));
 
 // Mock Inertia
-vi.mock('@inertiajs/vue3', () => ({
-    Link: { template: '<a><slot /></a>' },
-    usePage: vi.fn(() => ({
-        props: { storeSettings: { currency: 'PHP' } },
-    })),
-}));
+vi.mock('@inertiajs/vue3', async (importOriginal) => {
+    const actual = await importOriginal<any>();
+    return {
+        ...actual,
+        Link: { template: '<a><slot /></a>' },
+    };
+});
 
 // Mock Actions
 vi.mock('@/actions/App/Http/Controllers/Storefront/ProductController', () => ({
@@ -62,6 +63,14 @@ const mockProduct = {
     ],
 };
 
+const globalStubs = {
+    Dialog: { template: '<div><slot /></div>' },
+    DialogContent: { template: '<div><slot /></div>' },
+    DialogOverlay: { template: '<div></div>' },
+    DialogTitle: { template: '<div><slot /></div>' },
+    DialogDescription: { template: '<div><slot /></div>' },
+};
+
 describe('QuickView', () => {
     let mockUseCart: any;
 
@@ -71,9 +80,6 @@ describe('QuickView', () => {
             lastAddedItem: ref(null),
         };
         (useCart as any).mockReturnValue(mockUseCart);
-
-        // Mock Teleport/Dialog behavior if needed,
-        // but since we are testing the component logic:
     });
 
     it('renders product details when open', () => {
@@ -83,11 +89,7 @@ describe('QuickView', () => {
                 isOpen: true,
             },
             global: {
-                stubs: {
-                    Dialog: { template: '<div><slot /></div>' },
-                    DialogContent: { template: '<div><slot /></div>' },
-                    DialogOverlay: { template: '<div></div>' },
-                },
+                stubs: globalStubs,
             },
         });
 
@@ -103,11 +105,7 @@ describe('QuickView', () => {
                 isOpen: true,
             },
             global: {
-                stubs: {
-                    Dialog: { template: '<div><slot /></div>' },
-                    DialogContent: { template: '<div><slot /></div>' },
-                    DialogOverlay: { template: '<div></div>' },
-                },
+                stubs: globalStubs,
             },
         });
 
@@ -129,11 +127,7 @@ describe('QuickView', () => {
                 isOpen: true,
             },
             global: {
-                stubs: {
-                    Dialog: { template: '<div><slot /></div>' },
-                    DialogContent: { template: '<div><slot /></div>' },
-                    DialogOverlay: { template: '<div></div>' },
-                },
+                stubs: globalStubs,
             },
         });
 
@@ -158,11 +152,7 @@ describe('QuickView', () => {
                 isOpen: true,
             },
             global: {
-                stubs: {
-                    Dialog: { template: '<div><slot /></div>' },
-                    DialogContent: { template: '<div><slot /></div>' },
-                    DialogOverlay: { template: '<div></div>' },
-                },
+                stubs: globalStubs,
             },
         });
 

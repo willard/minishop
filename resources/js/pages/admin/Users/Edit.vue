@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { Form, Head, Link, usePage } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import {
+    index,
+    update,
+} from '@/actions/App/Http/Controllers/Admin/UserController';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { index, update } from '@/actions/App/Http/Controllers/Admin/UserController';
 
 interface StaffUser {
     id: number;
@@ -36,7 +39,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     <Head :title="`Edit ${user.name}`" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-col gap-6 p-4 max-w-2xl">
+        <div class="flex max-w-2xl flex-col gap-6 p-4">
             <!-- Header -->
             <div class="flex items-center gap-4">
                 <Link :href="index().url">
@@ -58,7 +61,9 @@ const breadcrumbs: BreadcrumbItem[] = [
             >
                 <!-- Name -->
                 <div class="grid gap-2">
-                    <Label for="name">Name <span class="text-destructive">*</span></Label>
+                    <Label for="name"
+                        >Name <span class="text-destructive">*</span></Label
+                    >
                     <Input
                         id="name"
                         name="name"
@@ -71,7 +76,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                 <!-- Email -->
                 <div class="grid gap-2">
-                    <Label for="email">Email <span class="text-destructive">*</span></Label>
+                    <Label for="email"
+                        >Email <span class="text-destructive">*</span></Label
+                    >
                     <Input
                         id="email"
                         name="email"
@@ -96,7 +103,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <InputError :message="errors.password" />
                     </div>
                     <div class="grid gap-2">
-                        <Label for="password_confirmation">Confirm Password</Label>
+                        <Label for="password_confirmation"
+                            >Confirm Password</Label
+                        >
                         <Input
                             id="password_confirmation"
                             name="password_confirmation"
@@ -108,19 +117,30 @@ const breadcrumbs: BreadcrumbItem[] = [
 
                 <!-- Role -->
                 <div class="grid gap-2">
-                    <Label for="role">Role <span class="text-destructive">*</span></Label>
+                    <Label for="role"
+                        >Role <span class="text-destructive">*</span></Label
+                    >
                     <select
                         id="role"
                         name="role"
                         :value="currentRole"
                         :disabled="isEditingSelf"
-                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 max-w-xs disabled:cursor-not-allowed disabled:opacity-50"
+                        class="flex h-10 w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                         required
                     >
-                        <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
+                        <option v-for="role in roles" :key="role" :value="role">
+                            {{ role }}
+                        </option>
                     </select>
-                    <p v-if="isEditingSelf" class="text-xs text-muted-foreground">You cannot change your own role</p>
-                    <p v-else class="text-xs text-muted-foreground">Determines what the user can access in the dashboard</p>
+                    <p
+                        v-if="isEditingSelf"
+                        class="text-xs text-muted-foreground"
+                    >
+                        You cannot change your own role
+                    </p>
+                    <p v-else class="text-xs text-muted-foreground">
+                        Determines what the user can access in the dashboard
+                    </p>
                     <InputError :message="errors.role" />
                 </div>
 

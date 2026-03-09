@@ -1,14 +1,26 @@
-import OrdersShow from '@/pages/storefront/Account/Orders/Show.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import OrdersShow from '@/pages/storefront/Account/Orders/Show.vue';
 
-vi.mock('@inertiajs/vue3', () => ({
-    Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a href="#"><slot /></a>', props: ['href'] },
-}));
+vi.mock('@inertiajs/vue3', async (importOriginal) => {
+    const actual = await importOriginal<any>();
+    return {
+        ...actual,
+        Head: { name: 'Head', template: '<div />', props: ['title'] },
+        Link: {
+            name: 'Link',
+            template: '<a href="#"><slot /></a>',
+            props: ['href'],
+        },
+    };
+});
 
 vi.mock('@/layouts/AccountLayout.vue', () => ({
-    default: { name: 'AccountLayout', template: '<div><slot /></div>', props: ['title'] },
+    default: {
+        name: 'AccountLayout',
+        template: '<div><slot /></div>',
+        props: ['title'],
+    },
 }));
 
 vi.mock('@/routes/account/orders', () => ({
@@ -104,9 +116,20 @@ describe('Account/Orders/Show', () => {
     it('shows "Product removed" for items with a null product', () => {
         const orderWithRemovedProduct = {
             ...baseOrder,
-            items: [{ id: 20, quantity: 1, unit_price: 1000, subtotal: 1000, product: null, variant: null }],
+            items: [
+                {
+                    id: 20,
+                    quantity: 1,
+                    unit_price: 1000,
+                    subtotal: 1000,
+                    product: null,
+                    variant: null,
+                },
+            ],
         };
-        const w = mount(OrdersShow, { props: { order: orderWithRemovedProduct } });
+        const w = mount(OrdersShow, {
+            props: { order: orderWithRemovedProduct },
+        });
         expect(w.text()).toContain('Product removed');
     });
 
@@ -123,7 +146,9 @@ describe('Account/Orders/Show', () => {
     });
 
     it('omits the gateway row when payment_gateway is null', () => {
-        const w = mount(OrdersShow, { props: { order: { ...baseOrder, payment_gateway: null } } });
+        const w = mount(OrdersShow, {
+            props: { order: { ...baseOrder, payment_gateway: null } },
+        });
         expect(w.text()).not.toContain('Via');
     });
 });

@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { AlertCircle, Loader2, Lock } from 'lucide-vue-next';
 import { loadStripe } from '@stripe/stripe-js';
 import type { Stripe, StripeCardElement } from '@stripe/stripe-js';
+import { AlertCircle, Loader2, Lock } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
-import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
-import { formatPrice } from '@/lib/utils';
-import { stripeIntent, paymongoCheckout } from '@/actions/App/Http/Controllers/Storefront/PaymentController';
 import { confirmation } from '@/actions/App/Http/Controllers/Storefront/CheckoutController';
+import {
+    stripeIntent,
+    paymongoCheckout,
+} from '@/actions/App/Http/Controllers/Storefront/PaymentController';
+import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
+import { usePrice } from '@/composables/usePrice';
 
 interface OrderItem {
     id: number;
@@ -43,7 +46,16 @@ const props = defineProps<{
     order: Order;
 }>();
 
-const page = usePage<{ storeSettings: { stripePublicKey: string | null; activeGateway: string; currency: string; currencyLocale: string } }>();
+const { formatPrice } = usePrice();
+
+const page = usePage<{
+    storeSettings: {
+        stripePublicKey: string | null;
+        activeGateway: string;
+        currency: string;
+        currencyLocale: string;
+    };
+}>();
 
 const stripe = ref<Stripe | null>(null);
 const cardElement = ref<StripeCardElement | null>(null);
@@ -57,7 +69,8 @@ const gateway = props.order.payment_gateway;
 async function initStripe(): Promise<void> {
     const publicKey = page.props.storeSettings?.stripePublicKey;
     if (!publicKey) {
-        paymentError.value = 'Stripe is not configured. Please contact the store.';
+        paymentError.value =
+            'Stripe is not configured. Please contact the store.';
         isLoading.value = false;
         return;
     }
@@ -67,8 +80,13 @@ async function initStripe(): Promise<void> {
         const response = await fetch(stripeIntent(props.order).url, {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '',
-                'Accept': 'application/json',
+                'X-CSRF-TOKEN':
+                    (
+                        document.querySelector(
+                            'meta[name="csrf-token"]',
+                        ) as HTMLMetaElement
+                    )?.content ?? '',
+                Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
         });
@@ -102,7 +120,8 @@ async function initStripe(): Promise<void> {
         card.mount('#card-element');
         cardElement.value = card;
     } catch (e: unknown) {
-        paymentError.value = e instanceof Error ? e.message : 'Failed to initialise payment.';
+        paymentError.value =
+            e instanceof Error ? e.message : 'Failed to initialise payment.';
     } finally {
         isLoading.value = false;
     }
@@ -113,8 +132,13 @@ async function initPayMongo(): Promise<void> {
         const response = await fetch(paymongoCheckout(props.order).url, {
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '',
-                'Accept': 'application/json',
+                'X-CSRF-TOKEN':
+                    (
+                        document.querySelector(
+                            'meta[name="csrf-token"]',
+                        ) as HTMLMetaElement
+                    )?.content ?? '',
+                Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
         });
@@ -126,7 +150,10 @@ async function initPayMongo(): Promise<void> {
         const data = await response.json();
         window.location.href = data.checkoutUrl;
     } catch (e: unknown) {
-        paymentError.value = e instanceof Error ? e.message : 'Failed to create checkout session.';
+        paymentError.value =
+            e instanceof Error
+                ? e.message
+                : 'Failed to create checkout session.';
         isLoading.value = false;
     }
 }
@@ -148,17 +175,22 @@ async function submitStripePayment(): Promise<void> {
     isProcessing.value = true;
     paymentError.value = '';
 
-    const { paymentIntent, error } = await stripe.value.confirmCardPayment(clientSecret.value, {
-        payment_method: { card: cardElement.value },
-    });
+    const { paymentIntent, error } = await stripe.value.confirmCardPayment(
+        clientSecret.value,
+        {
+            payment_method: { card: cardElement.value },
+        },
+    );
 
     if (error) {
-        paymentError.value = error.message ?? 'Payment failed. Please try again.';
+        paymentError.value =
+            error.message ?? 'Payment failed. Please try again.';
         isProcessing.value = false;
     } else if (paymentIntent?.status === 'succeeded') {
         router.get(confirmation(props.order).url);
     } else {
-        paymentError.value = 'Unexpected payment status. Please contact support.';
+        paymentError.value =
+            'Unexpected payment status. Please contact support.';
         isProcessing.value = false;
     }
 }
@@ -180,8 +212,14 @@ async function submitStripePayment(): Promise<void> {
                 <!-- Left: Payment form -->
                 <div>
                     <!-- Order ref -->
-                    <p class="mb-6 text-sm" style="color: rgba(28, 26, 23, 0.55)">
-                        Order <strong style="color: #1c1a17">{{ order.order_number }}</strong>
+                    <p
+                        class="mb-6 text-sm"
+                        style="color: rgba(28, 26, 23, 0.55)"
+                    >
+                        Order
+                        <strong style="color: #1c1a17">{{
+                            order.order_number
+                        }}</strong>
                         &nbsp;·&nbsp; {{ order.customer.user.email }}
                     </p>
 
@@ -189,7 +227,10 @@ async function submitStripePayment(): Promise<void> {
                     <div
                         v-if="paymentError"
                         class="mb-5 flex items-start gap-3 rounded-xl p-4 text-sm"
-                        style="background-color: rgba(192, 92, 58, 0.1); color: #c05c3a"
+                        style="
+                            background-color: rgba(192, 92, 58, 0.1);
+                            color: #c05c3a;
+                        "
                     >
                         <AlertCircle class="mt-0.5 size-4 shrink-0" />
                         {{ paymentError }}
@@ -201,13 +242,26 @@ async function submitStripePayment(): Promise<void> {
                             class="rounded-2xl border p-6"
                             style="border-color: rgba(28, 26, 23, 0.12)"
                         >
-                            <h2 class="mb-5 text-sm font-semibold uppercase tracking-wider" style="color: #1c1a17">
+                            <h2
+                                class="mb-5 text-sm font-semibold tracking-wider uppercase"
+                                style="color: #1c1a17"
+                            >
                                 Card Details
                             </h2>
 
                             <!-- Loading skeleton -->
                             <div v-if="isLoading" class="space-y-3">
-                                <div class="h-10 animate-pulse rounded-lg" style="background-color: rgba(28, 26, 23, 0.08)" />
+                                <div
+                                    class="h-10 animate-pulse rounded-lg"
+                                    style="
+                                        background-color: rgba(
+                                            28,
+                                            26,
+                                            23,
+                                            0.08
+                                        );
+                                    "
+                                />
                             </div>
 
                             <!-- Stripe card element mount point -->
@@ -215,25 +269,40 @@ async function submitStripePayment(): Promise<void> {
                                 v-show="!isLoading"
                                 id="card-element"
                                 class="rounded-xl border px-4 py-3"
-                                style="border-color: rgba(28, 26, 23, 0.2); background-color: #f9f6f0; min-height: 44px"
+                                style="
+                                    border-color: rgba(28, 26, 23, 0.2);
+                                    background-color: #f9f6f0;
+                                    min-height: 44px;
+                                "
                             />
 
                             <button
                                 v-if="!isLoading"
-                                class="mt-6 flex w-full items-center justify-center gap-2 rounded-full py-4 text-sm font-semibold uppercase tracking-widest text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
+                                class="mt-6 flex w-full items-center justify-center gap-2 rounded-full py-4 text-sm font-semibold tracking-widest text-white uppercase transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
                                 style="background-color: #1c1a17"
                                 :disabled="isProcessing"
                                 @click="submitStripePayment"
                             >
-                                <Loader2 v-if="isProcessing" class="size-4 animate-spin" />
+                                <Loader2
+                                    v-if="isProcessing"
+                                    class="size-4 animate-spin"
+                                />
                                 <Lock v-else class="size-4" />
-                                {{ isProcessing ? 'Processing…' : `Pay ${formatPrice(order.total_amount)}` }}
+                                {{
+                                    isProcessing
+                                        ? 'Processing…'
+                                        : `Pay ${formatPrice(order.total_amount)}`
+                                }}
                             </button>
                         </div>
 
-                        <p class="mt-3 flex items-center justify-center gap-1.5 text-xs" style="color: rgba(28, 26, 23, 0.4)">
+                        <p
+                            class="mt-3 flex items-center justify-center gap-1.5 text-xs"
+                            style="color: rgba(28, 26, 23, 0.4)"
+                        >
                             <Lock class="size-3" />
-                            Secured by Stripe · Your card details are never stored
+                            Secured by Stripe · Your card details are never
+                            stored
                         </p>
                     </template>
 
@@ -248,11 +317,22 @@ async function submitStripePayment(): Promise<void> {
                                 class="mx-auto mb-4 size-8 animate-spin"
                                 style="color: rgba(28, 26, 23, 0.4)"
                             />
-                            <p class="text-sm font-medium" style="color: #1c1a17">
-                                {{ isLoading ? 'Redirecting to PayMongo…' : 'Ready to pay' }}
+                            <p
+                                class="text-sm font-medium"
+                                style="color: #1c1a17"
+                            >
+                                {{
+                                    isLoading
+                                        ? 'Redirecting to PayMongo…'
+                                        : 'Ready to pay'
+                                }}
                             </p>
-                            <p class="mt-1 text-xs" style="color: rgba(28, 26, 23, 0.45)">
-                                You will be redirected to a secure checkout page.
+                            <p
+                                class="mt-1 text-xs"
+                                style="color: rgba(28, 26, 23, 0.45)"
+                            >
+                                You will be redirected to a secure checkout
+                                page.
                             </p>
                         </div>
                     </template>
@@ -262,9 +342,15 @@ async function submitStripePayment(): Promise<void> {
                 <div>
                     <div
                         class="rounded-2xl border p-6"
-                        style="border-color: rgba(28, 26, 23, 0.12); background-color: #f4f0e8"
+                        style="
+                            border-color: rgba(28, 26, 23, 0.12);
+                            background-color: #f4f0e8;
+                        "
                     >
-                        <h2 class="mb-5 text-sm font-semibold uppercase tracking-wider" style="color: #1c1a17">
+                        <h2
+                            class="mb-5 text-sm font-semibold tracking-wider uppercase"
+                            style="color: #1c1a17"
+                        >
                             Order Summary
                         </h2>
 
@@ -276,23 +362,40 @@ async function submitStripePayment(): Promise<void> {
                                 class="flex items-start justify-between gap-3 text-sm"
                             >
                                 <div class="min-w-0">
-                                    <p class="font-medium leading-snug" style="color: #1c1a17">{{ item.product_name }}</p>
-                                    <p class="mt-0.5 text-xs" style="color: rgba(28, 26, 23, 0.5)">
+                                    <p
+                                        class="leading-snug font-medium"
+                                        style="color: #1c1a17"
+                                    >
+                                        {{ item.product_name }}
+                                    </p>
+                                    <p
+                                        class="mt-0.5 text-xs"
+                                        style="color: rgba(28, 26, 23, 0.5)"
+                                    >
                                         × {{ item.quantity }}
                                     </p>
                                 </div>
-                                <span class="shrink-0 font-medium" style="color: #1c1a17">
+                                <span
+                                    class="shrink-0 font-medium"
+                                    style="color: #1c1a17"
+                                >
                                     {{ formatPrice(item.subtotal) }}
                                 </span>
                             </div>
                         </div>
 
                         <!-- Divider -->
-                        <div class="mb-4 h-px" style="background-color: rgba(28, 26, 23, 0.1)" />
+                        <div
+                            class="mb-4 h-px"
+                            style="background-color: rgba(28, 26, 23, 0.1)"
+                        />
 
                         <!-- Totals -->
                         <div class="space-y-2.5 text-sm">
-                            <div class="flex justify-between" style="color: rgba(28, 26, 23, 0.65)">
+                            <div
+                                class="flex justify-between"
+                                style="color: rgba(28, 26, 23, 0.65)"
+                            >
                                 <span>Subtotal</span>
                                 <span>{{ formatPrice(order.subtotal) }}</span>
                             </div>
@@ -302,23 +405,45 @@ async function submitStripePayment(): Promise<void> {
                                 style="color: #4a7c59"
                             >
                                 <span>Discount</span>
-                                <span>−{{ formatPrice(order.discount_amount) }}</span>
+                                <span
+                                    >−{{
+                                        formatPrice(order.discount_amount)
+                                    }}</span
+                                >
                             </div>
-                            <div class="flex justify-between" style="color: rgba(28, 26, 23, 0.65)">
+                            <div
+                                class="flex justify-between"
+                                style="color: rgba(28, 26, 23, 0.65)"
+                            >
                                 <span>Shipping</span>
                                 <span>
-                                    <template v-if="order.shipping_amount === 0">Free</template>
-                                    <template v-else>{{ formatPrice(order.shipping_amount) }}</template>
+                                    <template v-if="order.shipping_amount === 0"
+                                        >Free</template
+                                    >
+                                    <template v-else>{{
+                                        formatPrice(order.shipping_amount)
+                                    }}</template>
                                 </span>
                             </div>
-                            <div class="flex justify-between" style="color: rgba(28, 26, 23, 0.65)">
+                            <div
+                                class="flex justify-between"
+                                style="color: rgba(28, 26, 23, 0.65)"
+                            >
                                 <span>Tax</span>
                                 <span>{{ formatPrice(order.tax_amount) }}</span>
                             </div>
-                            <div class="h-px" style="background-color: rgba(28, 26, 23, 0.1)" />
-                            <div class="flex justify-between text-base font-semibold" style="color: #1c1a17">
+                            <div
+                                class="h-px"
+                                style="background-color: rgba(28, 26, 23, 0.1)"
+                            />
+                            <div
+                                class="flex justify-between text-base font-semibold"
+                                style="color: #1c1a17"
+                            >
                                 <span>Total</span>
-                                <span>{{ formatPrice(order.total_amount) }}</span>
+                                <span>{{
+                                    formatPrice(order.total_amount)
+                                }}</span>
                             </div>
                         </div>
 
@@ -326,9 +451,14 @@ async function submitStripePayment(): Promise<void> {
                         <div
                             v-if="order.shippingMethod"
                             class="mt-5 rounded-xl px-4 py-3 text-xs"
-                            style="background-color: rgba(28, 26, 23, 0.05); color: rgba(28, 26, 23, 0.6)"
+                            style="
+                                background-color: rgba(28, 26, 23, 0.05);
+                                color: rgba(28, 26, 23, 0.6);
+                            "
                         >
-                            <span class="font-medium" style="color: #1c1a17">Shipping:</span>
+                            <span class="font-medium" style="color: #1c1a17"
+                                >Shipping:</span
+                            >
                             {{ order.shippingMethod.name }}
                         </div>
                     </div>

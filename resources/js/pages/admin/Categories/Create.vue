@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import {
+    index,
+    create,
+    store,
+} from '@/actions/App/Http/Controllers/Admin/CategoryController';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { index, create, store } from '@/actions/App/Http/Controllers/Admin/CategoryController';
 
 interface ParentCategory {
     id: number;
@@ -30,7 +34,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     <Head title="Add Category" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-col gap-6 p-4 max-w-2xl">
+        <div class="flex max-w-2xl flex-col gap-6 p-4">
             <!-- Header -->
             <div class="flex items-center gap-4">
                 <Link :href="index().url">
@@ -40,7 +44,9 @@ const breadcrumbs: BreadcrumbItem[] = [
                 </Link>
                 <div>
                     <h1 class="text-2xl font-semibold">Add Category</h1>
-                    <p class="text-sm text-muted-foreground">Create a new product category</p>
+                    <p class="text-sm text-muted-foreground">
+                        Create a new product category
+                    </p>
                 </div>
             </div>
 
@@ -52,8 +58,15 @@ const breadcrumbs: BreadcrumbItem[] = [
             >
                 <!-- Name -->
                 <div class="grid gap-2">
-                    <Label for="name">Name <span class="text-destructive">*</span></Label>
-                    <Input id="name" name="name" placeholder="Category name" required />
+                    <Label for="name"
+                        >Name <span class="text-destructive">*</span></Label
+                    >
+                    <Input
+                        id="name"
+                        name="name"
+                        placeholder="Category name"
+                        required
+                    />
                     <InputError :message="errors.name" />
                 </div>
 
@@ -65,7 +78,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                         name="description"
                         rows="3"
                         placeholder="Category description"
-                        class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                        class="flex w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     />
                     <InputError :message="errors.description" />
                 </div>
@@ -76,10 +89,14 @@ const breadcrumbs: BreadcrumbItem[] = [
                     <select
                         id="parent_id"
                         name="parent_id"
-                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
                         <option value="">None (top-level category)</option>
-                        <option v-for="parent in parentCategories" :key="parent.id" :value="parent.id">
+                        <option
+                            v-for="parent in parentCategories"
+                            :key="parent.id"
+                            :value="parent.id"
+                        >
                             {{ parent.name }}
                         </option>
                     </select>
@@ -89,14 +106,28 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <!-- Sort Order -->
                 <div class="grid gap-2">
                     <Label for="sort_order">Sort Order</Label>
-                    <Input id="sort_order" name="sort_order" type="number" min="0" default-value="0" placeholder="0" />
-                    <p class="text-xs text-muted-foreground">Lower numbers appear first</p>
+                    <Input
+                        id="sort_order"
+                        name="sort_order"
+                        type="number"
+                        min="0"
+                        default-value="0"
+                        placeholder="0"
+                    />
+                    <p class="text-xs text-muted-foreground">
+                        Lower numbers appear first
+                    </p>
                     <InputError :message="errors.sort_order" />
                 </div>
 
                 <!-- Active Status -->
                 <div class="flex items-center gap-2">
-                    <Checkbox id="is_active" name="is_active" value="1" :default-value="true" />
+                    <Checkbox
+                        id="is_active"
+                        name="is_active"
+                        value="1"
+                        :default-value="true"
+                    />
                     <Label for="is_active">Active</Label>
                 </div>
 
