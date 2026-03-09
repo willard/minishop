@@ -109,7 +109,7 @@ function handleAddToCart(): void {
         slug: props.product.slug,
         sku: selectedVariant.value?.sku ?? props.product.sku,
         price: effectivePrice.value,
-        image: props.product.images?.[0]?.path ?? null,
+        image: props.product.images?.[0]?.url ?? null,
         variantLabel: variantLabel.value,
     });
 }
@@ -158,7 +158,7 @@ function handleAddToCart(): void {
                     >
                         <img
                             v-if="product.images?.[activeImageIndex]"
-                            :src="product.images[activeImageIndex].path"
+                            :src="product.images[activeImageIndex].url"
                             :alt="
                                 product.images[activeImageIndex].alt_text ??
                                 product.name
@@ -232,7 +232,7 @@ function handleAddToCart(): void {
                             @click="activeImageIndex = i"
                         >
                             <img
-                                :src="image.path"
+                                :src="image.url"
                                 :alt="image.alt_text ?? product.name"
                                 class="h-full w-full object-cover"
                             />
