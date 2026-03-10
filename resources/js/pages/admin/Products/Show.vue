@@ -123,7 +123,7 @@ function confirmDeleteVariant(variant: ProductVariant): void {
 // Per-variant image upload: track a form and file input ref per variant id
 const variantImageForms = ref<Record<number, ReturnType<typeof useForm>>>({});
 const variantFileInputs = ref<Record<number, HTMLInputElement | null>>({});
-const expandedVariants = ref<Set<number>>(new Set());
+const expandedVariants = ref<number[]>([]);
 
 function getVariantImageForm(variantId: number): ReturnType<typeof useForm> {
     if (!variantImageForms.value[variantId]) {
@@ -137,10 +137,10 @@ function getVariantImageForm(variantId: number): ReturnType<typeof useForm> {
 }
 
 function toggleVariantImages(variantId: number): void {
-    if (expandedVariants.value.has(variantId)) {
-        expandedVariants.value.delete(variantId);
+    if (expandedVariants.value.includes(variantId)) {
+        expandedVariants.value = expandedVariants.value.filter((id) => id !== variantId);
     } else {
-        expandedVariants.value.add(variantId);
+        expandedVariants.value = [...expandedVariants.value, variantId];
     }
 }
 
@@ -677,7 +677,7 @@ function moveImage(fromIndex: number, toIndex: number): void {
                                     size="sm"
                                     class="h-7 gap-1 px-2 text-xs"
                                     :class="
-                                        expandedVariants.has(variant.id)
+                                        expandedVariants.includes(variant.id)
                                             ? 'text-foreground'
                                             : 'text-muted-foreground'
                                     "
@@ -693,7 +693,7 @@ function moveImage(fromIndex: number, toIndex: number): void {
                                     <ChevronDown
                                         class="size-3 transition-transform"
                                         :class="
-                                            expandedVariants.has(variant.id)
+                                            expandedVariants.includes(variant.id)
                                                 ? 'rotate-180'
                                                 : ''
                                         "
@@ -725,7 +725,7 @@ function moveImage(fromIndex: number, toIndex: number): void {
 
                         <!-- Expandable image section -->
                         <div
-                            v-if="expandedVariants.has(variant.id)"
+                            v-if="expandedVariants.includes(variant.id)"
                             class="border-t border-dashed border-sidebar-border bg-muted/30 px-4 py-4"
                         >
                             <!-- Existing variant images -->

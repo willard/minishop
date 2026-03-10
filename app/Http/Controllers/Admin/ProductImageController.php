@@ -23,7 +23,7 @@ class ProductImageController extends Controller
 
         $maxSortOrder = ProductImage::query()
             ->where('product_id', $product->id)
-            ->where('variant_id', $variantId)
+            ->when($variantId === null, fn ($q) => $q->whereNull('variant_id'), fn ($q) => $q->where('variant_id', $variantId))
             ->max('sort_order') ?? -1;
 
         foreach ($files as $file) {
