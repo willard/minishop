@@ -347,6 +347,11 @@ function submit(): void {
                                         class="flex flex-col gap-4"
                                         v-slot="{ errors, processing }"
                                     >
+                                        <input
+                                            type="hidden"
+                                            name="redirect"
+                                            value="/checkout"
+                                        />
                                         <div class="flex flex-col gap-1.5">
                                             <label
                                                 class="text-xs font-medium"
@@ -479,6 +484,11 @@ function submit(): void {
                                         class="flex flex-col gap-4"
                                         v-slot="{ errors, processing }"
                                     >
+                                        <input
+                                            type="hidden"
+                                            name="redirect"
+                                            value="/checkout"
+                                        />
                                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                             <div class="flex flex-col gap-1.5 sm:col-span-2">
                                                 <label

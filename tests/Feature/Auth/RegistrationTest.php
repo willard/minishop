@@ -36,4 +36,32 @@ class RegistrationTest extends TestCase
         // Self-registered users become customers and are redirected to /account
         $response->assertRedirect('/account');
     }
+
+    public function test_registration_redirects_to_redirect_input_when_present(): void
+    {
+        $response = $this->post(route('register.store'), [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'redirect' => '/checkout',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/checkout');
+    }
+
+    public function test_registration_ignores_redirect_input_with_external_url(): void
+    {
+        $response = $this->post(route('register.store'), [
+            'name' => 'Test User',
+            'email' => 'test2@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'redirect' => 'https://evil.com',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/account');
+    }
 }
