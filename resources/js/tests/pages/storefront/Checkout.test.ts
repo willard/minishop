@@ -210,15 +210,6 @@ describe('storefront/Checkout - auth section', () => {
                 .find((b) => b.text().trim() === 'Sign in');
             await signInButton?.trigger('click');
 
-            // Panel is open — find and click X button (aria-label or last button in header)
-            const closeButton = wrapper
-                .findAll('button')
-                .find(
-                    (b) =>
-                        !b.text().trim() ||
-                        b.find('svg').exists(),
-                );
-
             // Click the close button directly via the panel header
             const allButtons = wrapper.findAll('button');
             // The X button is the one right after the tab buttons in the panel header
