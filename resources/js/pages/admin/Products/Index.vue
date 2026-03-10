@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Eye, PackagePlus, Pencil, Trash2 } from 'lucide-vue-next';
+import { ChevronDown, ChevronUp, ChevronsUpDown, Download, Eye, FileText, PackagePlus, Pencil, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import {
     index,
@@ -44,6 +44,8 @@ interface Filters {
     search?: string;
     category_id?: string;
     stock?: string;
+    sort_by?: string;
+    sort_dir?: string;
 }
 
 const props = defineProps<{
@@ -58,6 +60,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const search = ref(props.filters.search ?? '');
+const selectedCategory = ref(props.filters.category_id ?? '');
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 watch(search, (value) => {
@@ -73,17 +76,17 @@ watch(search, (value) => {
     }, 300);
 });
 
-function applyCategory(categoryId: number | undefined): void {
+watch(selectedCategory, (value) => {
     router.get(
         index().url,
         {
             ...props.filters,
             search: search.value || undefined,
-            category_id: categoryId,
+            category_id: value || undefined,
         },
         { preserveState: true, replace: true },
     );
-}
+});
 
 function applyStock(stock: string | undefined): void {
     router.get(
@@ -91,6 +94,23 @@ function applyStock(stock: string | undefined): void {
         { ...props.filters, search: search.value || undefined, stock },
         { preserveState: true, replace: true },
     );
+}
+
+function applySort(column: string): void {
+    const newDir =
+        props.filters.sort_by === column && props.filters.sort_dir === 'asc'
+            ? 'desc'
+            : 'asc';
+    router.get(
+        index().url,
+        { ...props.filters, search: search.value || undefined, sort_by: column, sort_dir: newDir },
+        { preserveState: true, replace: true },
+    );
+}
+
+function sortDir(column: string): 'asc' | 'desc' | null {
+    if (props.filters.sort_by !== column) return null;
+    return props.filters.sort_dir === 'asc' ? 'asc' : 'desc';
 }
 
 function formatPrice(cents: number): string {
@@ -101,6 +121,17 @@ function confirmDelete(product: Product): void {
     if (confirm(`Delete "${product.name}"? This cannot be undone.`)) {
         router.delete(destroy(product).url);
     }
+}
+
+function buildExportUrl(format: 'csv' | 'pdf'): string {
+    const params = new URLSearchParams();
+    if (props.filters.search) params.set('search', props.filters.search);
+    if (props.filters.category_id) params.set('category_id', props.filters.category_id);
+    if (props.filters.stock) params.set('stock', props.filters.stock);
+    if (props.filters.sort_by) params.set('sort_by', props.filters.sort_by);
+    if (props.filters.sort_dir) params.set('sort_dir', props.filters.sort_dir);
+    params.set('format', format);
+    return `/dashboard/products/export?${params.toString()}`;
 }
 
 const isFiltered =
@@ -120,81 +151,74 @@ const isFiltered =
                         {{ products.total }} total products
                     </p>
                 </div>
-                <Link :href="create().url">
-                    <Button>
-                        <PackagePlus class="mr-2 size-4" />
-                        Add Product
-                    </Button>
-                </Link>
+                <div class="flex items-center gap-2">
+                    <a :href="buildExportUrl('csv')" download>
+                        <Button variant="outline" size="sm">
+                            <Download class="mr-1.5 size-4" />
+                            CSV
+                        </Button>
+                    </a>
+                    <a :href="buildExportUrl('pdf')" target="_blank" rel="noopener">
+                        <Button variant="outline" size="sm">
+                            <FileText class="mr-1.5 size-4" />
+                            PDF
+                        </Button>
+                    </a>
+                    <Link :href="create().url">
+                        <Button>
+                            <PackagePlus class="mr-2 size-4" />
+                            Add Product
+                        </Button>
+                    </Link>
+                </div>
             </div>
 
             <!-- Filters -->
-            <div class="flex flex-col gap-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <Input
                     v-model="search"
                     placeholder="Search by name or SKU..."
                     class="max-w-xs"
                 />
-                <div class="flex flex-wrap gap-2">
-                    <!-- Stock filters -->
-                    <Button
-                        size="sm"
-                        :variant="!filters.stock ? 'default' : 'outline'"
-                        @click="applyStock(undefined)"
-                    >
-                        All Stock
-                    </Button>
-                    <Button
-                        size="sm"
-                        :variant="
-                            filters.stock === 'in_stock' ? 'default' : 'outline'
-                        "
-                        @click="applyStock('in_stock')"
-                    >
-                        In Stock
-                    </Button>
-                    <Button
-                        size="sm"
-                        :variant="
-                            filters.stock === 'out_of_stock'
-                                ? 'default'
-                                : 'outline'
-                        "
-                        @click="applyStock('out_of_stock')"
-                    >
-                        Out of Stock
-                    </Button>
 
-                    <!-- Separator -->
-                    <span
-                        v-if="categories.length > 0"
-                        class="self-center text-muted-foreground"
-                        >|</span
-                    >
+                <!-- Stock filters -->
+                <Button
+                    size="sm"
+                    :variant="!filters.stock ? 'default' : 'outline'"
+                    @click="applyStock(undefined)"
+                >
+                    All Stock
+                </Button>
+                <Button
+                    size="sm"
+                    :variant="filters.stock === 'in_stock' ? 'default' : 'outline'"
+                    @click="applyStock('in_stock')"
+                >
+                    In Stock
+                </Button>
+                <Button
+                    size="sm"
+                    :variant="filters.stock === 'out_of_stock' ? 'default' : 'outline'"
+                    @click="applyStock('out_of_stock')"
+                >
+                    Out of Stock
+                </Button>
 
-                    <!-- Category filters -->
-                    <Button
-                        v-if="categories.length > 0"
-                        size="sm"
-                        :variant="!filters.category_id ? 'default' : 'outline'"
-                        @click="applyCategory(undefined)"
-                    >
-                        All Categories
-                    </Button>
-                    <Button
+                <!-- Category dropdown -->
+                <select
+                    v-if="categories.length > 0"
+                    v-model="selectedCategory"
+                    class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                    <option value="">All Categories</option>
+                    <option
                         v-for="cat in categories"
                         :key="cat.id"
-                        size="sm"
-                        :variant="
-                            filters.category_id === String(cat.id)
-                                ? 'default'
-                                : 'outline'
-                        "
-                        @click="applyCategory(cat.id)"
+                        :value="String(cat.id)"
                     >
                         {{ cat.name }}
-                    </Button>
-                </div>
+                    </option>
+                </select>
             </div>
 
             <!-- Table -->
@@ -205,20 +229,62 @@ const isFiltered =
                     <thead class="bg-muted/50 text-muted-foreground">
                         <tr>
                             <th class="px-4 py-3 text-left font-medium">
-                                Name
+                                <button
+                                    class="flex items-center gap-1 hover:text-foreground"
+                                    @click="applySort('name')"
+                                >
+                                    Name
+                                    <ChevronUp v-if="sortDir('name') === 'asc'" class="size-3.5" />
+                                    <ChevronDown v-else-if="sortDir('name') === 'desc'" class="size-3.5" />
+                                    <ChevronsUpDown v-else class="size-3.5 opacity-40" />
+                                </button>
                             </th>
-                            <th class="px-4 py-3 text-left font-medium">SKU</th>
                             <th class="px-4 py-3 text-left font-medium">
-                                Price
+                                <button
+                                    class="flex items-center gap-1 hover:text-foreground"
+                                    @click="applySort('sku')"
+                                >
+                                    SKU
+                                    <ChevronUp v-if="sortDir('sku') === 'asc'" class="size-3.5" />
+                                    <ChevronDown v-else-if="sortDir('sku') === 'desc'" class="size-3.5" />
+                                    <ChevronsUpDown v-else class="size-3.5 opacity-40" />
+                                </button>
                             </th>
                             <th class="px-4 py-3 text-left font-medium">
-                                Stock
+                                <button
+                                    class="flex items-center gap-1 hover:text-foreground"
+                                    @click="applySort('price')"
+                                >
+                                    Price
+                                    <ChevronUp v-if="sortDir('price') === 'asc'" class="size-3.5" />
+                                    <ChevronDown v-else-if="sortDir('price') === 'desc'" class="size-3.5" />
+                                    <ChevronsUpDown v-else class="size-3.5 opacity-40" />
+                                </button>
+                            </th>
+                            <th class="px-4 py-3 text-left font-medium">
+                                <button
+                                    class="flex items-center gap-1 hover:text-foreground"
+                                    @click="applySort('stock_quantity')"
+                                >
+                                    Stock
+                                    <ChevronUp v-if="sortDir('stock_quantity') === 'asc'" class="size-3.5" />
+                                    <ChevronDown v-else-if="sortDir('stock_quantity') === 'desc'" class="size-3.5" />
+                                    <ChevronsUpDown v-else class="size-3.5 opacity-40" />
+                                </button>
                             </th>
                             <th class="px-4 py-3 text-left font-medium">
                                 Categories
                             </th>
                             <th class="px-4 py-3 text-left font-medium">
-                                Status
+                                <button
+                                    class="flex items-center gap-1 hover:text-foreground"
+                                    @click="applySort('is_active')"
+                                >
+                                    Status
+                                    <ChevronUp v-if="sortDir('is_active') === 'asc'" class="size-3.5" />
+                                    <ChevronDown v-else-if="sortDir('is_active') === 'desc'" class="size-3.5" />
+                                    <ChevronsUpDown v-else class="size-3.5 opacity-40" />
+                                </button>
                             </th>
                             <th class="px-4 py-3 text-right font-medium">
                                 Actions
