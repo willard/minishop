@@ -1,7 +1,29 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, ClipboardList, Folder, LayoutGrid, Package, Settings, ShoppingCart, Tag, Ticket, Truck, UserCog, Users } from 'lucide-vue-next';
+import {
+    BookOpen,
+    ClipboardList,
+    Folder,
+    LayoutGrid,
+    Package,
+    Settings,
+    ShoppingCart,
+    Tag,
+    Ticket,
+    Truck,
+    UserCog,
+    Users,
+} from 'lucide-vue-next';
+import { computed } from 'vue';
+import { index as activityLogIndex } from '@/actions/App/Http/Controllers/Admin/ActivityLogController';
+import { index as categoriesIndex } from '@/actions/App/Http/Controllers/Admin/CategoryController';
+import { index as couponsIndex } from '@/actions/App/Http/Controllers/Admin/CouponController';
+import { index as customersIndex } from '@/actions/App/Http/Controllers/Admin/CustomerController';
+import { index as ordersIndex } from '@/actions/App/Http/Controllers/Admin/OrderController';
+import { index as productsIndex } from '@/actions/App/Http/Controllers/Admin/ProductController';
+import { index as shippingMethodsIndex } from '@/actions/App/Http/Controllers/Admin/ShippingMethodController';
+import { edit as settingsEdit } from '@/actions/App/Http/Controllers/Admin/StoreSettingsController';
+import { index as usersIndex } from '@/actions/App/Http/Controllers/Admin/UserController';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -14,19 +36,10 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useCan } from '@/composables/useCan';
+import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import AppLogo from './AppLogo.vue';
-import { dashboard } from '@/routes';
-import { index as productsIndex } from '@/actions/App/Http/Controllers/Admin/ProductController';
-import { index as categoriesIndex } from '@/actions/App/Http/Controllers/Admin/CategoryController';
-import { index as ordersIndex } from '@/actions/App/Http/Controllers/Admin/OrderController';
-import { index as customersIndex } from '@/actions/App/Http/Controllers/Admin/CustomerController';
-import { index as usersIndex } from '@/actions/App/Http/Controllers/Admin/UserController';
-import { index as couponsIndex } from '@/actions/App/Http/Controllers/Admin/CouponController';
-import { index as shippingMethodsIndex } from '@/actions/App/Http/Controllers/Admin/ShippingMethodController';
-import { edit as settingsEdit } from '@/actions/App/Http/Controllers/Admin/StoreSettingsController';
-import { index as activityLogIndex } from '@/actions/App/Http/Controllers/Admin/ActivityLogController';
-import { useCan } from '@/composables/useCan';
 
 const { can } = useCan();
 

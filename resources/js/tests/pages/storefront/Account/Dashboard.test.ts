@@ -1,18 +1,33 @@
-import AccountDashboard from '@/pages/storefront/Account/Dashboard.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import AccountDashboard from '@/pages/storefront/Account/Dashboard.vue';
 
-vi.mock('@inertiajs/vue3', () => ({
-    Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a href="#"><slot /></a>', props: ['href'] },
-}));
+vi.mock('@inertiajs/vue3', async (importOriginal) => {
+    const actual = await importOriginal<any>();
+    return {
+        ...actual,
+        Head: { name: 'Head', template: '<div />', props: ['title'] },
+        Link: {
+            name: 'Link',
+            template: '<a href="#"><slot /></a>',
+            props: ['href'],
+        },
+    };
+});
 
 vi.mock('@/layouts/AccountLayout.vue', () => ({
-    default: { name: 'AccountLayout', template: '<div><slot /></div>', props: ['title'] },
+    default: {
+        name: 'AccountLayout',
+        template: '<div><slot /></div>',
+        props: ['title'],
+    },
 }));
 
 vi.mock('@/routes/account/orders', () => ({
-    show: vi.fn((params: { order: string }) => ({ url: `/account/orders/${params.order}` })),
+    index: vi.fn(() => ({ url: '/account/orders' })),
+    show: vi.fn((params: { order: string }) => ({
+        url: `/account/orders/${params.order}`,
+    })),
 }));
 
 vi.mock('@/lib/utils', () => ({
@@ -67,7 +82,20 @@ describe('Account/Dashboard', () => {
     });
 
     it('shows empty state when no orders', () => {
-        const empty = mount(AccountDashboard, { props: { ...baseProps, recentOrders: [] } });
+        const empty = mount(AccountDashboard, {
+            props: { ...baseProps, recentOrders: [] },
+        });
         expect(empty.text()).toContain('No orders yet');
+    });
+
+    it('shows "View all orders" link when there are recent orders', () => {
+        expect(wrapper.text()).toContain('View all orders');
+    });
+
+    it('does not show "View all orders" link when no recent orders', () => {
+        const empty = mount(AccountDashboard, {
+            props: { ...baseProps, recentOrders: [] },
+        });
+        expect(empty.text()).not.toContain('View all orders');
     });
 });

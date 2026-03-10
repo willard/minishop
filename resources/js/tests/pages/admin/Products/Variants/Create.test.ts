@@ -1,10 +1,14 @@
-import CreateVariantPage from '@/pages/admin/Products/Variants/Create.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import CreateVariantPage from '@/pages/admin/Products/Variants/Create.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a :href="href"><slot /></a>', props: ['href'] },
+    Link: {
+        name: 'Link',
+        template: '<a :href="href"><slot /></a>',
+        props: ['href'],
+    },
     useForm: vi.fn((initialData: Record<string, unknown>) => ({
         ...initialData,
         processing: false,
@@ -15,23 +19,43 @@ vi.mock('@inertiajs/vue3', () => ({
 }));
 
 vi.mock('@/layouts/AppLayout.vue', () => ({
-    default: { name: 'AppLayout', template: '<div><slot /></div>', props: ['breadcrumbs'] },
+    default: {
+        name: 'AppLayout',
+        template: '<div><slot /></div>',
+        props: ['breadcrumbs'],
+    },
 }));
 
 vi.mock('@/components/ui/button', () => ({
-    Button: { name: 'Button', template: '<button><slot /></button>', props: ['variant', 'size', 'type', 'disabled'] },
+    Button: {
+        name: 'Button',
+        template: '<button><slot /></button>',
+        props: ['variant', 'size', 'type', 'disabled'],
+    },
 }));
 
 vi.mock('@/components/ui/input', () => ({
-    Input: { name: 'Input', template: '<input />', props: ['id', 'modelValue', 'type', 'min', 'placeholder', 'class'] },
+    Input: {
+        name: 'Input',
+        template: '<input />',
+        props: ['id', 'modelValue', 'type', 'min', 'placeholder', 'class'],
+    },
 }));
 
 vi.mock('@/components/ui/label', () => ({
-    Label: { name: 'Label', template: '<label><slot /></label>', props: ['for'] },
+    Label: {
+        name: 'Label',
+        template: '<label><slot /></label>',
+        props: ['for'],
+    },
 }));
 
 vi.mock('@/components/ui/checkbox', () => ({
-    Checkbox: { name: 'Checkbox', template: '<input type="checkbox" />', props: ['id', 'checked'] },
+    Checkbox: {
+        name: 'Checkbox',
+        template: '<input type="checkbox" />',
+        props: ['id', 'checked'],
+    },
 }));
 
 vi.mock('@/components/InputError.vue', () => ({
@@ -40,15 +64,24 @@ vi.mock('@/components/InputError.vue', () => ({
 
 vi.mock('@/actions/App/Http/Controllers/Admin/ProductController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/products' })),
-    show: vi.fn((product: { slug: string }) => ({ url: `/dashboard/products/${product.slug}` })),
+    show: vi.fn((product: { slug: string }) => ({
+        url: `/dashboard/products/${product.slug}`,
+    })),
 }));
 
-vi.mock('@/actions/App/Http/Controllers/Admin/ProductVariantController', () => ({
-    store: vi.fn((product: { slug: string }) => ({ url: `/dashboard/products/${product.slug}/variants` })),
-}));
+vi.mock(
+    '@/actions/App/Http/Controllers/Admin/ProductVariantController',
+    () => ({
+        store: vi.fn((product: { slug: string }) => ({
+            url: `/dashboard/products/${product.slug}/variants`,
+        })),
+    }),
+);
 
 vi.mock('@/actions/App/Http/Controllers/Admin/ProductOptionController', () => ({
-    create: vi.fn((product: { slug: string }) => ({ url: `/dashboard/products/${product.slug}/options/create` })),
+    create: vi.fn((product: { slug: string }) => ({
+        url: `/dashboard/products/${product.slug}/options/create`,
+    })),
 }));
 
 const baseProduct = {

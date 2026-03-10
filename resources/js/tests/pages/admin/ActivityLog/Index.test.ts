@@ -1,18 +1,30 @@
-import IndexPage from '@/pages/admin/ActivityLog/Index.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import IndexPage from '@/pages/admin/ActivityLog/Index.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a href="#"><slot /></a>', props: ['href'] },
+    Link: {
+        name: 'Link',
+        template: '<a href="#"><slot /></a>',
+        props: ['href'],
+    },
 }));
 
 vi.mock('@/layouts/AppLayout.vue', () => ({
-    default: { name: 'AppLayout', template: '<div><slot /></div>', props: ['breadcrumbs'] },
+    default: {
+        name: 'AppLayout',
+        template: '<div><slot /></div>',
+        props: ['breadcrumbs'],
+    },
 }));
 
 vi.mock('@/components/ui/badge', () => ({
-    Badge: { name: 'Badge', template: '<span class="badge"><slot /></span>', props: ['variant'] },
+    Badge: {
+        name: 'Badge',
+        template: '<span class="badge"><slot /></span>',
+        props: ['variant'],
+    },
 }));
 
 vi.mock('@/actions/App/Http/Controllers/Admin/ActivityLogController', () => ({
@@ -78,7 +90,9 @@ describe('admin/ActivityLog/Index', () => {
 
     it('displays log descriptions', () => {
         expect(wrapper.text()).toContain('Created product "Test Widget"');
-        expect(wrapper.text()).toContain('Updated order ORD-0005 status to Shipped');
+        expect(wrapper.text()).toContain(
+            'Updated order ORD-0005 status to Shipped',
+        );
         expect(wrapper.text()).toContain('Deleted coupon SAVE20');
     });
 
@@ -117,10 +131,26 @@ describe('admin/ActivityLog/Index', () => {
                     last_page: 3,
                     links: [
                         { url: null, label: '&laquo; Previous', active: false },
-                        { url: '/dashboard/activity-log?page=1', label: '1', active: true },
-                        { url: '/dashboard/activity-log?page=2', label: '2', active: false },
-                        { url: '/dashboard/activity-log?page=3', label: '3', active: false },
-                        { url: '/dashboard/activity-log?page=2', label: 'Next &raquo;', active: false },
+                        {
+                            url: '/dashboard/activity-log?page=1',
+                            label: '1',
+                            active: true,
+                        },
+                        {
+                            url: '/dashboard/activity-log?page=2',
+                            label: '2',
+                            active: false,
+                        },
+                        {
+                            url: '/dashboard/activity-log?page=3',
+                            label: '3',
+                            active: false,
+                        },
+                        {
+                            url: '/dashboard/activity-log?page=2',
+                            label: 'Next &raquo;',
+                            active: false,
+                        },
                     ],
                 },
             },

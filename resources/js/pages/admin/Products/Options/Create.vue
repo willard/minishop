@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Minus, Plus } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import {
+    index,
+    show,
+} from '@/actions/App/Http/Controllers/Admin/ProductController';
+import { store } from '@/actions/App/Http/Controllers/Admin/ProductOptionController';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { index, show } from '@/actions/App/Http/Controllers/Admin/ProductController';
-import { store } from '@/actions/App/Http/Controllers/Admin/ProductOptionController';
 
 interface Product {
     id: number;
@@ -51,7 +54,7 @@ function submit(): void {
     <Head title="Add Option Type" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-col gap-6 p-4 max-w-2xl">
+        <div class="flex max-w-2xl flex-col gap-6 p-4">
             <!-- Header -->
             <div class="flex items-center gap-4">
                 <Link :href="show(product).url">
@@ -61,7 +64,9 @@ function submit(): void {
                 </Link>
                 <div>
                     <h1 class="text-2xl font-semibold">Add Option Type</h1>
-                    <p class="text-sm text-muted-foreground">{{ product.name }}</p>
+                    <p class="text-sm text-muted-foreground">
+                        {{ product.name }}
+                    </p>
                 </div>
             </div>
 
@@ -69,8 +74,13 @@ function submit(): void {
             <form class="flex flex-col gap-6" @submit.prevent="submit">
                 <!-- Name -->
                 <div class="grid gap-2">
-                    <Label for="name">Option Name <span class="text-destructive">*</span></Label>
-                    <p class="text-xs text-muted-foreground -mt-1">e.g. Size, Color, Material</p>
+                    <Label for="name"
+                        >Option Name
+                        <span class="text-destructive">*</span></Label
+                    >
+                    <p class="-mt-1 text-xs text-muted-foreground">
+                        e.g. Size, Color, Material
+                    </p>
                     <Input
                         id="name"
                         v-model="form.name"
@@ -83,8 +93,13 @@ function submit(): void {
 
                 <!-- Values -->
                 <div class="grid gap-3">
-                    <Label>Values <span class="text-destructive">*</span></Label>
-                    <p class="text-xs text-muted-foreground -mt-1">The available choices for this option (e.g. S, M, L, XL).</p>
+                    <Label
+                        >Values <span class="text-destructive">*</span></Label
+                    >
+                    <p class="-mt-1 text-xs text-muted-foreground">
+                        The available choices for this option (e.g. S, M, L,
+                        XL).
+                    </p>
 
                     <div
                         v-for="(value, idx) in form.values"
@@ -106,7 +121,13 @@ function submit(): void {
                         >
                             <Minus class="size-4" />
                         </Button>
-                        <InputError :message="(form.errors as Record<string, string>)[`values.${idx}`]" />
+                        <InputError
+                            :message="
+                                (form.errors as Record<string, string>)[
+                                    `values.${idx}`
+                                ]
+                            "
+                        />
                     </div>
 
                     <InputError :message="form.errors.values as string" />

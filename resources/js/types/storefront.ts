@@ -9,6 +9,7 @@ export interface StorefrontCategory {
 export interface StorefrontProductImage {
     id: number;
     path: string;
+    url: string;
     alt_text: string | null;
     sort_order: number;
 }
@@ -80,6 +81,8 @@ export interface PaginatedProducts {
     current_page: number;
     last_page: number;
     per_page: number;
+    from: number | null;
+    to: number | null;
     total: number;
     links: PaginationLink[];
 }

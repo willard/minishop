@@ -1,33 +1,57 @@
-import IndexPage from '@/pages/admin/Orders/Index.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import IndexPage from '@/pages/admin/Orders/Index.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a href="#"><slot /></a>', props: ['href'] },
+    Link: {
+        name: 'Link',
+        template: '<a href="#"><slot /></a>',
+        props: ['href'],
+    },
     router: { delete: vi.fn(), get: vi.fn() },
 }));
 
 vi.mock('@/layouts/AppLayout.vue', () => ({
-    default: { name: 'AppLayout', template: '<div><slot /></div>', props: ['breadcrumbs'] },
+    default: {
+        name: 'AppLayout',
+        template: '<div><slot /></div>',
+        props: ['breadcrumbs'],
+    },
 }));
 
 vi.mock('@/components/ui/button', () => ({
-    Button: { name: 'Button', template: '<button><slot /></button>', props: ['variant', 'size', 'type', 'disabled'] },
+    Button: {
+        name: 'Button',
+        template: '<button><slot /></button>',
+        props: ['variant', 'size', 'type', 'disabled'],
+    },
 }));
 
 vi.mock('@/components/ui/badge', () => ({
-    Badge: { name: 'Badge', template: '<span class="badge"><slot /></span>', props: ['variant'] },
+    Badge: {
+        name: 'Badge',
+        template: '<span class="badge"><slot /></span>',
+        props: ['variant'],
+    },
 }));
 
 vi.mock('@/components/ui/input', () => ({
-    Input: { name: 'Input', template: '<input />', props: ['modelValue', 'placeholder', 'class'] },
+    Input: {
+        name: 'Input',
+        template: '<input />',
+        props: ['modelValue', 'placeholder', 'class'],
+    },
 }));
 
 vi.mock('@/actions/App/Http/Controllers/Admin/OrderController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/orders' })),
-    show: vi.fn((order: { order_number: string }) => ({ url: `/dashboard/orders/${order.order_number}` })),
-    destroy: vi.fn((order: { order_number: string }) => ({ url: `/dashboard/orders/${order.order_number}` })),
+    show: vi.fn((order: { order_number: string }) => ({
+        url: `/dashboard/orders/${order.order_number}`,
+    })),
+    destroy: vi.fn((order: { order_number: string }) => ({
+        url: `/dashboard/orders/${order.order_number}`,
+    })),
 }));
 
 const baseOrders = {
@@ -83,7 +107,11 @@ describe('admin/Orders/Index', () => {
 
     beforeEach(() => {
         wrapper = mount(IndexPage, {
-            props: { orders: baseOrders, filters: baseFilters, statuses: baseStatuses },
+            props: {
+                orders: baseOrders,
+                filters: baseFilters,
+                statuses: baseStatuses,
+            },
         });
     });
 
@@ -132,7 +160,11 @@ describe('admin/Orders/Index', () => {
 
     it('shows empty state when no orders', () => {
         const emptyWrapper = mount(IndexPage, {
-            props: { orders: { ...baseOrders, data: [], total: 0 }, filters: baseFilters, statuses: baseStatuses },
+            props: {
+                orders: { ...baseOrders, data: [], total: 0 },
+                filters: baseFilters,
+                statuses: baseStatuses,
+            },
         });
         expect(emptyWrapper.text()).toContain('No orders yet');
     });

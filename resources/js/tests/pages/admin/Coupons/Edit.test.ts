@@ -1,10 +1,14 @@
-import EditCouponPage from '@/pages/admin/Coupons/Edit.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import EditCouponPage from '@/pages/admin/Coupons/Edit.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a :href="href"><slot /></a>', props: ['href'] },
+    Link: {
+        name: 'Link',
+        template: '<a :href="href"><slot /></a>',
+        props: ['href'],
+    },
     Form: {
         name: 'Form',
         template: '<form><slot :errors="{}" :processing="false" /></form>',
@@ -13,27 +17,53 @@ vi.mock('@inertiajs/vue3', () => ({
 }));
 
 vi.mock('@/layouts/AppLayout.vue', () => ({
-    default: { name: 'AppLayout', template: '<div><slot /></div>', props: ['breadcrumbs'] },
+    default: {
+        name: 'AppLayout',
+        template: '<div><slot /></div>',
+        props: ['breadcrumbs'],
+    },
 }));
 
 vi.mock('@/components/ui/button', () => ({
-    Button: { name: 'Button', template: '<button><slot /></button>', props: ['variant', 'size', 'type', 'disabled'] },
+    Button: {
+        name: 'Button',
+        template: '<button><slot /></button>',
+        props: ['variant', 'size', 'type', 'disabled'],
+    },
 }));
 
 vi.mock('@/components/ui/input', () => ({
     Input: {
         name: 'Input',
         template: '<input />',
-        props: ['id', 'name', 'modelValue', 'defaultValue', 'type', 'min', 'placeholder', 'class', 'required'],
+        props: [
+            'id',
+            'name',
+            'modelValue',
+            'defaultValue',
+            'type',
+            'min',
+            'placeholder',
+            'class',
+            'required',
+        ],
     },
 }));
 
 vi.mock('@/components/ui/label', () => ({
-    Label: { name: 'Label', template: '<label><slot /></label>', props: ['for'] },
+    Label: {
+        name: 'Label',
+        template: '<label><slot /></label>',
+        props: ['for'],
+    },
 }));
 
 vi.mock('@/components/ui/checkbox', () => ({
-    Checkbox: { name: 'Checkbox', template: '<input type="checkbox" />', props: ['id', 'name', 'value', 'defaultValue'] },
+    Checkbox: {
+        name: 'Checkbox',
+        template: '<input type="checkbox" />',
+        props: ['id', 'name', 'value', 'defaultValue'],
+    },
 }));
 
 vi.mock('@/components/InputError.vue', () => ({
@@ -42,7 +72,12 @@ vi.mock('@/components/InputError.vue', () => ({
 
 vi.mock('@/actions/App/Http/Controllers/Admin/CouponController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/coupons' })),
-    update: { form: vi.fn((c: { id: number }) => ({ action: `/dashboard/coupons/${c.id}`, method: 'put' })) },
+    update: {
+        form: vi.fn((c: { id: number }) => ({
+            action: `/dashboard/coupons/${c.id}`,
+            method: 'put',
+        })),
+    },
 }));
 
 const baseCoupon = {

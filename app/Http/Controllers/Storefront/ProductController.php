@@ -15,7 +15,7 @@ class ProductController extends Controller
     {
         $products = Product::query()
             ->where('is_active', true)
-            ->with(['categories', 'images'])
+            ->with(['categories', 'images', 'options.values', 'variants.optionValues'])
             ->when($request->filled('category'), function ($query) use ($request) {
                 $query->whereHas('categories', fn ($q) => $q->where('slug', $request->string('category')));
             })

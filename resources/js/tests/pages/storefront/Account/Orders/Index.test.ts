@@ -1,18 +1,32 @@
-import OrdersIndex from '@/pages/storefront/Account/Orders/Index.vue';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
+import OrdersIndex from '@/pages/storefront/Account/Orders/Index.vue';
 
-vi.mock('@inertiajs/vue3', () => ({
-    Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a href="#"><slot /></a>', props: ['href'] },
-}));
+vi.mock('@inertiajs/vue3', async (importOriginal) => {
+    const actual = await importOriginal<any>();
+    return {
+        ...actual,
+        Head: { name: 'Head', template: '<div />', props: ['title'] },
+        Link: {
+            name: 'Link',
+            template: '<a href="#"><slot /></a>',
+            props: ['href'],
+        },
+    };
+});
 
 vi.mock('@/layouts/AccountLayout.vue', () => ({
-    default: { name: 'AccountLayout', template: '<div><slot /></div>', props: ['title'] },
+    default: {
+        name: 'AccountLayout',
+        template: '<div><slot /></div>',
+        props: ['title'],
+    },
 }));
 
 vi.mock('@/routes/account/orders', () => ({
-    show: vi.fn((params: { order: string }) => ({ url: `/account/orders/${params.order}` })),
+    show: vi.fn((params: { order: string }) => ({
+        url: `/account/orders/${params.order}`,
+    })),
 }));
 
 vi.mock('@/lib/utils', () => ({
@@ -37,19 +51,25 @@ const makeOrders = (count: number) => ({
 
 describe('Account/Orders/Index', () => {
     it('renders order list', () => {
-        const wrapper = mount(OrdersIndex, { props: { orders: makeOrders(3) } });
+        const wrapper = mount(OrdersIndex, {
+            props: { orders: makeOrders(3) },
+        });
         expect(wrapper.text()).toContain('ORD-000001');
         expect(wrapper.text()).toContain('ORD-000002');
         expect(wrapper.text()).toContain('ORD-000003');
     });
 
     it('shows empty state when no orders', () => {
-        const wrapper = mount(OrdersIndex, { props: { orders: makeOrders(0) } });
+        const wrapper = mount(OrdersIndex, {
+            props: { orders: makeOrders(0) },
+        });
         expect(wrapper.text()).toContain("haven't placed any orders");
     });
 
     it('does not render pagination when only one page', () => {
-        const wrapper = mount(OrdersIndex, { props: { orders: makeOrders(3) } });
+        const wrapper = mount(OrdersIndex, {
+            props: { orders: makeOrders(3) },
+        });
         expect(wrapper.find('[href]').exists()).toBe(true);
     });
 });

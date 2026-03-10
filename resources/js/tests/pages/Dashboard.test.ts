@@ -1,22 +1,38 @@
-import DashboardPage from '@/pages/Dashboard.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import DashboardPage from '@/pages/Dashboard.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a href="#"><slot /></a>', props: ['href'] },
+    Link: {
+        name: 'Link',
+        template: '<a href="#"><slot /></a>',
+        props: ['href'],
+    },
 }));
 
 vi.mock('@/layouts/AppLayout.vue', () => ({
-    default: { name: 'AppLayout', template: '<div><slot /></div>', props: ['breadcrumbs'] },
+    default: {
+        name: 'AppLayout',
+        template: '<div><slot /></div>',
+        props: ['breadcrumbs'],
+    },
 }));
 
 vi.mock('@/components/ui/badge', () => ({
-    Badge: { name: 'Badge', template: '<span class="badge"><slot /></span>', props: ['variant'] },
+    Badge: {
+        name: 'Badge',
+        template: '<span class="badge"><slot /></span>',
+        props: ['variant'],
+    },
 }));
 
 vi.mock('@/components/ui/button', () => ({
-    Button: { name: 'Button', template: '<button><slot /></button>', props: ['variant', 'size'] },
+    Button: {
+        name: 'Button',
+        template: '<button><slot /></button>',
+        props: ['variant', 'size'],
+    },
 }));
 
 vi.mock('@/routes', () => ({
@@ -25,7 +41,9 @@ vi.mock('@/routes', () => ({
 
 vi.mock('@/actions/App/Http/Controllers/Admin/OrderController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/orders' })),
-    show: vi.fn((order: { order_number: string }) => ({ url: `/dashboard/orders/${order.order_number}` })),
+    show: vi.fn((order: { order_number: string }) => ({
+        url: `/dashboard/orders/${order.order_number}`,
+    })),
 }));
 
 vi.mock('@/actions/App/Http/Controllers/Admin/ProductController', () => ({
@@ -43,7 +61,10 @@ const baseProps = {
             order_number: 'ORD-000001',
             status: 'pending',
             total_amount: 5000,
-            customer: { id: 1, user: { id: 2, name: 'Jane Doe', email: 'jane@example.com' } },
+            customer: {
+                id: 1,
+                user: { id: 2, name: 'Jane Doe', email: 'jane@example.com' },
+            },
             created_at: '2026-02-23T10:00:00.000Z',
         },
         {
@@ -51,7 +72,10 @@ const baseProps = {
             order_number: 'ORD-000002',
             status: 'delivered',
             total_amount: 12000,
-            customer: { id: 2, user: { id: 3, name: 'John Smith', email: 'john@example.com' } },
+            customer: {
+                id: 2,
+                user: { id: 3, name: 'John Smith', email: 'john@example.com' },
+            },
             created_at: '2026-02-22T10:00:00.000Z',
         },
     ],

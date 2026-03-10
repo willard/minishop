@@ -10,7 +10,11 @@ export function toUrl(href: NonNullable<InertiaLinkProps['href']>) {
     return typeof href === 'string' ? href : href?.url;
 }
 
-export function formatPrice(cents: number, currency = 'PHP', locale = 'en-PH'): string {
+export function formatPrice(
+    cents: number,
+    currency = 'PHP',
+    locale = 'en-PH',
+): string {
     return new Intl.NumberFormat(locale, {
         style: 'currency',
         currency,

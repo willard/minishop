@@ -1,6 +1,6 @@
-import AppSidebar from '@/components/AppSidebar.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import AppSidebar from '@/components/AppSidebar.vue';
 
 const mockCan = vi.fn(() => true);
 
@@ -11,7 +11,11 @@ vi.mock('@/composables/useCan', () => ({
 vi.mock('@inertiajs/vue3', () => ({
     usePage: vi.fn(() => ({
         props: {
-            auth: { user: { id: 1, name: 'Test', email: 'test@example.com' }, roles: [], permissions: [] },
+            auth: {
+                user: { id: 1, name: 'Test', email: 'test@example.com' },
+                roles: [],
+                permissions: [],
+            },
         },
     })),
     Link: { name: 'Link', template: '<a><slot /></a>', props: ['href'] },
@@ -36,9 +40,12 @@ vi.mock('@/actions/App/Http/Controllers/Admin/CustomerController', () => ({
 vi.mock('@/actions/App/Http/Controllers/Admin/CouponController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/coupons' })),
 }));
-vi.mock('@/actions/App/Http/Controllers/Admin/ShippingMethodController', () => ({
-    index: vi.fn(() => ({ url: '/dashboard/shipping-methods' })),
-}));
+vi.mock(
+    '@/actions/App/Http/Controllers/Admin/ShippingMethodController',
+    () => ({
+        index: vi.fn(() => ({ url: '/dashboard/shipping-methods' })),
+    }),
+);
 vi.mock('@/actions/App/Http/Controllers/Admin/StoreSettingsController', () => ({
     edit: vi.fn(() => ({ url: '/dashboard/settings' })),
 }));
@@ -50,19 +57,31 @@ vi.mock('@/actions/App/Http/Controllers/Admin/UserController', () => ({
 }));
 
 vi.mock('@/components/ui/sidebar', () => ({
-    Sidebar: { name: 'Sidebar', template: '<div><slot /></div>', props: ['collapsible', 'variant'] },
+    Sidebar: {
+        name: 'Sidebar',
+        template: '<div><slot /></div>',
+        props: ['collapsible', 'variant'],
+    },
     SidebarContent: { name: 'SidebarContent', template: '<div><slot /></div>' },
     SidebarFooter: { name: 'SidebarFooter', template: '<div><slot /></div>' },
     SidebarHeader: { name: 'SidebarHeader', template: '<div><slot /></div>' },
     SidebarMenu: { name: 'SidebarMenu', template: '<div><slot /></div>' },
-    SidebarMenuButton: { name: 'SidebarMenuButton', template: '<div><slot /></div>', props: ['size', 'asChild'] },
-    SidebarMenuItem: { name: 'SidebarMenuItem', template: '<div><slot /></div>' },
+    SidebarMenuButton: {
+        name: 'SidebarMenuButton',
+        template: '<div><slot /></div>',
+        props: ['size', 'asChild'],
+    },
+    SidebarMenuItem: {
+        name: 'SidebarMenuItem',
+        template: '<div><slot /></div>',
+    },
 }));
 
 vi.mock('@/components/NavMain.vue', () => ({
     default: {
         name: 'NavMain',
-        template: '<div class="nav-main"><span v-for="item in items" :key="item.title" class="nav-item">{{ item.title }}</span></div>',
+        template:
+            '<div class="nav-main"><span v-for="item in items" :key="item.title" class="nav-item">{{ item.title }}</span></div>',
         props: ['items'],
     },
 }));
@@ -157,7 +176,9 @@ describe('AppSidebar', () => {
     });
 
     it('hides Users for users without users.view permission', () => {
-        mockCan.mockImplementation((permission: string) => permission !== 'users.view');
+        mockCan.mockImplementation(
+            (permission: string) => permission !== 'users.view',
+        );
 
         const wrapper = mount(AppSidebar);
         const titles = getNavItemTitles(wrapper);

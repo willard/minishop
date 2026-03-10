@@ -1,35 +1,61 @@
-import IndexPage from '@/pages/admin/Products/Index.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import IndexPage from '@/pages/admin/Products/Index.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a :href="href"><slot /></a>', props: ['href'] },
+    Link: {
+        name: 'Link',
+        template: '<a :href="href"><slot /></a>',
+        props: ['href'],
+    },
     router: { delete: vi.fn(), get: vi.fn() },
 }));
 
 vi.mock('@/layouts/AppLayout.vue', () => ({
-    default: { name: 'AppLayout', template: '<div><slot /></div>', props: ['breadcrumbs'] },
+    default: {
+        name: 'AppLayout',
+        template: '<div><slot /></div>',
+        props: ['breadcrumbs'],
+    },
 }));
 
 vi.mock('@/components/ui/button', () => ({
-    Button: { name: 'Button', template: '<button><slot /></button>', props: ['variant', 'size'] },
+    Button: {
+        name: 'Button',
+        template: '<button><slot /></button>',
+        props: ['variant', 'size'],
+    },
 }));
 
 vi.mock('@/components/ui/badge', () => ({
-    Badge: { name: 'Badge', template: '<span class="badge"><slot /></span>', props: ['variant'] },
+    Badge: {
+        name: 'Badge',
+        template: '<span class="badge"><slot /></span>',
+        props: ['variant'],
+    },
 }));
 
 vi.mock('@/components/ui/input', () => ({
-    Input: { name: 'Input', template: '<input />', props: ['modelValue', 'placeholder', 'class'] },
+    Input: {
+        name: 'Input',
+        template: '<input />',
+        props: ['modelValue', 'placeholder', 'class'],
+    },
 }));
 
 vi.mock('@/actions/App/Http/Controllers/Admin/ProductController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/products' })),
     create: vi.fn(() => ({ url: '/dashboard/products/create' })),
-    show: vi.fn((product: { slug: string }) => ({ url: `/dashboard/products/${product.slug}` })),
-    edit: vi.fn((product: { slug: string }) => ({ url: `/dashboard/products/${product.slug}/edit` })),
-    destroy: vi.fn((product: { slug: string }) => ({ url: `/dashboard/products/${product.slug}` })),
+    show: vi.fn((product: { slug: string }) => ({
+        url: `/dashboard/products/${product.slug}`,
+    })),
+    edit: vi.fn((product: { slug: string }) => ({
+        url: `/dashboard/products/${product.slug}/edit`,
+    })),
+    destroy: vi.fn((product: { slug: string }) => ({
+        url: `/dashboard/products/${product.slug}`,
+    })),
 }));
 
 const baseProducts = {
@@ -78,7 +104,11 @@ describe('admin/Products/Index', () => {
 
     beforeEach(() => {
         wrapper = mount(IndexPage, {
-            props: { products: baseProducts, filters: baseFilters, categories: baseCategories },
+            props: {
+                products: baseProducts,
+                filters: baseFilters,
+                categories: baseCategories,
+            },
         });
     });
 
@@ -132,7 +162,11 @@ describe('admin/Products/Index', () => {
 
     it('shows empty state when no products', () => {
         const emptyWrapper = mount(IndexPage, {
-            props: { products: { ...baseProducts, data: [], total: 0 }, filters: baseFilters, categories: baseCategories },
+            props: {
+                products: { ...baseProducts, data: [], total: 0 },
+                filters: baseFilters,
+                categories: baseCategories,
+            },
         });
         expect(emptyWrapper.text()).toContain('No products yet');
     });
@@ -141,7 +175,11 @@ describe('admin/Products/Index', () => {
         const filteredWrapper = mount(IndexPage, {
             props: {
                 products: { ...baseProducts, data: [], total: 0 },
-                filters: { search: 'missing', category_id: undefined, stock: undefined },
+                filters: {
+                    search: 'missing',
+                    category_id: undefined,
+                    stock: undefined,
+                },
                 categories: baseCategories,
             },
         });

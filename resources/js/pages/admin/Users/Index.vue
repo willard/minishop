@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Button } from '@/components/ui/button';
+import {
+    index,
+    create,
+    edit,
+    destroy,
+} from '@/actions/App/Http/Controllers/Admin/UserController';
 import { Badge } from '@/components/ui/badge';
-import { type BreadcrumbItem } from '@/types';
-import { index, create, edit, destroy } from '@/actions/App/Http/Controllers/Admin/UserController';
+import { Button } from '@/components/ui/button';
 import { useCan } from '@/composables/useCan';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
 
 interface Role {
     id: number;
@@ -44,7 +49,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Users', href: index().url },
 ];
 
-function roleBadgeVariant(roleName: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+function roleBadgeVariant(
+    roleName: string,
+): 'default' | 'secondary' | 'destructive' | 'outline' {
     switch (roleName) {
         case 'super-admin':
             return 'destructive';
@@ -79,7 +86,11 @@ function confirmDelete(user: StaffUser): void {
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-semibold">Users</h1>
-                    <p class="text-sm text-muted-foreground">{{ users.total }} staff user{{ users.total === 1 ? '' : 's' }}</p>
+                    <p class="text-sm text-muted-foreground">
+                        {{ users.total }} staff user{{
+                            users.total === 1 ? '' : 's'
+                        }}
+                    </p>
                 </div>
                 <Link v-if="can('users.create')" :href="create().url">
                     <Button>
@@ -90,49 +101,88 @@ function confirmDelete(user: StaffUser): void {
             </div>
 
             <!-- Table -->
-            <div class="rounded-lg border border-sidebar-border overflow-hidden">
+            <div
+                class="overflow-hidden rounded-lg border border-sidebar-border"
+            >
                 <table class="w-full text-sm">
                     <thead class="bg-muted/50 text-muted-foreground">
                         <tr>
-                            <th class="px-4 py-3 text-left font-medium">Name</th>
-                            <th class="px-4 py-3 text-left font-medium">Email</th>
-                            <th class="px-4 py-3 text-left font-medium">Role</th>
-                            <th class="px-4 py-3 text-left font-medium">Created</th>
-                            <th class="px-4 py-3 text-right font-medium">Actions</th>
+                            <th class="px-4 py-3 text-left font-medium">
+                                Name
+                            </th>
+                            <th class="px-4 py-3 text-left font-medium">
+                                Email
+                            </th>
+                            <th class="px-4 py-3 text-left font-medium">
+                                Role
+                            </th>
+                            <th class="px-4 py-3 text-left font-medium">
+                                Created
+                            </th>
+                            <th class="px-4 py-3 text-right font-medium">
+                                Actions
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-sidebar-border">
                         <tr v-if="users.data.length === 0">
-                            <td colspan="5" class="px-4 py-8 text-center text-muted-foreground">
+                            <td
+                                colspan="5"
+                                class="px-4 py-8 text-center text-muted-foreground"
+                            >
                                 No users yet.
-                                <Link :href="create().url" class="text-primary underline ml-1">Create your first user</Link>
+                                <Link
+                                    :href="create().url"
+                                    class="ml-1 text-primary underline"
+                                    >Create your first user</Link
+                                >
                             </td>
                         </tr>
                         <tr
                             v-for="user in users.data"
                             :key="user.id"
-                            class="hover:bg-muted/30 transition-colors"
+                            class="transition-colors hover:bg-muted/30"
                         >
                             <td class="px-4 py-3 font-medium">
                                 {{ user.name }}
-                                <span v-if="user.id === currentUserId" class="text-xs text-muted-foreground ml-1">(you)</span>
+                                <span
+                                    v-if="user.id === currentUserId"
+                                    class="ml-1 text-xs text-muted-foreground"
+                                    >(you)</span
+                                >
                             </td>
-                            <td class="px-4 py-3 text-muted-foreground">{{ user.email }}</td>
+                            <td class="px-4 py-3 text-muted-foreground">
+                                {{ user.email }}
+                            </td>
                             <td class="px-4 py-3">
-                                <Badge :variant="roleBadgeVariant(user.roles[0]?.name ?? '')">
+                                <Badge
+                                    :variant="
+                                        roleBadgeVariant(
+                                            user.roles[0]?.name ?? '',
+                                        )
+                                    "
+                                >
                                     {{ user.roles[0]?.name ?? 'No role' }}
                                 </Badge>
                             </td>
-                            <td class="px-4 py-3 text-muted-foreground">{{ formatDate(user.created_at) }}</td>
+                            <td class="px-4 py-3 text-muted-foreground">
+                                {{ formatDate(user.created_at) }}
+                            </td>
                             <td class="px-4 py-3">
                                 <div class="flex justify-end gap-2">
-                                    <Link v-if="can('users.update')" :href="edit(user).url">
+                                    <Link
+                                        v-if="can('users.update')"
+                                        :href="edit(user).url"
+                                    >
                                         <Button variant="ghost" size="sm">
                                             <Pencil class="size-4" />
                                         </Button>
                                     </Link>
                                     <Button
-                                        v-if="can('users.delete') && user.id !== currentUserId"
+                                        v-if="
+                                            can('users.delete') &&
+                                            user.id !== currentUserId
+                                        "
                                         variant="ghost"
                                         size="sm"
                                         class="text-destructive hover:text-destructive"
@@ -153,12 +203,16 @@ function confirmDelete(user: StaffUser): void {
                     <Link
                         v-if="link.url"
                         :href="link.url"
-                        class="px-3 py-1.5 rounded text-sm border border-sidebar-border hover:bg-muted/50 transition-colors"
-                        :class="{ 'bg-primary text-primary-foreground border-primary': link.active }"
-                    ><span v-html="link.label" /></Link>
+                        class="rounded border border-sidebar-border px-3 py-1.5 text-sm transition-colors hover:bg-muted/50"
+                        :class="{
+                            'border-primary bg-primary text-primary-foreground':
+                                link.active,
+                        }"
+                        ><span v-html="link.label"
+                    /></Link>
                     <span
                         v-else
-                        class="px-3 py-1.5 rounded text-sm border border-sidebar-border text-muted-foreground opacity-50"
+                        class="rounded border border-sidebar-border px-3 py-1.5 text-sm text-muted-foreground opacity-50"
                         v-html="link.label"
                     />
                 </template>

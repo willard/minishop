@@ -1,6 +1,6 @@
-import AppLogo from '@/components/AppLogo.vue';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
+import AppLogo from '@/components/AppLogo.vue';
 
 describe('AppLogo', () => {
     it('renders without errors', () => {

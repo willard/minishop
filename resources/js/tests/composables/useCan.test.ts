@@ -60,7 +60,10 @@ describe('useCan', () => {
     });
 
     it('handles user with multiple roles', () => {
-        mockPage(['admin', 'manager'], ['products.view', 'products.create', 'orders.view']);
+        mockPage(
+            ['admin', 'manager'],
+            ['products.view', 'products.create', 'orders.view'],
+        );
         const { can, hasRole } = useCan();
 
         expect(hasRole('admin')).toBe(true);

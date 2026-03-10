@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class ProductImage extends Model
 {
@@ -18,11 +20,20 @@ class ProductImage extends Model
         'sort_order',
     ];
 
+    protected $appends = ['url'];
+
     protected function casts(): array
     {
         return [
             'sort_order' => 'integer',
         ];
+    }
+
+    protected function url(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => Storage::url($this->attributes['path']),
+        );
     }
 
     public function product(): BelongsTo

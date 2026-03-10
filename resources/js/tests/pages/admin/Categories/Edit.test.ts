@@ -1,6 +1,6 @@
-import EditPage from '@/pages/admin/Categories/Edit.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import EditPage from '@/pages/admin/Categories/Edit.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Form: {
@@ -9,11 +9,19 @@ vi.mock('@inertiajs/vue3', () => ({
         props: ['action', 'method'],
     },
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a href="#"><slot /></a>', props: ['href'] },
+    Link: {
+        name: 'Link',
+        template: '<a href="#"><slot /></a>',
+        props: ['href'],
+    },
 }));
 
 vi.mock('@/layouts/AppLayout.vue', () => ({
-    default: { name: 'AppLayout', template: '<div><slot /></div>', props: ['breadcrumbs'] },
+    default: {
+        name: 'AppLayout',
+        template: '<div><slot /></div>',
+        props: ['breadcrumbs'],
+    },
 }));
 
 vi.mock('@/components/ui/checkbox', () => ({
@@ -21,21 +29,33 @@ vi.mock('@/components/ui/checkbox', () => ({
         name: 'Checkbox',
         // Maps defaultValue → checked so we can assert .checked in the DOM.
         // Tests will FAIL if the code regresses to :default-checked.
-        template: '<input type="checkbox" :id="id" :name="name" :value="value" :checked="defaultValue" />',
+        template:
+            '<input type="checkbox" :id="id" :name="name" :value="value" :checked="defaultValue" />',
         props: ['id', 'name', 'value', 'defaultValue'],
     },
 }));
 
 vi.mock('@/components/ui/button', () => ({
-    Button: { name: 'Button', template: '<button><slot /></button>', props: ['variant', 'size', 'type', 'disabled'] },
+    Button: {
+        name: 'Button',
+        template: '<button><slot /></button>',
+        props: ['variant', 'size', 'type', 'disabled'],
+    },
 }));
 
 vi.mock('@/components/ui/label', () => ({
-    Label: { name: 'Label', template: '<label><slot /></label>', props: ['for'] },
+    Label: {
+        name: 'Label',
+        template: '<label><slot /></label>',
+        props: ['for'],
+    },
 }));
 
 vi.mock('@/actions/App/Http/Controllers/Admin/CategoryController', () => {
-    const update = vi.fn(() => ({ url: '/dashboard/categories/electronics', method: 'put' }));
+    const update = vi.fn(() => ({
+        url: '/dashboard/categories/electronics',
+        method: 'put',
+    }));
     update.form = vi.fn(() => ({
         action: '/dashboard/categories/electronics?_method=PUT',
         method: 'post',
@@ -90,21 +110,30 @@ describe('admin/Categories/Edit', () => {
     });
 
     it('pre-selects the correct parent category in select', () => {
-        const select = wrapper.find('select[name="parent_id"]') as { element: HTMLSelectElement };
+        const select = wrapper.find('select[name="parent_id"]') as {
+            element: HTMLSelectElement;
+        };
         // Value is compared as a string since DOM select values are always strings
         expect(select.element.value).toBe('2');
     });
 
     it('pre-checks is_active checkbox when category is active', () => {
-        const checkbox = wrapper.find('input[name="is_active"]') as { element: HTMLInputElement };
+        const checkbox = wrapper.find('input[name="is_active"]') as {
+            element: HTMLInputElement;
+        };
         expect(checkbox.element.checked).toBe(true);
     });
 
     it('leaves is_active unchecked when category is inactive', () => {
         const inactiveWrapper = mount(EditPage, {
-            props: { category: { ...baseCategory, is_active: false }, parentCategories },
+            props: {
+                category: { ...baseCategory, is_active: false },
+                parentCategories,
+            },
         });
-        const checkbox = inactiveWrapper.find('input[name="is_active"]') as { element: HTMLInputElement };
+        const checkbox = inactiveWrapper.find('input[name="is_active"]') as {
+            element: HTMLInputElement;
+        };
         expect(checkbox.element.checked).toBe(false);
     });
 
@@ -112,7 +141,9 @@ describe('admin/Categories/Edit', () => {
         const noParentsWrapper = mount(EditPage, {
             props: { category: baseCategory, parentCategories: [] },
         });
-        expect(noParentsWrapper.find('select[name="parent_id"]').exists()).toBe(false);
+        expect(noParentsWrapper.find('select[name="parent_id"]').exists()).toBe(
+            false,
+        );
     });
 
     it('displays an empty parent option alongside parent choices', () => {

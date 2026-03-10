@@ -1,10 +1,14 @@
-import UsersIndexPage from '@/pages/admin/Users/Index.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import UsersIndexPage from '@/pages/admin/Users/Index.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
-    Link: { name: 'Link', template: '<a :href="href"><slot /></a>', props: ['href'] },
+    Link: {
+        name: 'Link',
+        template: '<a :href="href"><slot /></a>',
+        props: ['href'],
+    },
     router: { delete: vi.fn() },
     usePage: vi.fn(() => ({
         props: {
@@ -18,15 +22,27 @@ vi.mock('@inertiajs/vue3', () => ({
 }));
 
 vi.mock('@/layouts/AppLayout.vue', () => ({
-    default: { name: 'AppLayout', template: '<div><slot /></div>', props: ['breadcrumbs'] },
+    default: {
+        name: 'AppLayout',
+        template: '<div><slot /></div>',
+        props: ['breadcrumbs'],
+    },
 }));
 
 vi.mock('@/components/ui/button', () => ({
-    Button: { name: 'Button', template: '<button @click="$emit(\'click\')"><slot /></button>', props: ['variant', 'size', 'type'] },
+    Button: {
+        name: 'Button',
+        template: '<button @click="$emit(\'click\')"><slot /></button>',
+        props: ['variant', 'size', 'type'],
+    },
 }));
 
 vi.mock('@/components/ui/badge', () => ({
-    Badge: { name: 'Badge', template: '<span><slot /></span>', props: ['variant'] },
+    Badge: {
+        name: 'Badge',
+        template: '<span><slot /></span>',
+        props: ['variant'],
+    },
 }));
 
 vi.mock('@/composables/useCan', () => ({
@@ -39,8 +55,12 @@ vi.mock('@/composables/useCan', () => ({
 vi.mock('@/actions/App/Http/Controllers/Admin/UserController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/users' })),
     create: vi.fn(() => ({ url: '/dashboard/users/create' })),
-    edit: vi.fn((u: { id: number }) => ({ url: `/dashboard/users/${u.id}/edit` })),
-    destroy: vi.fn((u: { id: number }) => ({ url: `/dashboard/users/${u.id}` })),
+    edit: vi.fn((u: { id: number }) => ({
+        url: `/dashboard/users/${u.id}/edit`,
+    })),
+    destroy: vi.fn((u: { id: number }) => ({
+        url: `/dashboard/users/${u.id}`,
+    })),
 }));
 
 const basePagination = {

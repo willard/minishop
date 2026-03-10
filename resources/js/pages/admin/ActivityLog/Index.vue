@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Badge } from '@/components/ui/badge';
-import { type BreadcrumbItem } from '@/types';
 import { index } from '@/actions/App/Http/Controllers/Admin/ActivityLogController';
+import { Badge } from '@/components/ui/badge';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
 
 interface User {
     id: number;
@@ -39,7 +39,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Activity Log', href: index().url },
 ];
 
-function actionVariant(action: string): 'default' | 'secondary' | 'destructive' {
+function actionVariant(
+    action: string,
+): 'default' | 'secondary' | 'destructive' {
     switch (action) {
         case 'created':
             return 'default';
@@ -63,39 +65,59 @@ function formatDate(dateString: string): string {
             <!-- Header -->
             <div>
                 <h1 class="text-2xl font-semibold">Activity Log</h1>
-                <p class="text-sm text-muted-foreground">{{ logs.total }} total entries</p>
+                <p class="text-sm text-muted-foreground">
+                    {{ logs.total }} total entries
+                </p>
             </div>
 
             <!-- Table -->
-            <div class="rounded-lg border border-sidebar-border overflow-hidden">
+            <div
+                class="overflow-hidden rounded-lg border border-sidebar-border"
+            >
                 <table class="w-full text-sm">
                     <thead class="bg-muted/50 text-muted-foreground">
                         <tr>
-                            <th class="px-4 py-3 text-left font-medium">When</th>
-                            <th class="px-4 py-3 text-left font-medium">User</th>
-                            <th class="px-4 py-3 text-left font-medium">Action</th>
-                            <th class="px-4 py-3 text-left font-medium">Description</th>
+                            <th class="px-4 py-3 text-left font-medium">
+                                When
+                            </th>
+                            <th class="px-4 py-3 text-left font-medium">
+                                User
+                            </th>
+                            <th class="px-4 py-3 text-left font-medium">
+                                Action
+                            </th>
+                            <th class="px-4 py-3 text-left font-medium">
+                                Description
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-sidebar-border">
                         <tr v-if="logs.data.length === 0">
-                            <td colspan="4" class="px-4 py-8 text-center text-muted-foreground">
+                            <td
+                                colspan="4"
+                                class="px-4 py-8 text-center text-muted-foreground"
+                            >
                                 No activity recorded yet.
                             </td>
                         </tr>
                         <tr
                             v-for="log in logs.data"
                             :key="log.id"
-                            class="hover:bg-muted/30 transition-colors"
+                            class="transition-colors hover:bg-muted/30"
                         >
-                            <td class="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
+                            <td
+                                class="px-4 py-3 text-xs whitespace-nowrap text-muted-foreground"
+                            >
                                 {{ formatDate(log.created_at) }}
                             </td>
                             <td class="px-4 py-3 text-xs">
                                 {{ log.user?.name ?? 'System' }}
                             </td>
                             <td class="px-4 py-3">
-                                <Badge :variant="actionVariant(log.action)" class="capitalize">
+                                <Badge
+                                    :variant="actionVariant(log.action)"
+                                    class="capitalize"
+                                >
                                     {{ log.action }}
                                 </Badge>
                             </td>
@@ -113,12 +135,16 @@ function formatDate(dateString: string): string {
                     <a
                         v-if="link.url"
                         :href="link.url"
-                        class="px-3 py-1.5 rounded text-sm border border-sidebar-border hover:bg-muted/50 transition-colors"
-                        :class="{ 'bg-primary text-primary-foreground border-primary': link.active }"
-                    ><span v-html="link.label" /></a>
+                        class="rounded border border-sidebar-border px-3 py-1.5 text-sm transition-colors hover:bg-muted/50"
+                        :class="{
+                            'border-primary bg-primary text-primary-foreground':
+                                link.active,
+                        }"
+                        ><span v-html="link.label"
+                    /></a>
                     <span
                         v-else
-                        class="px-3 py-1.5 rounded text-sm border border-sidebar-border text-muted-foreground opacity-50"
+                        class="rounded border border-sidebar-border px-3 py-1.5 text-sm text-muted-foreground opacity-50"
                         v-html="link.label"
                     />
                 </template>

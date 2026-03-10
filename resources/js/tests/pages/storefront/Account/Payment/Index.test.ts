@@ -1,13 +1,17 @@
-import PaymentIndex from '@/pages/storefront/Account/Payment/Index.vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import PaymentIndex from '@/pages/storefront/Account/Payment/Index.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
 }));
 
 vi.mock('@/layouts/AccountLayout.vue', () => ({
-    default: { name: 'AccountLayout', template: '<div><slot /></div>', props: ['title'] },
+    default: {
+        name: 'AccountLayout',
+        template: '<div><slot /></div>',
+        props: ['title'],
+    },
 }));
 
 describe('Account/Payment/Index', () => {

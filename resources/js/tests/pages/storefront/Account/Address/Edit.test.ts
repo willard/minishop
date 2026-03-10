@@ -1,18 +1,23 @@
-import AddressEdit from '@/pages/storefront/Account/Address/Edit.vue';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
+import AddressEdit from '@/pages/storefront/Account/Address/Edit.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
     Head: { name: 'Head', template: '<div />', props: ['title'] },
     Form: {
         name: 'Form',
-        template: '<form><slot :errors="{}" :processing="false" :recentlySuccessful="false" /></form>',
+        template:
+            '<form><slot :errors="{}" :processing="false" :recentlySuccessful="false" /></form>',
         props: ['action', 'method', 'setDefaultsOnSuccess'],
     },
 }));
 
 vi.mock('@/layouts/AccountLayout.vue', () => ({
-    default: { name: 'AccountLayout', template: '<div><slot /></div>', props: ['title'] },
+    default: {
+        name: 'AccountLayout',
+        template: '<div><slot /></div>',
+        props: ['title'],
+    },
 }));
 
 vi.mock('@/components/InputError.vue', () => ({
@@ -20,7 +25,9 @@ vi.mock('@/components/InputError.vue', () => ({
 }));
 
 vi.mock('@/routes/account/address', () => ({
-    update: { form: vi.fn(() => ({ action: '/account/address', method: 'post' })) },
+    update: {
+        form: vi.fn(() => ({ action: '/account/address', method: 'post' })),
+    },
 }));
 
 const existingAddress = {
@@ -46,25 +53,33 @@ describe('Account/Address/Edit', () => {
     });
 
     it('pre-fills the name field from an existing address', () => {
-        const wrapper = mount(AddressEdit, { props: { address: existingAddress } });
+        const wrapper = mount(AddressEdit, {
+            props: { address: existingAddress },
+        });
         const nameInput = wrapper.find('input[name="name"]');
         expect(nameInput.attributes('value')).toBe('Jane Doe');
     });
 
     it('pre-fills the address line 1 from an existing address', () => {
-        const wrapper = mount(AddressEdit, { props: { address: existingAddress } });
+        const wrapper = mount(AddressEdit, {
+            props: { address: existingAddress },
+        });
         const line1 = wrapper.find('input[name="line1"]');
         expect(line1.attributes('value')).toBe('123 Main St');
     });
 
     it('pre-fills the city from an existing address', () => {
-        const wrapper = mount(AddressEdit, { props: { address: existingAddress } });
+        const wrapper = mount(AddressEdit, {
+            props: { address: existingAddress },
+        });
         const city = wrapper.find('input[name="city"]');
         expect(city.attributes('value')).toBe('Manila');
     });
 
     it('pre-fills the postal code from an existing address', () => {
-        const wrapper = mount(AddressEdit, { props: { address: existingAddress } });
+        const wrapper = mount(AddressEdit, {
+            props: { address: existingAddress },
+        });
         const postal = wrapper.find('input[name="postal_code"]');
         expect(postal.attributes('value')).toBe('1000');
     });
