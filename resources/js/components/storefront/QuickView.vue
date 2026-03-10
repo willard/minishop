@@ -104,6 +104,21 @@ const hasVariants = computed<boolean>(() => {
     return (props.product?.options?.length ?? 0) > 0;
 });
 
+const displayImages = computed(() => {
+    if (
+        selectedVariant.value &&
+        (selectedVariant.value.images?.length ?? 0) > 0
+    ) {
+        return selectedVariant.value.images;
+    }
+
+    return props.product?.images ?? [];
+});
+
+watch(selectedVariant, () => {
+    activeImageIndex.value = 0;
+});
+
 function handleAddToCart(): void {
     if (!props.product || !inStock.value) {
         return;
@@ -116,7 +131,7 @@ function handleAddToCart(): void {
         slug: props.product.slug,
         sku: selectedVariant.value?.sku ?? props.product.sku,
         price: effectivePrice.value,
-        image: props.product.images?.[0]?.url ?? null,
+        image: displayImages.value[0]?.url ?? null,
         variantLabel: variantLabel.value,
     });
 }
@@ -153,10 +168,10 @@ function handleAddToCart(): void {
                         "
                     >
                         <img
-                            v-if="product.images?.[activeImageIndex]"
-                            :src="product.images[activeImageIndex].url"
+                            v-if="displayImages[activeImageIndex]"
+                            :src="displayImages[activeImageIndex].url"
                             :alt="
-                                product.images[activeImageIndex].alt_text ??
+                                displayImages[activeImageIndex].alt_text ??
                                 product.name
                             "
                             class="h-full w-full object-cover"
@@ -179,7 +194,7 @@ function handleAddToCart(): void {
 
                     <!-- Navigation arrows -->
                     <div
-                        v-if="product.images && product.images.length > 1"
+                        v-if="displayImages.length > 1"
                         class="absolute inset-x-4 top-1/2 flex -translate-y-1/2 justify-between"
                     >
                         <button
@@ -192,7 +207,7 @@ function handleAddToCart(): void {
                         <div v-else class="size-10" />
 
                         <button
-                            v-if="activeImageIndex < product.images.length - 1"
+                            v-if="activeImageIndex < displayImages.length - 1"
                             class="flex size-10 items-center justify-center rounded-full bg-white/80 shadow-sm transition-opacity hover:bg-white"
                             @click="activeImageIndex++"
                         >
@@ -202,11 +217,11 @@ function handleAddToCart(): void {
 
                     <!-- Thumbnails overlay -->
                     <div
-                        v-if="product.images && product.images.length > 1"
+                        v-if="displayImages.length > 1"
                         class="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2"
                     >
                         <button
-                            v-for="(img, i) in product.images"
+                            v-for="(img, i) in displayImages"
                             :key="img.id"
                             class="size-2 rounded-full transition-all"
                             :style="

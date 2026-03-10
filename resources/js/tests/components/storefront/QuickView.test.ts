@@ -31,7 +31,7 @@ const mockProduct = {
     price: 59900,
     stock_quantity: 10,
     description: 'A beautiful handmade mug.',
-    images: [{ id: 1, path: '/img.jpg', alt_text: 'Mug' }],
+    images: [{ id: 1, path: '/img.jpg', url: '/storage/img.jpg', alt_text: 'Mug', sort_order: 0 }],
     categories: [{ id: 1, name: 'Kitchen' }],
     options: [
         {
@@ -51,6 +51,7 @@ const mockProduct = {
             stock_quantity: 5,
             is_active: true,
             option_values: [{ id: 1, value: 'Small' }],
+            images: [],
         },
         {
             id: 2,
@@ -59,6 +60,7 @@ const mockProduct = {
             stock_quantity: 5,
             is_active: true,
             option_values: [{ id: 2, value: 'Large' }],
+            images: [{ id: 10, path: '/large.jpg', url: '/storage/large.jpg', alt_text: 'Large', sort_order: 0 }],
         },
     ],
 };
@@ -141,6 +143,53 @@ describe('QuickView', () => {
                 productId: 1,
                 variantId: 1, // Default selected first variant
                 price: 59900,
+            }),
+        );
+    });
+
+    it('uses variant image when selected variant has images', async () => {
+        const wrapper = mount(QuickView, {
+            props: {
+                product: mockProduct as any,
+                isOpen: true,
+            },
+            global: {
+                stubs: globalStubs,
+            },
+        });
+
+        // Select "Large" (variant with an image)
+        const largeButton = wrapper.findAll('button').find((b) => b.text() === 'Large');
+        await largeButton?.trigger('click');
+
+        const addToBagButton = wrapper.findAll('button').find((b) => b.text().includes('Add to Bag'));
+        await addToBagButton?.trigger('click');
+
+        expect(mockUseCart.addItem).toHaveBeenCalledWith(
+            expect.objectContaining({
+                image: '/storage/large.jpg',
+            }),
+        );
+    });
+
+    it('falls back to product image when selected variant has no images', async () => {
+        const wrapper = mount(QuickView, {
+            props: {
+                product: mockProduct as any,
+                isOpen: true,
+            },
+            global: {
+                stubs: globalStubs,
+            },
+        });
+
+        // "Small" is selected by default and has no images
+        const addToBagButton = wrapper.findAll('button').find((b) => b.text().includes('Add to Bag'));
+        await addToBagButton?.trigger('click');
+
+        expect(mockUseCart.addItem).toHaveBeenCalledWith(
+            expect.objectContaining({
+                image: '/storage/img.jpg',
             }),
         );
     });

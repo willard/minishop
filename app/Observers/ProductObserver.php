@@ -67,7 +67,7 @@ class ProductObserver
 
     public function deleting(Product $product): void
     {
-        foreach ($product->images as $image) {
+        foreach ($product->allImages as $image) {
             Storage::disk('public')->delete($image->path);
         }
     }

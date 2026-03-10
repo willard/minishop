@@ -1,4 +1,10 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ref } from 'vue';
+
+vi.mock('@vueuse/core', () => ({
+    useLocalStorage: (_key: string, defaultValue: unknown) => ref(defaultValue),
+}));
+
 import { useCart } from '@/composables/useCart';
 import type { CartItem } from '@/types/storefront';
 
