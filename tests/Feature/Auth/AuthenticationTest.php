@@ -68,6 +68,34 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_login_redirects_to_redirect_input_when_present(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+            'redirect' => '/checkout',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/checkout');
+    }
+
+    public function test_login_ignores_redirect_input_with_external_url(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+            'redirect' => 'https://evil.com',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/account');
+    }
+
     public function test_users_can_not_authenticate_with_invalid_password()
     {
         $user = User::factory()->create();

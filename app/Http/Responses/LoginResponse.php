@@ -14,8 +14,16 @@ class LoginResponse implements LoginResponseContract
         $user = $request->user();
         $home = $user->hasAnyRole(['super-admin', 'admin', 'manager']) ? '/dashboard' : '/account';
 
-        return $request->wantsJson()
-            ? response()->json(['two_factor' => false])
-            : redirect()->intended($home);
+        if ($request->wantsJson()) {
+            return response()->json(['two_factor' => false]);
+        }
+
+        $redirect = $request->input('redirect');
+
+        if (is_string($redirect) && str_starts_with($redirect, '/')) {
+            return redirect($redirect);
+        }
+
+        return redirect()->intended($home);
     }
 }
