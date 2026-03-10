@@ -88,7 +88,7 @@ class ProductController extends Controller
     {
         $this->authorize('view', $product);
 
-        $product->load(['categories', 'images', 'options.values', 'variants.optionValues.option']);
+        $product->load(['categories', 'images', 'options.values', 'variants.optionValues.option', 'variants.images']);
 
         return Inertia::render('admin/Products/Show', [
             'product' => $product,

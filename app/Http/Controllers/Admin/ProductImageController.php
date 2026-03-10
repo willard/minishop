@@ -19,13 +19,20 @@ class ProductImageController extends Controller
         Gate::authorize('products.update');
 
         $files = $request->file('images');
-        $maxSortOrder = $product->images()->max('sort_order') ?? -1;
+        $variantId = $request->integer('variant_id') ?: null;
+
+        $maxSortOrder = ProductImage::query()
+            ->where('product_id', $product->id)
+            ->where('variant_id', $variantId)
+            ->max('sort_order') ?? -1;
 
         foreach ($files as $file) {
             $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
             $path = $file->storeAs("products/{$product->id}", $filename, 'public');
 
-            $product->images()->create([
+            ProductImage::create([
+                'product_id' => $product->id,
+                'variant_id' => $variantId,
                 'path' => $path,
                 'alt_text' => $request->input('alt_text'),
                 'sort_order' => ++$maxSortOrder,

@@ -4,6 +4,7 @@ namespace Tests\Feature\Admin;
 
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Models\ProductVariant;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -213,6 +214,67 @@ class ProductImageTest extends TestCase
         $this->actingAs($user)
             ->put(route('admin.products.images.reorder', $product), [])
             ->assertSessionHasErrors('image_ids');
+    }
+
+    public function test_upload_with_variant_id_assigns_image_to_variant(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->superAdmin()->create();
+        $product = Product::factory()->create();
+        $variant = ProductVariant::factory()->create(['product_id' => $product->id]);
+
+        $this->actingAs($user)
+            ->post(route('admin.products.images.store', $product), [
+                'images' => [UploadedFile::fake()->image('variant-photo.jpg')],
+                'variant_id' => $variant->id,
+            ])
+            ->assertRedirect(route('admin.products.show', $product));
+
+        $this->assertDatabaseHas('product_images', [
+            'product_id' => $product->id,
+            'variant_id' => $variant->id,
+        ]);
+    }
+
+    public function test_product_images_scope_excludes_variant_images(): void
+    {
+        $product = Product::factory()->create();
+        $variant = ProductVariant::factory()->create(['product_id' => $product->id]);
+
+        ProductImage::factory()->create(['product_id' => $product->id, 'variant_id' => null]);
+        ProductImage::factory()->create(['product_id' => $product->id, 'variant_id' => $variant->id]);
+
+        $this->assertCount(1, $product->images);
+        $this->assertNull($product->images->first()->variant_id);
+    }
+
+    public function test_variant_images_relationship_returns_only_variant_images(): void
+    {
+        $product = Product::factory()->create();
+        $variant = ProductVariant::factory()->create(['product_id' => $product->id]);
+
+        ProductImage::factory()->create(['product_id' => $product->id, 'variant_id' => null]);
+        ProductImage::factory()->create(['product_id' => $product->id, 'variant_id' => $variant->id]);
+        ProductImage::factory()->create(['product_id' => $product->id, 'variant_id' => $variant->id]);
+
+        $this->assertCount(2, $variant->images);
+        foreach ($variant->images as $image) {
+            $this->assertEquals($variant->id, $image->variant_id);
+        }
+    }
+
+    public function test_upload_with_invalid_variant_id_fails_validation(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->superAdmin()->create();
+        $product = Product::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.products.images.store', $product), [
+                'images' => [UploadedFile::fake()->image('photo.jpg')],
+                'variant_id' => 99999,
+            ])
+            ->assertSessionHasErrors('variant_id');
     }
 
     public function test_product_delete_cleans_up_image_files(): void

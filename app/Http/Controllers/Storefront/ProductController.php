@@ -15,7 +15,7 @@ class ProductController extends Controller
     {
         $products = Product::query()
             ->where('is_active', true)
-            ->with(['categories', 'images', 'options.values', 'variants.optionValues'])
+            ->with(['categories', 'images', 'options.values', 'variants.optionValues', 'variants.images'])
             ->when($request->filled('category'), function ($query) use ($request) {
                 $query->whereHas('categories', fn ($q) => $q->where('slug', $request->string('category')));
             })
@@ -48,6 +48,7 @@ class ProductController extends Controller
             'images',
             'options.values',
             'variants.optionValues',
+            'variants.images',
         ]);
 
         return Inertia::render('storefront/Products/Show', [

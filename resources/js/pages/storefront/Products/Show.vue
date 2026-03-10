@@ -2,7 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { useWindowScroll } from '@vueuse/core';
 import { ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 // ... (existing imports)
 
@@ -97,6 +97,21 @@ const hasVariants = computed<boolean>(() => {
     return (props.product.options?.length ?? 0) > 0;
 });
 
+const displayImages = computed(() => {
+    if (
+        selectedVariant.value &&
+        (selectedVariant.value.images?.length ?? 0) > 0
+    ) {
+        return selectedVariant.value.images!;
+    }
+
+    return props.product.images;
+});
+
+watch(selectedVariant, () => {
+    activeImageIndex.value = 0;
+});
+
 function handleAddToCart(): void {
     if (!inStock.value) {
         return;
@@ -109,7 +124,7 @@ function handleAddToCart(): void {
         slug: props.product.slug,
         sku: selectedVariant.value?.sku ?? props.product.sku,
         price: effectivePrice.value,
-        image: props.product.images?.[0]?.url ?? null,
+        image: displayImages.value[0]?.url ?? null,
         variantLabel: variantLabel.value,
     });
 }
@@ -157,10 +172,10 @@ function handleAddToCart(): void {
                         @mousemove="handleMouseMove"
                     >
                         <img
-                            v-if="product.images?.[activeImageIndex]"
-                            :src="product.images[activeImageIndex].url"
+                            v-if="displayImages[activeImageIndex]"
+                            :src="displayImages[activeImageIndex].url"
                             :alt="
-                                product.images[activeImageIndex].alt_text ??
+                                displayImages[activeImageIndex].alt_text ??
                                 product.name
                             "
                             class="h-full w-full object-cover transition-transform duration-200 ease-out"
@@ -187,9 +202,7 @@ function handleAddToCart(): void {
                         <!-- Navigation arrows (when multiple images) -->
                         <button
                             v-if="
-                                product.images &&
-                                product.images.length > 1 &&
-                                activeImageIndex > 0
+                                displayImages.length > 1 && activeImageIndex > 0
                             "
                             class="absolute top-1/2 left-3 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 shadow-sm transition-opacity hover:bg-white"
                             @click="activeImageIndex--"
@@ -201,9 +214,8 @@ function handleAddToCart(): void {
                         </button>
                         <button
                             v-if="
-                                product.images &&
-                                product.images.length > 1 &&
-                                activeImageIndex < product.images.length - 1
+                                displayImages.length > 1 &&
+                                activeImageIndex < displayImages.length - 1
                             "
                             class="absolute top-1/2 right-3 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 shadow-sm transition-opacity hover:bg-white"
                             @click="activeImageIndex++"
@@ -217,11 +229,11 @@ function handleAddToCart(): void {
 
                     <!-- Thumbnails -->
                     <div
-                        v-if="product.images && product.images.length > 1"
+                        v-if="displayImages.length > 1"
                         class="flex gap-3 overflow-x-auto"
                     >
                         <button
-                            v-for="(image, i) in product.images"
+                            v-for="(image, i) in displayImages"
                             :key="image.id"
                             class="size-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all"
                             :style="

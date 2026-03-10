@@ -20,6 +20,7 @@ class StoreProductImageRequest extends FormRequest
             'images' => ['required', 'array', 'min:1'],
             'images.*' => ['required', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
             'alt_text' => ['nullable', 'string', 'max:255'],
+            'variant_id' => ['nullable', 'integer', 'exists:product_variants,id'],
         ];
     }
 

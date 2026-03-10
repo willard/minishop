@@ -40,6 +40,7 @@ export interface StorefrontVariant {
     stock_quantity: number;
     is_active: boolean;
     option_values: StorefrontVariantOptionValue[];
+    images?: StorefrontProductImage[];
 }
 
 export interface StorefrontProduct {

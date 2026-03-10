@@ -55,6 +55,7 @@ const baseProps = {
     totalOrders: 8,
     totalCustomers: 3,
     lowStockCount: 2,
+    lowStockThreshold: 10,
     recentOrders: [
         {
             id: 1,

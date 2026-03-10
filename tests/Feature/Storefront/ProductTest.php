@@ -4,6 +4,8 @@ namespace Tests\Feature\Storefront;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductImage;
+use App\Models\ProductVariant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -82,5 +84,37 @@ class ProductTest extends TestCase
     {
         $this->get(route('storefront.products.show', 'non-existent-slug'))
             ->assertNotFound();
+    }
+
+    public function test_product_show_includes_variant_images(): void
+    {
+        $product = Product::factory()->create();
+        $variant = ProductVariant::factory()->create(['product_id' => $product->id]);
+        ProductImage::factory()->create([
+            'product_id' => $product->id,
+            'variant_id' => $variant->id,
+            'sort_order' => 0,
+        ]);
+
+        $this->get(route('storefront.products.show', $product))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('product.variants.0.images', 1)
+            );
+    }
+
+    public function test_product_show_images_only_contains_product_level_images(): void
+    {
+        $product = Product::factory()->create();
+        $variant = ProductVariant::factory()->create(['product_id' => $product->id]);
+
+        ProductImage::factory()->create(['product_id' => $product->id, 'variant_id' => null]);
+        ProductImage::factory()->create(['product_id' => $product->id, 'variant_id' => $variant->id]);
+
+        $this->get(route('storefront.products.show', $product))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('product.images', 1)
+            );
     }
 }

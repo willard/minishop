@@ -4,6 +4,7 @@ import {
     ArrowLeft,
     ChevronDown,
     ChevronUp,
+    ImagePlus,
     Pencil,
     Plus,
     Trash2,
@@ -43,6 +44,7 @@ interface Category {
 interface ProductImage {
     id: number;
     path: string;
+    url: string;
     alt_text: string | null;
     sort_order: number;
 }
@@ -73,6 +75,7 @@ interface ProductVariant {
     stock_quantity: number;
     is_active: boolean;
     option_values: OptionValue[];
+    images: ProductImage[];
 }
 
 interface Product {
@@ -114,6 +117,59 @@ function confirmDelete(): void {
 function confirmDeleteVariant(variant: ProductVariant): void {
     if (confirm('Delete this variant? This cannot be undone.')) {
         router.delete(destroyVariant({ product: props.product, variant }).url);
+    }
+}
+
+// Per-variant image upload: track a form and file input ref per variant id
+const variantImageForms = ref<Record<number, ReturnType<typeof useForm>>>({});
+const variantFileInputs = ref<Record<number, HTMLInputElement | null>>({});
+const expandedVariants = ref<Set<number>>(new Set());
+
+function getVariantImageForm(variantId: number): ReturnType<typeof useForm> {
+    if (!variantImageForms.value[variantId]) {
+        variantImageForms.value[variantId] = useForm({
+            images: null as File[] | null,
+            variant_id: variantId,
+        });
+    }
+
+    return variantImageForms.value[variantId];
+}
+
+function toggleVariantImages(variantId: number): void {
+    if (expandedVariants.value.has(variantId)) {
+        expandedVariants.value.delete(variantId);
+    } else {
+        expandedVariants.value.add(variantId);
+    }
+}
+
+function onVariantFileChange(variantId: number, event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const form = getVariantImageForm(variantId);
+    form.images = target.files ? Array.from(target.files) : null;
+}
+
+function uploadVariantImages(variantId: number): void {
+    const form = getVariantImageForm(variantId);
+    form.post(storeImage(props.product).url, {
+        forceFormData: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            form.reset();
+            const input = variantFileInputs.value[variantId];
+            if (input) {
+                input.value = '';
+            }
+        },
+    });
+}
+
+function confirmDeleteVariantImage(image: ProductImage): void {
+    if (confirm('Delete this image? This cannot be undone.')) {
+        router.delete(destroyImage({ product: props.product, image }).url, {
+            preserveScroll: true,
+        });
     }
 }
 
@@ -548,68 +604,39 @@ function moveImage(fromIndex: number, toIndex: number): void {
                     options.
                 </div>
 
-                <table v-else class="w-full text-sm">
-                    <thead class="border-b border-sidebar-border bg-muted/20">
-                        <tr>
-                            <th
-                                class="px-4 py-2 text-left text-xs font-medium text-muted-foreground"
-                            >
-                                Options
-                            </th>
-                            <th
-                                class="px-4 py-2 text-left text-xs font-medium text-muted-foreground"
-                            >
-                                SKU
-                            </th>
-                            <th
-                                class="px-4 py-2 text-left text-xs font-medium text-muted-foreground"
-                            >
-                                Price
-                            </th>
-                            <th
-                                class="px-4 py-2 text-left text-xs font-medium text-muted-foreground"
-                            >
-                                Stock
-                            </th>
-                            <th
-                                class="px-4 py-2 text-left text-xs font-medium text-muted-foreground"
-                            >
-                                Status
-                            </th>
-                            <th class="px-4 py-2" />
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-sidebar-border">
-                        <tr
-                            v-for="variant in product.variants"
-                            :key="variant.id"
-                            class="transition-colors hover:bg-muted/30"
+                <div v-else class="divide-y divide-sidebar-border">
+                    <div
+                        v-for="variant in product.variants"
+                        :key="variant.id"
+                    >
+                        <!-- Variant row -->
+                        <div
+                            class="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/20"
                         >
-                            <td class="px-4 py-2.5">
-                                <div class="flex flex-wrap gap-1">
-                                    <Badge
-                                        v-for="ov in variant.option_values"
-                                        :key="ov.id"
-                                        variant="secondary"
-                                        class="text-xs font-normal"
-                                    >
-                                        {{ ov.option.name }}: {{ ov.value }}
-                                    </Badge>
-                                    <span
-                                        v-if="
-                                            variant.option_values.length === 0
-                                        "
-                                        class="text-xs text-muted-foreground italic"
-                                        >No options</span
-                                    >
-                                </div>
-                            </td>
-                            <td
-                                class="px-4 py-2.5 font-mono text-xs text-muted-foreground"
+                            <!-- Option badges -->
+                            <div class="flex min-w-0 flex-1 flex-wrap gap-1">
+                                <Badge
+                                    v-for="ov in variant.option_values"
+                                    :key="ov.id"
+                                    variant="secondary"
+                                    class="text-xs font-normal"
+                                >
+                                    {{ ov.option.name }}: {{ ov.value }}
+                                </Badge>
+                                <span
+                                    v-if="variant.option_values.length === 0"
+                                    class="text-xs text-muted-foreground italic"
+                                    >No options</span
+                                >
+                            </div>
+
+                            <!-- Meta info -->
+                            <div
+                                class="hidden items-center gap-4 text-sm sm:flex"
                             >
-                                {{ variant.sku ?? '—' }}
-                            </td>
-                            <td class="px-4 py-2.5">
+                                <span class="font-mono text-xs text-muted-foreground">{{
+                                    variant.sku ?? '—'
+                                }}</span>
                                 <span v-if="variant.price !== null"
                                     >${{ formatPrice(variant.price) }}</span
                                 >
@@ -618,18 +645,15 @@ function moveImage(fromIndex: number, toIndex: number): void {
                                     class="text-xs text-muted-foreground italic"
                                     >Inherited</span
                                 >
-                            </td>
-                            <td
-                                class="px-4 py-2.5"
-                                :class="
-                                    variant.stock_quantity === 0
-                                        ? 'font-medium text-destructive'
-                                        : ''
-                                "
-                            >
-                                {{ variant.stock_quantity }}
-                            </td>
-                            <td class="px-4 py-2.5">
+                                <span
+                                    :class="
+                                        variant.stock_quantity === 0
+                                            ? 'font-medium text-destructive'
+                                            : 'text-muted-foreground'
+                                    "
+                                    class="text-xs"
+                                    >{{ variant.stock_quantity }} in stock</span
+                                >
                                 <Badge
                                     :variant="
                                         variant.is_active
@@ -644,38 +668,137 @@ function moveImage(fromIndex: number, toIndex: number): void {
                                             : 'Inactive'
                                     }}
                                 </Badge>
-                            </td>
-                            <td class="px-4 py-2.5 text-right">
-                                <div
-                                    class="flex items-center justify-end gap-1"
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="flex items-center gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    class="h-7 gap-1 px-2 text-xs"
+                                    :class="
+                                        expandedVariants.has(variant.id)
+                                            ? 'text-foreground'
+                                            : 'text-muted-foreground'
+                                    "
+                                    @click="toggleVariantImages(variant.id)"
                                 >
-                                    <Link
-                                        :href="
-                                            editVariant({ product, variant })
-                                                .url
-                                        "
+                                    <ImagePlus class="size-3" />
+                                    <span
+                                        >{{
+                                            variant.images.length || ''
+                                        }}
+                                        Images</span
                                     >
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            class="h-7 w-7 p-0"
-                                        >
-                                            <Pencil class="size-3" />
-                                        </Button>
-                                    </Link>
+                                    <ChevronDown
+                                        class="size-3 transition-transform"
+                                        :class="
+                                            expandedVariants.has(variant.id)
+                                                ? 'rotate-180'
+                                                : ''
+                                        "
+                                    />
+                                </Button>
+                                <Link
+                                    :href="
+                                        editVariant({ product, variant }).url
+                                    "
+                                >
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        class="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                                        @click="confirmDeleteVariant(variant)"
+                                        class="h-7 w-7 p-0"
                                     >
-                                        <Trash2 class="size-3" />
+                                        <Pencil class="size-3" />
+                                    </Button>
+                                </Link>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    class="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                    @click="confirmDeleteVariant(variant)"
+                                >
+                                    <Trash2 class="size-3" />
+                                </Button>
+                            </div>
+                        </div>
+
+                        <!-- Expandable image section -->
+                        <div
+                            v-if="expandedVariants.has(variant.id)"
+                            class="border-t border-dashed border-sidebar-border bg-muted/30 px-4 py-4"
+                        >
+                            <!-- Existing variant images -->
+                            <div
+                                v-if="variant.images.length > 0"
+                                class="mb-4 grid grid-cols-4 gap-2"
+                            >
+                                <div
+                                    v-for="image in variant.images"
+                                    :key="image.id"
+                                    class="group relative overflow-hidden rounded-md border border-sidebar-border"
+                                >
+                                    <img
+                                        :src="`/storage/${image.path}`"
+                                        :alt="image.alt_text ?? product.name"
+                                        class="aspect-square w-full object-cover"
+                                    />
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        class="absolute top-1 right-1 h-5 w-5 p-0 opacity-0 transition-opacity group-hover:opacity-100"
+                                        @click="confirmDeleteVariantImage(image)"
+                                    >
+                                        <X class="size-3" />
                                     </Button>
                                 </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                            </div>
+                            <p
+                                v-else
+                                class="mb-3 text-xs text-muted-foreground"
+                            >
+                                No images for this variant yet.
+                            </p>
+
+                            <!-- Upload form -->
+                            <form
+                                class="flex items-end gap-2"
+                                @submit.prevent="
+                                    uploadVariantImages(variant.id)
+                                "
+                            >
+                                <input
+                                    :ref="
+                                        (el) =>
+                                            (variantFileInputs[variant.id] =
+                                                el as HTMLInputElement | null)
+                                    "
+                                    type="file"
+                                    multiple
+                                    accept="image/jpeg,image/png,image/webp,image/gif"
+                                    class="text-sm file:mr-2 file:rounded file:border-0 file:bg-muted file:px-2.5 file:py-1 file:text-xs file:font-medium"
+                                    @change="
+                                        onVariantFileChange(variant.id, $event)
+                                    "
+                                />
+                                <Button
+                                    type="submit"
+                                    size="sm"
+                                    class="h-8 shrink-0"
+                                    :disabled="
+                                        !getVariantImageForm(variant.id)
+                                            .images ||
+                                        getVariantImageForm(variant.id)
+                                            .processing
+                                    "
+                                >
+                                    <Upload class="mr-1 size-3" />
+                                    Upload
+                                </Button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </AppLayout>
