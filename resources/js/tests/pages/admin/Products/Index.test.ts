@@ -56,6 +56,19 @@ vi.mock('@/actions/App/Http/Controllers/Admin/ProductController', () => ({
     destroy: vi.fn((product: { slug: string }) => ({
         url: `/dashboard/products/${product.slug}`,
     })),
+    exportMethod: Object.assign(
+        vi.fn(() => ({ url: '/dashboard/products/export' })),
+        {
+            url: vi.fn((options?: { query?: Record<string, string | undefined> }) => {
+                const params = new URLSearchParams();
+                for (const [k, v] of Object.entries(options?.query ?? {})) {
+                    if (v !== undefined) params.set(k, v);
+                }
+                const qs = params.toString();
+                return `/dashboard/products/export${qs ? '?' + qs : ''}`;
+            }),
+        },
+    ),
 }));
 
 const baseProducts = {
@@ -88,10 +101,18 @@ const baseProducts = {
     links: [],
 };
 
-const baseFilters: { search?: string; category_id?: string; stock?: string } = {
+const baseFilters: {
+    search?: string;
+    category_id?: string;
+    stock?: string;
+    sort_by?: string;
+    sort_dir?: string;
+} = {
     search: '',
     category_id: undefined,
     stock: undefined,
+    sort_by: undefined,
+    sort_dir: undefined,
 };
 
 const baseCategories = [
@@ -151,13 +172,59 @@ describe('admin/Products/Index', () => {
         expect(buttonTexts).toContain('out of stock');
     });
 
-    it('renders category filter buttons', () => {
+    it('renders category filter as a select dropdown', () => {
+        const select = wrapper.find('select');
+        expect(select.exists()).toBe(true);
+        const options = select.findAll('option');
+        const optionTexts = options.map((o) => o.text().trim());
+        expect(optionTexts).toContain('All Categories');
+        expect(optionTexts).toContain('Apparel');
+        expect(optionTexts).toContain('Electronics');
+    });
+
+    it('renders sortable column headers for name, sku, price, stock, and status', () => {
         const buttons = wrapper.findAll('button');
         const buttonTexts = buttons.map((b) => b.text().trim().toLowerCase());
-        expect(buttonTexts).toContain('all categories');
-        baseCategories.forEach((cat) => {
-            expect(buttonTexts).toContain(cat.name.toLowerCase());
+        expect(buttonTexts.some((t) => t.includes('name'))).toBe(true);
+        expect(buttonTexts.some((t) => t.includes('sku'))).toBe(true);
+        expect(buttonTexts.some((t) => t.includes('price'))).toBe(true);
+        expect(buttonTexts.some((t) => t.includes('stock'))).toBe(true);
+        expect(buttonTexts.some((t) => t.includes('status'))).toBe(true);
+    });
+
+    it('clicking a sort header calls router.get with sort_by and sort_dir', async () => {
+        const { router } = await import('@inertiajs/vue3');
+        const sortButtons = wrapper.findAll('thead button');
+        await sortButtons[0].trigger('click');
+        expect(router.get).toHaveBeenCalledWith(
+            '/dashboard/products',
+            expect.objectContaining({ sort_by: expect.any(String), sort_dir: 'asc' }),
+            expect.any(Object),
+        );
+    });
+
+    it('renders CSV and PDF export links', () => {
+        const links = wrapper.findAll('a');
+        const hrefs = links.map((l) => l.attributes('href') ?? '');
+        expect(hrefs.some((h) => h.includes('format=csv'))).toBe(true);
+        expect(hrefs.some((h) => h.includes('format=pdf'))).toBe(true);
+    });
+
+    it('export links include active filter params', () => {
+        const filteredWrapper = mount(IndexPage, {
+            props: {
+                products: baseProducts,
+                filters: { search: 'shirt', stock: 'in_stock', sort_by: 'price', sort_dir: 'asc' },
+                categories: baseCategories,
+            },
         });
+        const links = filteredWrapper.findAll('a');
+        const hrefs = links.map((l) => l.attributes('href') ?? '');
+        const csvHref = hrefs.find((h) => h.includes('format=csv')) ?? '';
+        expect(csvHref).toContain('search=shirt');
+        expect(csvHref).toContain('stock=in_stock');
+        expect(csvHref).toContain('sort_by=price');
+        expect(csvHref).toContain('sort_dir=asc');
     });
 
     it('shows empty state when no products', () => {
