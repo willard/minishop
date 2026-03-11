@@ -38,6 +38,7 @@ vi.mock('@/components/ui/input', () => ({
 
 vi.mock('@/actions/App/Http/Controllers/Admin/OrderController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/orders' })),
+    create: vi.fn(() => ({ url: '/dashboard/orders/create' })),
     show: vi.fn((order: { order_number: string }) => ({
         url: `/dashboard/orders/${order.order_number}`,
     })),
@@ -152,6 +153,11 @@ describe('admin/Orders/Index', () => {
     it('renders the search input', () => {
         expect(wrapper.find('input').exists()).toBe(true);
     });
+
+    it('renders the New Order button', () => {
+        expect(wrapper.text()).toContain('New Order');
+    });
+
 
     it('renders status filter as a select dropdown with all status options', () => {
         const select = wrapper.find('select');
