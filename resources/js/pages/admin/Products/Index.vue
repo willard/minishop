@@ -8,6 +8,7 @@ import {
     show,
     edit,
     destroy,
+    exportMethod,
 } from '@/actions/App/Http/Controllers/Admin/ProductController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -124,14 +125,16 @@ function confirmDelete(product: Product): void {
 }
 
 function buildExportUrl(format: 'csv' | 'pdf'): string {
-    const params = new URLSearchParams();
-    if (props.filters.search) params.set('search', props.filters.search);
-    if (props.filters.category_id) params.set('category_id', props.filters.category_id);
-    if (props.filters.stock) params.set('stock', props.filters.stock);
-    if (props.filters.sort_by) params.set('sort_by', props.filters.sort_by);
-    if (props.filters.sort_dir) params.set('sort_dir', props.filters.sort_dir);
-    params.set('format', format);
-    return `/dashboard/products/export?${params.toString()}`;
+    return exportMethod.url({
+        query: {
+            format,
+            search: props.filters.search || undefined,
+            category_id: props.filters.category_id || undefined,
+            stock: props.filters.stock || undefined,
+            sort_by: props.filters.sort_by || undefined,
+            sort_dir: props.filters.sort_dir || undefined,
+        },
+    });
 }
 
 const isFiltered =
