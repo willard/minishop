@@ -215,6 +215,48 @@ class OrderTest extends TestCase
             );
     }
 
+    public function test_orders_index_can_be_sorted_by_total_amount_ascending(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        Order::factory()->create(['total_amount' => 500]);
+        Order::factory()->create(['total_amount' => 9999]);
+        Order::factory()->create(['total_amount' => 2000]);
+
+        $this->actingAs($user)
+            ->get(route('admin.orders.index', ['sort_by' => 'total_amount', 'sort_dir' => 'asc']))
+            ->assertInertia(fn (AssertableJson $page) => $page
+                ->where('orders.data.0.total_amount', 500)
+                ->where('orders.data.1.total_amount', 2000)
+                ->where('orders.data.2.total_amount', 9999)
+            );
+    }
+
+    public function test_orders_index_can_be_sorted_by_order_number_descending(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        Order::factory()->create(['order_number' => 'ORD-AAA']);
+        Order::factory()->create(['order_number' => 'ORD-ZZZ']);
+        Order::factory()->create(['order_number' => 'ORD-MMM']);
+
+        $this->actingAs($user)
+            ->get(route('admin.orders.index', ['sort_by' => 'order_number', 'sort_dir' => 'desc']))
+            ->assertInertia(fn (AssertableJson $page) => $page
+                ->where('orders.data.0.order_number', 'ORD-ZZZ')
+                ->where('orders.data.1.order_number', 'ORD-MMM')
+                ->where('orders.data.2.order_number', 'ORD-AAA')
+            );
+    }
+
+    public function test_orders_index_ignores_invalid_sort_column(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        Order::factory(3)->create();
+
+        $this->actingAs($user)
+            ->get(route('admin.orders.index', ['sort_by' => 'invalid_column']))
+            ->assertOk();
+    }
+
     public function test_orders_index_can_be_searched_by_customer_name(): void
     {
         $user = User::factory()->superAdmin()->create();

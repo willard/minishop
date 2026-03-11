@@ -18,11 +18,18 @@ use Inertia\Response;
 
 class OrderController extends Controller
 {
+    private const ALLOWED_SORTS = ['order_number', 'total_amount', 'status', 'created_at'];
+
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', Order::class);
 
-        $filters = $request->only(['status', 'search']);
+        $filters = $request->only(['status', 'search', 'sort_by', 'sort_dir']);
+
+        $sortBy = in_array($filters['sort_by'] ?? null, self::ALLOWED_SORTS)
+            ? $filters['sort_by']
+            : 'created_at';
+        $sortDir = ($filters['sort_dir'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
 
         $orders = Order::query()
             ->with('customer.user')
@@ -41,7 +48,7 @@ class OrderController extends Controller
                     });
                 }
             )
-            ->orderByDesc('created_at')
+            ->orderBy($sortBy, $sortDir)
             ->paginate(20)
             ->withQueryString();
 
