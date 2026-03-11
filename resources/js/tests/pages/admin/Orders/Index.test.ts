@@ -46,6 +46,7 @@ vi.mock('@/components/ui/input', () => ({
 
 vi.mock('@/actions/App/Http/Controllers/Admin/OrderController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/orders' })),
+    create: vi.fn(() => ({ url: '/dashboard/orders/create' })),
     show: vi.fn((order: { order_number: string }) => ({
         url: `/dashboard/orders/${order.order_number}`,
     })),
@@ -178,5 +179,9 @@ describe('admin/Orders/Index', () => {
             },
         });
         expect(filteredWrapper.text()).toContain('No orders found.');
+    });
+
+    it('renders the New Order button', () => {
+        expect(wrapper.text()).toContain('New Order');
     });
 });

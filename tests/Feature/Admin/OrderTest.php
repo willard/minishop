@@ -3,9 +3,12 @@
 namespace Tests\Feature\Admin;
 
 use App\Enums\OrderStatus;
+use App\Models\Coupon;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -295,5 +298,224 @@ class OrderTest extends TestCase
             ->assertRedirect(route('admin.orders.show', $order));
 
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'cancelled']);
+    }
+
+    public function test_guests_are_redirected_from_create_order(): void
+    {
+        $this->get(route('admin.orders.create'))->assertRedirect(route('login'));
+    }
+
+    public function test_guests_cannot_store_an_order(): void
+    {
+        $this->post(route('admin.orders.store'), [])->assertRedirect(route('login'));
+    }
+
+    public function test_super_admin_can_view_create_order_form(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+
+        $this->actingAs($user)
+            ->get(route('admin.orders.create'))
+            ->assertOk()
+            ->assertInertia(fn (AssertableJson $page) => $page
+                ->component('admin/Orders/Create')
+                ->has('customers')
+                ->has('products')
+                ->has('shippingMethods')
+                ->has('statuses')
+                ->has('taxRate')
+            );
+    }
+
+    public function test_super_admin_can_create_an_order_manually(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $customer = Customer::factory()->create();
+        $product = Product::factory()->create(['name' => 'Test Widget', 'price' => 2000, 'sku' => 'TW-001', 'stock_quantity' => 10]);
+
+        $this->actingAs($user)
+            ->post(route('admin.orders.store'), [
+                'customer_id' => $customer->id,
+                'status' => 'pending',
+                'items' => [
+                    ['product_id' => $product->id, 'quantity' => 2, 'unit_price' => 2000],
+                ],
+                'shipping_name' => 'Jane Doe',
+                'shipping_address_line1' => '123 Main St',
+                'shipping_city' => 'Manila',
+                'shipping_state' => 'Metro Manila',
+                'shipping_postcode' => '1000',
+                'shipping_country' => 'PH',
+            ])
+            ->assertRedirect();
+
+        $order = Order::query()->latest()->first();
+        $this->assertNotNull($order);
+        $this->assertEquals($customer->id, $order->customer_id);
+        $this->assertEquals(4000, $order->subtotal);
+        $this->assertCount(1, $order->items);
+        $this->assertEquals('Test Widget', $order->items->first()->product_name);
+        $this->assertEquals('TW-001', $order->items->first()->product_sku);
+        $this->assertNull($order->items->first()->variant_id);
+    }
+
+    public function test_creating_an_order_decrements_product_stock(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $customer = Customer::factory()->create();
+        $product = Product::factory()->create(['stock_quantity' => 10, 'price' => 1000]);
+
+        $this->actingAs($user)
+            ->post(route('admin.orders.store'), [
+                'customer_id' => $customer->id,
+                'status' => 'pending',
+                'items' => [['product_id' => $product->id, 'quantity' => 3, 'unit_price' => 1000]],
+                'shipping_name' => 'Jane Doe',
+                'shipping_address_line1' => '123 Main St',
+                'shipping_city' => 'Manila',
+                'shipping_state' => 'Metro Manila',
+                'shipping_postcode' => '1000',
+                'shipping_country' => 'PH',
+            ])
+            ->assertRedirect();
+
+        $this->assertEquals(7, $product->fresh()->stock_quantity);
+    }
+
+    public function test_super_admin_can_create_an_order_with_a_variant(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $customer = Customer::factory()->create();
+        $product = Product::factory()->create(['name' => 'T-Shirt', 'price' => 1500, 'sku' => 'TS-BASE', 'stock_quantity' => 5]);
+        $variant = ProductVariant::factory()->for($product)->create(['sku' => 'TS-RED-L', 'price' => 1800, 'stock_quantity' => 8]);
+
+        $this->actingAs($user)
+            ->post(route('admin.orders.store'), [
+                'customer_id' => $customer->id,
+                'status' => 'pending',
+                'items' => [
+                    ['product_id' => $product->id, 'variant_id' => $variant->id, 'quantity' => 2, 'unit_price' => 1800],
+                ],
+                'shipping_name' => 'Jane Doe',
+                'shipping_address_line1' => '123 Main St',
+                'shipping_city' => 'Manila',
+                'shipping_state' => 'Metro Manila',
+                'shipping_postcode' => '1000',
+                'shipping_country' => 'PH',
+            ])
+            ->assertRedirect();
+
+        $order = Order::query()->latest()->first();
+        $item = $order->items->first();
+        $this->assertEquals($variant->id, $item->variant_id);
+        $this->assertEquals('TS-RED-L', $item->product_sku);
+        $this->assertEquals(6, $variant->fresh()->stock_quantity);
+        $this->assertEquals(5, $product->fresh()->stock_quantity);
+    }
+
+    public function test_store_order_applies_valid_coupon(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $customer = Customer::factory()->create();
+        $product = Product::factory()->create(['price' => 10000, 'stock_quantity' => 5]);
+        $coupon = Coupon::factory()->create(['code' => 'SAVE500', 'type' => 'fixed', 'value' => 500, 'is_active' => true]);
+
+        $this->actingAs($user)
+            ->post(route('admin.orders.store'), [
+                'customer_id' => $customer->id,
+                'status' => 'pending',
+                'items' => [['product_id' => $product->id, 'quantity' => 1, 'unit_price' => 10000]],
+                'coupon_code' => 'SAVE500',
+                'shipping_name' => 'Jane Doe',
+                'shipping_address_line1' => '123 Main St',
+                'shipping_city' => 'Manila',
+                'shipping_state' => 'Metro Manila',
+                'shipping_postcode' => '1000',
+                'shipping_country' => 'PH',
+            ])
+            ->assertRedirect();
+
+        $order = Order::query()->latest()->first();
+        $this->assertEquals(500, $order->discount_amount);
+        $this->assertEquals($coupon->id, $order->coupon_id);
+        $this->assertEquals(1, $coupon->fresh()->used_count);
+    }
+
+    public function test_store_order_rejects_invalid_coupon_code(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $customer = Customer::factory()->create();
+        $product = Product::factory()->create(['stock_quantity' => 5]);
+
+        $this->actingAs($user)
+            ->post(route('admin.orders.store'), [
+                'customer_id' => $customer->id,
+                'status' => 'pending',
+                'items' => [['product_id' => $product->id, 'quantity' => 1, 'unit_price' => 1000]],
+                'coupon_code' => 'DOESNOTEXIST',
+                'shipping_name' => 'Jane Doe',
+                'shipping_address_line1' => '123 Main St',
+                'shipping_city' => 'Manila',
+                'shipping_state' => 'Metro Manila',
+                'shipping_postcode' => '1000',
+                'shipping_country' => 'PH',
+            ])
+            ->assertSessionHasErrors('coupon_code');
+    }
+
+    public function test_store_order_requires_at_least_one_item(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $customer = Customer::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.orders.store'), [
+                'customer_id' => $customer->id,
+                'status' => 'pending',
+                'items' => [],
+                'shipping_name' => 'Jane Doe',
+                'shipping_address_line1' => '123 Main St',
+                'shipping_city' => 'Manila',
+                'shipping_state' => 'Metro Manila',
+                'shipping_postcode' => '1000',
+                'shipping_country' => 'PH',
+            ])
+            ->assertSessionHasErrors('items');
+    }
+
+    public function test_store_order_requires_customer(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $product = Product::factory()->create(['stock_quantity' => 5]);
+
+        $this->actingAs($user)
+            ->post(route('admin.orders.store'), [
+                'status' => 'pending',
+                'items' => [['product_id' => $product->id, 'quantity' => 1, 'unit_price' => 1000]],
+                'shipping_name' => 'Jane Doe',
+                'shipping_address_line1' => '123 Main St',
+                'shipping_city' => 'Manila',
+                'shipping_state' => 'Metro Manila',
+                'shipping_postcode' => '1000',
+                'shipping_country' => 'PH',
+            ])
+            ->assertSessionHasErrors('customer_id');
+    }
+
+    public function test_products_are_passed_with_their_variants_on_create(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $product = Product::factory()->create(['is_active' => true]);
+        ProductVariant::factory()->for($product)->create(['is_active' => true]);
+
+        $this->actingAs($user)
+            ->get(route('admin.orders.create'))
+            ->assertOk()
+            ->assertInertia(fn (AssertableJson $page) => $page
+                ->has('products', 1, fn (AssertableJson $p) => $p
+                    ->has('variants', 1)
+                    ->etc()
+                )
+            );
     }
 }
