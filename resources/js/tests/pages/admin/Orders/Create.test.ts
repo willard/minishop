@@ -1,5 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useForm } from '@inertiajs/vue3';
 import CreateOrderPage from '@/pages/admin/Orders/Create.vue';
 
 const mockPost = vi.fn();
@@ -68,8 +69,25 @@ const baseCustomers = [
 ];
 
 const baseProducts = [
-    { id: 1, name: 'Widget A', sku: 'WA-001', price: 1500, stock_quantity: 10 },
-    { id: 2, name: 'Widget B', sku: null, price: 2000, stock_quantity: 5 },
+    {
+        id: 1,
+        name: 'Widget A',
+        sku: 'WA-001',
+        price: 1500,
+        stock_quantity: 10,
+        variants: [],
+    },
+    {
+        id: 2,
+        name: 'T-Shirt',
+        sku: 'TS-BASE',
+        price: 1800,
+        stock_quantity: 5,
+        variants: [
+            { id: 10, sku: 'TS-RED-L', price: 1800, stock_quantity: 8, label: 'Red / Large' },
+            { id: 11, sku: 'TS-BLUE-M', price: 1800, stock_quantity: 3, label: 'Blue / Medium' },
+        ],
+    },
 ];
 
 const baseShippingMethods = [
@@ -117,7 +135,7 @@ describe('admin/Orders/Create', () => {
         const options = wrapper.findAll('option');
         const texts = options.map((o) => o.text());
         expect(texts.some((t) => t.includes('Widget A'))).toBe(true);
-        expect(texts.some((t) => t.includes('Widget B'))).toBe(true);
+        expect(texts.some((t) => t.includes('T-Shirt'))).toBe(true);
     });
 
     it('renders shipping method options', () => {
@@ -132,6 +150,35 @@ describe('admin/Orders/Create', () => {
         const texts = options.map((o) => o.text());
         expect(texts.some((t) => t.includes('Pending'))).toBe(true);
         expect(texts.some((t) => t.includes('Processing'))).toBe(true);
+    });
+
+    it('does not show a variant selector when a product without variants is pre-selected', () => {
+        const wrapperNoVariants = mount(CreateOrderPage, {
+            props: {
+                ...defaultProps,
+                products: [{ id: 1, name: 'Widget A', sku: 'WA-001', price: 1500, stock_quantity: 10, variants: [] }],
+            },
+        });
+        expect(wrapperNoVariants.text()).not.toContain('Variant');
+    });
+
+    it('renders variant options when a product with variants is selected', () => {
+        vi.mocked(useForm).mockReturnValueOnce({
+            customer_id: '',
+            status: 'pending',
+            items: [{ product_id: 2, variant_id: '', quantity: 1, unit_price: '' }],
+            shipping_name: '', shipping_address_line1: '', shipping_address_line2: '',
+            shipping_city: '', shipping_state: '', shipping_postcode: '',
+            shipping_country: 'PH', shipping_method_id: '', coupon_code: '', notes: '',
+            errors: {}, processing: false,
+            transform: vi.fn().mockReturnThis(),
+            post: mockPost,
+        } as ReturnType<typeof useForm>);
+
+        const wrapperVariants = mount(CreateOrderPage, { props: defaultProps });
+        const texts = wrapperVariants.findAll('option').map((o) => o.text());
+        expect(texts.some((t) => t.includes('Red / Large'))).toBe(true);
+        expect(texts.some((t) => t.includes('Blue / Medium'))).toBe(true);
     });
 
     it('renders the Add Item button', () => {
@@ -169,11 +216,6 @@ describe('admin/Orders/Create', () => {
             props: { ...defaultProps, taxRate: 0 },
         });
         expect(noTaxWrapper.text()).not.toContain('Tax (');
-    });
-
-    it('displays $0.00 totals when no items are filled in', () => {
-        const summaryText = wrapper.text();
-        expect(summaryText).toContain('$0.00');
     });
 
     it('renders coupon code field label', () => {

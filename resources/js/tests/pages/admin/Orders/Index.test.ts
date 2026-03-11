@@ -218,4 +218,8 @@ describe('admin/Orders/Index', () => {
         });
         expect(filteredWrapper.text()).toContain('No orders found.');
     });
+
+    it('renders the New Order button', () => {
+        expect(wrapper.text()).toContain('New Order');
+    });
 });

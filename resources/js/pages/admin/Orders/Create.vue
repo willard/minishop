@@ -20,12 +20,21 @@ interface Customer {
     email: string;
 }
 
+interface ProductVariant {
+    id: number;
+    sku: string | null;
+    price: number;
+    stock_quantity: number;
+    label: string;
+}
+
 interface Product {
     id: number;
     name: string;
     sku: string | null;
     price: number;
     stock_quantity: number;
+    variants: ProductVariant[];
 }
 
 interface ShippingMethod {
@@ -57,7 +66,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const form = useForm({
     customer_id: '' as number | '',
     status: 'pending',
-    items: [{ product_id: '' as number | '', quantity: 1, unit_price: '' as number | '' }],
+    items: [{ product_id: '' as number | '', variant_id: '' as number | '', quantity: 1, unit_price: '' as number | '' }],
     shipping_name: '',
     shipping_address_line1: '',
     shipping_address_line2: '',
@@ -70,19 +79,35 @@ const form = useForm({
     notes: '',
 });
 
-function addItem(): void {
-    form.items.push({ product_id: '', quantity: 1, unit_price: '' });
-}
-
-function removeItem(i: number): void {
-    form.items.splice(i, 1);
+function variantsForItem(i: number): ProductVariant[] {
+    const product = props.products.find((p) => p.id === Number(form.items[i].product_id));
+    return product?.variants ?? [];
 }
 
 function onProductChange(i: number): void {
+    form.items[i].variant_id = '';
     const product = props.products.find((p) => p.id === Number(form.items[i].product_id));
     if (product) {
         form.items[i].unit_price = +(product.price / 100).toFixed(2);
     }
+}
+
+function onVariantChange(i: number): void {
+    const variants = variantsForItem(i);
+    const variant = variants.find((v) => v.id === Number(form.items[i].variant_id));
+    const product = props.products.find((p) => p.id === Number(form.items[i].product_id));
+    if (variant) {
+        const price = variant.price ?? product?.price ?? 0;
+        form.items[i].unit_price = +(price / 100).toFixed(2);
+    }
+}
+
+function addItem(): void {
+    form.items.push({ product_id: '', variant_id: '', quantity: 1, unit_price: '' });
+}
+
+function removeItem(i: number): void {
+    form.items.splice(i, 1);
 }
 
 function lineTotal(i: number): number {
@@ -105,7 +130,7 @@ const shippingCost = computed(() => {
 });
 
 const taxAmount = computed(() =>
-    Math.round((subtotal.value + shippingCost.value) * props.taxRate) / 100,
+    Math.round(subtotal.value * props.taxRate) / 100,
 );
 
 const orderTotal = computed(() => subtotal.value + shippingCost.value + taxAmount.value);
@@ -125,6 +150,7 @@ function submit(): void {
             notes: data.notes || undefined,
             items: data.items.map((item) => ({
                 product_id: Number(item.product_id),
+                variant_id: item.variant_id ? Number(item.variant_id) : undefined,
                 quantity: Number(item.quantity),
                 unit_price: Math.round(Number(item.unit_price) * 100),
             })),
@@ -191,69 +217,88 @@ function submit(): void {
 
                             <InputError :message="form.errors.items" class="mb-3" />
 
-                            <div class="flex flex-col gap-3">
+                            <div class="flex flex-col gap-4">
                                 <div
                                     v-for="(item, i) in form.items"
                                     :key="i"
-                                    class="grid grid-cols-[1fr_80px_110px_90px_36px] items-start gap-2"
+                                    class="rounded-md border border-sidebar-border p-3"
                                 >
-                                    <!-- Product -->
-                                    <div class="grid gap-1">
-                                        <Label v-if="i === 0" class="text-xs">Product</Label>
-                                        <select
-                                            v-model="item.product_id"
-                                            class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                                            :class="{ 'border-destructive': form.errors[`items.${i}.product_id`] }"
-                                            @change="onProductChange(i)"
-                                        >
-                                            <option value="">Select…</option>
-                                            <option
-                                                v-for="p in products"
-                                                :key="p.id"
-                                                :value="p.id"
+                                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr]">
+                                        <!-- Product -->
+                                        <div class="grid gap-1">
+                                            <Label class="text-xs">Product</Label>
+                                            <select
+                                                v-model="item.product_id"
+                                                class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                                                :class="{ 'border-destructive': form.errors[`items.${i}.product_id`] }"
+                                                @change="onProductChange(i)"
                                             >
-                                                {{ p.name }}{{ p.sku ? ` — ${p.sku}` : '' }}
-                                            </option>
-                                        </select>
-                                        <InputError :message="form.errors[`items.${i}.product_id`]" />
-                                    </div>
+                                                <option value="">Select…</option>
+                                                <option
+                                                    v-for="p in products"
+                                                    :key="p.id"
+                                                    :value="p.id"
+                                                >
+                                                    {{ p.name }}{{ p.sku ? ` — ${p.sku}` : '' }}
+                                                </option>
+                                            </select>
+                                            <InputError :message="form.errors[`items.${i}.product_id`]" />
+                                        </div>
 
-                                    <!-- Quantity -->
-                                    <div class="grid gap-1">
-                                        <Label v-if="i === 0" class="text-xs">Qty</Label>
-                                        <Input
-                                            v-model="item.quantity"
-                                            type="number"
-                                            min="1"
-                                            :class="{ 'border-destructive': form.errors[`items.${i}.quantity`] }"
-                                        />
-                                        <InputError :message="form.errors[`items.${i}.quantity`]" />
-                                    </div>
-
-                                    <!-- Unit price -->
-                                    <div class="grid gap-1">
-                                        <Label v-if="i === 0" class="text-xs">Unit Price ($)</Label>
-                                        <Input
-                                            v-model="item.unit_price"
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            :class="{ 'border-destructive': form.errors[`items.${i}.unit_price`] }"
-                                        />
-                                        <InputError :message="form.errors[`items.${i}.unit_price`]" />
-                                    </div>
-
-                                    <!-- Line total -->
-                                    <div class="grid gap-1">
-                                        <span v-if="i === 0" class="text-xs font-medium text-muted-foreground">Total</span>
-                                        <div class="flex h-9 items-center text-sm font-medium">
-                                            ${{ formatCurrency(lineTotal(i)) }}
+                                        <!-- Variant (only shown when product has variants) -->
+                                        <div v-if="variantsForItem(i).length > 0" class="grid gap-1">
+                                            <Label class="text-xs">Variant</Label>
+                                            <select
+                                                v-model="item.variant_id"
+                                                class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                                                :class="{ 'border-destructive': form.errors[`items.${i}.variant_id`] }"
+                                                @change="onVariantChange(i)"
+                                            >
+                                                <option value="">No variant</option>
+                                                <option
+                                                    v-for="v in variantsForItem(i)"
+                                                    :key="v.id"
+                                                    :value="v.id"
+                                                >
+                                                    {{ v.label }}
+                                                </option>
+                                            </select>
+                                            <InputError :message="form.errors[`items.${i}.variant_id`]" />
                                         </div>
                                     </div>
 
-                                    <!-- Remove -->
-                                    <div class="grid gap-1">
-                                        <span v-if="i === 0" class="text-xs">&nbsp;</span>
+                                    <div class="mt-3 grid grid-cols-[80px_130px_1fr_36px] items-end gap-2">
+                                        <!-- Quantity -->
+                                        <div class="grid gap-1">
+                                            <Label class="text-xs">Qty</Label>
+                                            <Input
+                                                v-model="item.quantity"
+                                                type="number"
+                                                min="1"
+                                                :class="{ 'border-destructive': form.errors[`items.${i}.quantity`] }"
+                                            />
+                                            <InputError :message="form.errors[`items.${i}.quantity`]" />
+                                        </div>
+
+                                        <!-- Unit price -->
+                                        <div class="grid gap-1">
+                                            <Label class="text-xs">Unit Price ($)</Label>
+                                            <Input
+                                                v-model="item.unit_price"
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                :class="{ 'border-destructive': form.errors[`items.${i}.unit_price`] }"
+                                            />
+                                            <InputError :message="form.errors[`items.${i}.unit_price`]" />
+                                        </div>
+
+                                        <!-- Line total -->
+                                        <div class="flex h-9 items-center text-sm font-medium">
+                                            ${{ formatCurrency(lineTotal(i)) }}
+                                        </div>
+
+                                        <!-- Remove -->
                                         <Button
                                             type="button"
                                             variant="ghost"
@@ -458,7 +503,7 @@ function submit(): void {
                                 </div>
                                 <div v-if="form.coupon_code" class="flex justify-between text-muted-foreground">
                                     <span>Coupon <span class="font-mono text-xs">{{ form.coupon_code }}</span></span>
-                                    <span class="italic text-xs">applied on submit</span>
+                                    <span class="text-xs italic">applied on submit</span>
                                 </div>
                                 <div class="mt-2 flex justify-between border-t border-sidebar-border pt-2 font-semibold">
                                     <span>Total</span>

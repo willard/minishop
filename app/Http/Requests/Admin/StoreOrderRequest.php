@@ -14,7 +14,7 @@ class StoreOrderRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, mixed>>
+     * @return array<string, mixed>
      */
     public function rules(): array
     {
@@ -23,6 +23,7 @@ class StoreOrderRequest extends FormRequest
             'status' => ['required', Rule::enum(OrderStatus::class)],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer', 'exists:products,id'],
+            'items.*.variant_id' => ['nullable', 'integer', 'exists:product_variants,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
             'items.*.unit_price' => ['required', 'integer', 'min:0'],
             'shipping_name' => ['required', 'string', 'max:255'],

@@ -10,12 +10,14 @@ use App\Models\User;
  *
  * Each method delegates to a Spatie permission check (e.g. 'orders.view').
  * Super-admins bypass all checks via Gate::before in AppServiceProvider.
- *
- * There is no create() method because orders originate from the storefront
- * checkout flow, not from admin actions.
  */
 class OrderPolicy
 {
+    public function create(User $user): bool
+    {
+        return $user->can('orders.create');
+    }
+
     public function viewAny(User $user): bool
     {
         return $user->can('orders.view');

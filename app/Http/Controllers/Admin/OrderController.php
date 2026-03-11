@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\CreateOrderAction;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreOrderRequest;
 use App\Http\Requests\Admin\UpdateOrderRequest;
 use App\Mail\OrderStatusChangedMail;
-use App\Models\Coupon;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\ShippingMethod;
 use App\Models\StoreSettings;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -84,8 +85,23 @@ class OrderController extends Controller
 
         $products = Product::query()
             ->where('is_active', true)
+            ->with(['variants' => fn ($q) => $q->where('is_active', true)->with('optionValues')])
             ->orderBy('name')
-            ->get(['id', 'name', 'sku', 'price', 'stock_quantity']);
+            ->get(['id', 'name', 'sku', 'price', 'stock_quantity'])
+            ->map(fn (Product $p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'sku' => $p->sku,
+                'price' => $p->price,
+                'stock_quantity' => $p->stock_quantity,
+                'variants' => $p->variants->map(fn (ProductVariant $v) => [
+                    'id' => $v->id,
+                    'sku' => $v->sku,
+                    'price' => $v->price,
+                    'stock_quantity' => $v->stock_quantity,
+                    'label' => $v->optionValues->pluck('value')->join(' / ') ?: ($v->sku ?? "Variant #{$v->id}"),
+                ]),
+            ]);
 
         $shippingMethods = ShippingMethod::query()
             ->active()
@@ -106,47 +122,43 @@ class OrderController extends Controller
         ]);
     }
 
-    public function store(StoreOrderRequest $request): RedirectResponse
+    public function store(StoreOrderRequest $request, CreateOrderAction $createOrder): RedirectResponse
     {
         $this->authorize('create', Order::class);
 
         $data = $request->validated();
 
-        $subtotal = array_sum(array_map(
-            fn (array $item) => $item['unit_price'] * $item['quantity'],
-            $data['items']
-        ));
+        $productIds = array_column($data['items'], 'product_id');
+        $products = Product::query()->whereIn('id', $productIds)->get()->keyBy('id');
 
-        $shippingMethod = isset($data['shipping_method_id'])
-            ? ShippingMethod::find($data['shipping_method_id'])
-            : null;
-        $shippingAmount = $shippingMethod ? $shippingMethod->effective_price : 0;
+        $variantIds = array_filter(array_column($data['items'], 'variant_id'));
+        $variants = ! empty($variantIds)
+            ? ProductVariant::query()->whereIn('id', $variantIds)->get()->keyBy('id')
+            : collect();
 
-        $coupon = null;
-        $discountAmount = 0;
-        if (! empty($data['coupon_code'])) {
-            $coupon = Coupon::where('code', $data['coupon_code'])->first();
-            if ($coupon && $coupon->isValid($subtotal)) {
-                $discountAmount = $coupon->calculateDiscount($subtotal);
-            }
-        }
+        $lineItems = array_map(function (array $item) use ($products, $variants): array {
+            $product = $products->get($item['product_id']);
+            $variant = isset($item['variant_id']) ? $variants->get($item['variant_id']) : null;
 
-        $settings = StoreSettings::current();
-        $taxableAmount = max(0, $subtotal - $discountAmount + $shippingAmount);
-        $taxAmount = (int) round($taxableAmount * (float) ($settings->tax_rate ?? 0) / 100);
-        $totalAmount = max(0, $subtotal - $discountAmount + $shippingAmount + $taxAmount);
+            return [
+                'product_id' => $item['product_id'],
+                'variant_id' => $item['variant_id'] ?? null,
+                'product_name' => $product->name,
+                'product_sku' => $variant?->sku ?? $product->sku,
+                'unit_price' => $item['unit_price'],
+                'quantity' => $item['quantity'],
+                'subtotal' => $item['unit_price'] * $item['quantity'],
+            ];
+        }, $data['items']);
 
-        $order = Order::create([
-            'order_number' => '',
+        $order = $createOrder->execute([
             'customer_id' => $data['customer_id'],
-            'coupon_id' => $coupon?->id,
-            'shipping_method_id' => $data['shipping_method_id'] ?? null,
             'status' => $data['status'],
-            'subtotal' => $subtotal,
-            'discount_amount' => $discountAmount,
-            'shipping_amount' => $shippingAmount,
-            'tax_amount' => $taxAmount,
-            'total_amount' => $totalAmount,
+            'payment_status' => 'pending',
+            'payment_gateway' => null,
+            'items' => $lineItems,
+            'coupon_code' => $data['coupon_code'] ?? null,
+            'shipping_method_id' => $data['shipping_method_id'] ?? null,
             'shipping_name' => $data['shipping_name'],
             'shipping_address_line1' => $data['shipping_address_line1'],
             'shipping_address_line2' => $data['shipping_address_line2'] ?? null,
@@ -155,22 +167,9 @@ class OrderController extends Controller
             'shipping_postcode' => $data['shipping_postcode'],
             'shipping_country' => $data['shipping_country'],
             'notes' => $data['notes'] ?? null,
-            'payment_status' => 'pending',
         ]);
 
-        foreach ($data['items'] as $item) {
-            $product = Product::find($item['product_id']);
-            $order->items()->create([
-                'product_id' => $item['product_id'],
-                'product_name' => $product->name,
-                'product_sku' => $product->sku,
-                'unit_price' => $item['unit_price'],
-                'quantity' => $item['quantity'],
-                'subtotal' => $item['unit_price'] * $item['quantity'],
-            ]);
-        }
-
-        return redirect()->route('admin.orders.show', $order)
+        return redirect()->route('admin.orders.show', $order->refresh())
             ->with('success', 'Order created successfully.');
     }
 
@@ -178,7 +177,7 @@ class OrderController extends Controller
     {
         $this->authorize('view', $order);
 
-        $order->load(['customer.user', 'items.product']);
+        $order->load(['customer.user', 'items.product', 'items.variant']);
 
         return Inertia::render('admin/Orders/Show', [
             'order' => $order,

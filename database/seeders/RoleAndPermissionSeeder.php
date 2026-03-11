@@ -27,6 +27,7 @@ class RoleAndPermissionSeeder extends Seeder
             'categories.update',
             'categories.delete',
             'orders.view',
+            'orders.create',
             'orders.update',
             'orders.delete',
             'orders.invoice',
@@ -60,7 +61,7 @@ class RoleAndPermissionSeeder extends Seeder
             'dashboard.view',
             'products.view', 'products.create', 'products.update', 'products.delete',
             'categories.view', 'categories.create', 'categories.update', 'categories.delete',
-            'orders.view', 'orders.update', 'orders.delete', 'orders.invoice',
+            'orders.view', 'orders.create', 'orders.update', 'orders.delete', 'orders.invoice',
             'customers.view',
             'coupons.view', 'coupons.create', 'coupons.update', 'coupons.delete',
             'shipping-methods.view', 'shipping-methods.create', 'shipping-methods.update', 'shipping-methods.delete',
@@ -73,7 +74,7 @@ class RoleAndPermissionSeeder extends Seeder
             'dashboard.view',
             'products.view', 'products.create', 'products.update',
             'categories.view',
-            'orders.view', 'orders.update', 'orders.invoice',
+            'orders.view', 'orders.create', 'orders.update', 'orders.invoice',
             'customers.view',
         ]);
 
