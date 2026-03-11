@@ -162,7 +162,7 @@ class OrderController extends Controller
             'notes' => $data['notes'] ?? null,
         ]);
 
-        return redirect()->route('admin.orders.show', $order)
+        return redirect()->route('admin.orders.show', $order->refresh())
             ->with('success', 'Order created successfully.');
     }
 
