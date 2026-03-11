@@ -154,6 +154,11 @@ describe('admin/Orders/Index', () => {
         expect(wrapper.find('input').exists()).toBe(true);
     });
 
+    it('renders the New Order button', () => {
+        expect(wrapper.text()).toContain('New Order');
+    });
+
+
     it('renders status filter as a select dropdown with all status options', () => {
         const select = wrapper.find('select');
         expect(select.exists()).toBe(true);

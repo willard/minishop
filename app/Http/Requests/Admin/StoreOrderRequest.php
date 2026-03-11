@@ -38,4 +38,23 @@ class StoreOrderRequest extends FormRequest
             'notes' => ['nullable', 'string'],
         ];
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'customer_id.required' => 'Please select a customer.',
+            'customer_id.exists' => 'The selected customer does not exist.',
+            'items.required' => 'At least one item is required.',
+            'items.min' => 'At least one item is required.',
+            'items.*.product_id.required' => 'Please select a product for each item.',
+            'items.*.product_id.exists' => 'One of the selected products does not exist.',
+            'items.*.quantity.required' => 'Quantity is required for each item.',
+            'items.*.quantity.min' => 'Quantity must be at least 1.',
+            'items.*.unit_price.min' => 'Unit price cannot be negative.',
+            'coupon_code.exists' => 'The coupon code is invalid.',
+        ];
+    }
 }
