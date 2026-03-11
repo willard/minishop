@@ -46,7 +46,7 @@ class OrderEmailTest extends TestCase
             'city' => 'Makati',
             'state' => 'Metro Manila',
             'postcode' => '1200',
-            'country' => 'PH',
+            'country' => 'CA',
             'shipping_method_id' => $this->shippingMethod->id,
             'items' => [],
         ], $overrides);

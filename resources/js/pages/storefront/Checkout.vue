@@ -69,7 +69,7 @@ const form = useForm({
     city: '',
     state: '',
     postcode: '',
-    country: 'PH',
+    country: 'CA',
     shipping_method_id: computed(
         () => shippingMethods.value[0]?.id ?? null,
     ) as unknown as number | null,
@@ -504,7 +504,7 @@ function submit(): void {
                                                     name="name"
                                                     required
                                                     autocomplete="name"
-                                                    placeholder="Maria Santos"
+                                                    placeholder="Jane Smith"
                                                     class="w-full rounded-xl border px-4 py-3 text-sm transition-colors outline-none"
                                                     :class="{
                                                         'border-[#c05c3a] ring-1 ring-[#c05c3a]':
@@ -703,7 +703,7 @@ function submit(): void {
                                         background-color: #f9f6f0;
                                         color: #1c1a17;
                                     "
-                                    placeholder="Maria Santos"
+                                    placeholder="Jane Smith"
                                 />
                                 <p
                                     v-if="form.errors.name"
@@ -734,7 +734,7 @@ function submit(): void {
                                         background-color: #f9f6f0;
                                         color: #1c1a17;
                                     "
-                                    placeholder="maria@example.com"
+                                    placeholder="jane@example.com"
                                 />
                                 <p
                                     v-if="form.errors.email"
@@ -761,7 +761,7 @@ function submit(): void {
                                         background-color: #f9f6f0;
                                         color: #1c1a17;
                                     "
-                                    placeholder="+63 912 345 6789"
+                                    placeholder="+1 416 555 0123"
                                 />
                             </div>
                         </div>
@@ -798,7 +798,7 @@ function submit(): void {
                                         background-color: #f9f6f0;
                                         color: #1c1a17;
                                     "
-                                    placeholder="123 Rizal Street"
+                                    placeholder="123 Maple Avenue"
                                 />
                                 <p
                                     v-if="form.errors.address_line1"
@@ -849,7 +849,7 @@ function submit(): void {
                                         background-color: #f9f6f0;
                                         color: #1c1a17;
                                     "
-                                    placeholder="Makati"
+                                    placeholder="Toronto"
                                 />
                                 <p
                                     v-if="form.errors.city"
@@ -881,7 +881,7 @@ function submit(): void {
                                         background-color: #f9f6f0;
                                         color: #1c1a17;
                                     "
-                                    placeholder="Metro Manila"
+                                    placeholder="Ontario"
                                 />
                                 <p
                                     v-if="form.errors.state"
@@ -913,7 +913,7 @@ function submit(): void {
                                         background-color: #f9f6f0;
                                         color: #1c1a17;
                                     "
-                                    placeholder="1200"
+                                    placeholder="M5V 3A8"
                                 />
                                 <p
                                     v-if="form.errors.postcode"
@@ -940,11 +940,11 @@ function submit(): void {
                                         color: #1c1a17;
                                     "
                                 >
-                                    <option value="PH">Philippines</option>
+                                    <option value="CA">Canada</option>
                                     <option value="US">United States</option>
-                                    <option value="SG">Singapore</option>
-                                    <option value="AU">Australia</option>
                                     <option value="GB">United Kingdom</option>
+                                    <option value="AU">Australia</option>
+                                    <option value="SG">Singapore</option>
                                 </select>
                             </div>
                         </div>

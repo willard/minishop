@@ -387,7 +387,7 @@ class OrderTest extends TestCase
                 'shipping_city' => 'Manila',
                 'shipping_state' => 'Metro Manila',
                 'shipping_postcode' => '1000',
-                'shipping_country' => 'PH',
+                'shipping_country' => 'CA',
             ])
             ->assertRedirect();
 
@@ -417,7 +417,7 @@ class OrderTest extends TestCase
                 'shipping_city' => 'Manila',
                 'shipping_state' => 'Metro Manila',
                 'shipping_postcode' => '1000',
-                'shipping_country' => 'PH',
+                'shipping_country' => 'CA',
             ])
             ->assertRedirect();
 
@@ -443,7 +443,7 @@ class OrderTest extends TestCase
                 'shipping_city' => 'Manila',
                 'shipping_state' => 'Metro Manila',
                 'shipping_postcode' => '1000',
-                'shipping_country' => 'PH',
+                'shipping_country' => 'CA',
             ])
             ->assertRedirect();
 
@@ -473,7 +473,7 @@ class OrderTest extends TestCase
                 'shipping_city' => 'Manila',
                 'shipping_state' => 'Metro Manila',
                 'shipping_postcode' => '1000',
-                'shipping_country' => 'PH',
+                'shipping_country' => 'CA',
             ])
             ->assertRedirect();
 
@@ -500,7 +500,7 @@ class OrderTest extends TestCase
                 'shipping_city' => 'Manila',
                 'shipping_state' => 'Metro Manila',
                 'shipping_postcode' => '1000',
-                'shipping_country' => 'PH',
+                'shipping_country' => 'CA',
             ])
             ->assertSessionHasErrors('coupon_code');
     }
@@ -520,7 +520,7 @@ class OrderTest extends TestCase
                 'shipping_city' => 'Manila',
                 'shipping_state' => 'Metro Manila',
                 'shipping_postcode' => '1000',
-                'shipping_country' => 'PH',
+                'shipping_country' => 'CA',
             ])
             ->assertSessionHasErrors('items');
     }
@@ -539,7 +539,7 @@ class OrderTest extends TestCase
                 'shipping_city' => 'Manila',
                 'shipping_state' => 'Metro Manila',
                 'shipping_postcode' => '1000',
-                'shipping_country' => 'PH',
+                'shipping_country' => 'CA',
             ])
             ->assertSessionHasErrors('customer_id');
     }
