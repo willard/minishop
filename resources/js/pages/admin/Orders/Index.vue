@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ChevronDown, ChevronUp, ChevronsUpDown, Eye, Trash2 } from 'lucide-vue-next';
+import { ChevronDown, ChevronUp, ChevronsUpDown, Eye, ShoppingCart, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import {
     index,
+    create,
     show,
     destroy,
 } from '@/actions/App/Http/Controllers/Admin/OrderController';
@@ -147,6 +148,12 @@ function confirmDelete(order: Order): void {
                         {{ orders.total }} total orders
                     </p>
                 </div>
+                <Link :href="create().url">
+                    <Button>
+                        <ShoppingCart class="mr-2 size-4" />
+                        New Order
+                    </Button>
+                </Link>
             </div>
 
             <!-- Filters -->
