@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Eye, Trash2 } from 'lucide-vue-next';
+import { ChevronDown, ChevronUp, ChevronsUpDown, Eye, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import {
     index,
     show,
     destroy,
 } from '@/actions/App/Http/Controllers/Admin/OrderController';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -44,6 +43,8 @@ interface Pagination {
 interface Filters {
     status?: string;
     search?: string;
+    sort_by?: string;
+    sort_dir?: string;
 }
 
 interface StatusOption {
@@ -63,12 +64,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const search = ref(props.filters.search ?? '');
+const selectedStatus = ref(props.filters.status ?? '');
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 watch(search, (value) => {
-    if (searchTimeout) {
-        clearTimeout(searchTimeout);
-    }
+    if (searchTimeout) clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
         router.get(
             index().url,
@@ -78,29 +78,52 @@ watch(search, (value) => {
     }, 300);
 });
 
-function applyFilter(status: string | undefined): void {
+watch(selectedStatus, (value) => {
     router.get(
         index().url,
-        { search: search.value || undefined, status },
+        { ...props.filters, search: search.value || undefined, status: value || undefined },
         { preserveState: true, replace: true },
     );
+});
+
+function applySort(column: string): void {
+    const newDir =
+        props.filters.sort_by === column && props.filters.sort_dir === 'asc'
+            ? 'desc'
+            : 'asc';
+    router.get(
+        index().url,
+        { ...props.filters, search: search.value || undefined, sort_by: column, sort_dir: newDir },
+        { preserveState: true, replace: true },
+    );
+}
+
+function sortDir(column: string): 'asc' | 'desc' | null {
+    if (props.filters.sort_by !== column) return null;
+    return props.filters.sort_dir === 'asc' ? 'asc' : 'desc';
 }
 
 function formatPrice(cents: number): string {
     return (cents / 100).toFixed(2);
 }
 
-function statusVariant(
-    status: string,
-): 'default' | 'secondary' | 'destructive' | 'outline' {
+function statusClass(status: string): string {
+    const base = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize';
     switch (status) {
+        case 'pending':
+            return `${base} bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400`;
+        case 'processing':
+            return `${base} bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400`;
+        case 'shipped':
+            return `${base} bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400`;
         case 'delivered':
-            return 'default';
+            return `${base} bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400`;
         case 'cancelled':
+            return `${base} bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400`;
         case 'refunded':
-            return 'destructive';
+            return `${base} bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400`;
         default:
-            return 'secondary';
+            return `${base} bg-muted text-muted-foreground`;
     }
 }
 
@@ -127,33 +150,27 @@ function confirmDelete(order: Order): void {
             </div>
 
             <!-- Filters -->
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div class="flex flex-wrap items-center gap-3">
                 <Input
                     v-model="search"
                     placeholder="Search order # or customer..."
                     class="max-w-xs"
                 />
-                <div class="flex flex-wrap gap-2">
-                    <Button
-                        size="sm"
-                        :variant="!filters.status ? 'default' : 'outline'"
-                        @click="applyFilter(undefined)"
-                    >
-                        All
-                    </Button>
-                    <Button
+
+                <!-- Status dropdown -->
+                <select
+                    v-model="selectedStatus"
+                    class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                    <option value="">All Statuses</option>
+                    <option
                         v-for="s in statuses"
                         :key="s.value"
-                        size="sm"
-                        :variant="
-                            filters.status === s.value ? 'default' : 'outline'
-                        "
-                        class="capitalize"
-                        @click="applyFilter(s.value)"
+                        :value="s.value"
                     >
                         {{ s.label }}
-                    </Button>
-                </div>
+                    </option>
+                </select>
             </div>
 
             <!-- Table -->
@@ -164,19 +181,51 @@ function confirmDelete(order: Order): void {
                     <thead class="bg-muted/50 text-muted-foreground">
                         <tr>
                             <th class="px-4 py-3 text-left font-medium">
-                                Order #
+                                <button
+                                    class="flex items-center gap-1 hover:text-foreground"
+                                    @click="applySort('order_number')"
+                                >
+                                    Order #
+                                    <ChevronUp v-if="sortDir('order_number') === 'asc'" class="size-3.5" />
+                                    <ChevronDown v-else-if="sortDir('order_number') === 'desc'" class="size-3.5" />
+                                    <ChevronsUpDown v-else class="size-3.5 opacity-40" />
+                                </button>
                             </th>
                             <th class="px-4 py-3 text-left font-medium">
                                 Customer
                             </th>
                             <th class="px-4 py-3 text-left font-medium">
-                                Total
+                                <button
+                                    class="flex items-center gap-1 hover:text-foreground"
+                                    @click="applySort('total_amount')"
+                                >
+                                    Total
+                                    <ChevronUp v-if="sortDir('total_amount') === 'asc'" class="size-3.5" />
+                                    <ChevronDown v-else-if="sortDir('total_amount') === 'desc'" class="size-3.5" />
+                                    <ChevronsUpDown v-else class="size-3.5 opacity-40" />
+                                </button>
                             </th>
                             <th class="px-4 py-3 text-left font-medium">
-                                Status
+                                <button
+                                    class="flex items-center gap-1 hover:text-foreground"
+                                    @click="applySort('status')"
+                                >
+                                    Status
+                                    <ChevronUp v-if="sortDir('status') === 'asc'" class="size-3.5" />
+                                    <ChevronDown v-else-if="sortDir('status') === 'desc'" class="size-3.5" />
+                                    <ChevronsUpDown v-else class="size-3.5 opacity-40" />
+                                </button>
                             </th>
                             <th class="px-4 py-3 text-left font-medium">
-                                Date
+                                <button
+                                    class="flex items-center gap-1 hover:text-foreground"
+                                    @click="applySort('created_at')"
+                                >
+                                    Date
+                                    <ChevronUp v-if="sortDir('created_at') === 'asc'" class="size-3.5" />
+                                    <ChevronDown v-else-if="sortDir('created_at') === 'desc'" class="size-3.5" />
+                                    <ChevronsUpDown v-else class="size-3.5 opacity-40" />
+                                </button>
                             </th>
                             <th class="px-4 py-3 text-right font-medium">
                                 Actions
@@ -218,12 +267,9 @@ function confirmDelete(order: Order): void {
                                 ${{ formatPrice(order.total_amount) }}
                             </td>
                             <td class="px-4 py-3">
-                                <Badge
-                                    :variant="statusVariant(order.status)"
-                                    class="capitalize"
-                                >
+                                <span :class="statusClass(order.status)">
                                     {{ order.status }}
-                                </Badge>
+                                </span>
                             </td>
                             <td class="px-4 py-3 text-xs text-muted-foreground">
                                 {{
