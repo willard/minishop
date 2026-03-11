@@ -28,14 +28,6 @@ vi.mock('@/components/ui/button', () => ({
     },
 }));
 
-vi.mock('@/components/ui/badge', () => ({
-    Badge: {
-        name: 'Badge',
-        template: '<span class="badge"><slot /></span>',
-        props: ['variant'],
-    },
-}));
-
 vi.mock('@/components/ui/input', () => ({
     Input: {
         name: 'Input',
@@ -81,17 +73,36 @@ const baseOrders = {
             items_count: 1,
             created_at: '2026-02-22T10:00:00.000Z',
         },
+        {
+            id: 3,
+            order_number: 'ORD-000003',
+            status: 'cancelled',
+            total_amount: 3000,
+            customer: {
+                id: 3,
+                user: { id: 4, name: 'Alex Lee', email: 'alex@example.com' },
+            },
+            items_count: 1,
+            created_at: '2026-02-21T10:00:00.000Z',
+        },
     ],
     current_page: 1,
     last_page: 1,
     per_page: 20,
-    total: 2,
+    total: 3,
     links: [],
 };
 
-const baseFilters: { status?: string; search?: string } = {
+const baseFilters: {
+    status?: string;
+    search?: string;
+    sort_by?: string;
+    sort_dir?: string;
+} = {
     status: undefined,
     search: '',
+    sort_by: undefined,
+    sort_dir: undefined,
 };
 
 const baseStatuses = [
@@ -121,7 +132,7 @@ describe('admin/Orders/Index', () => {
     });
 
     it('displays the total orders count', () => {
-        expect(wrapper.text()).toContain('2 total orders');
+        expect(wrapper.text()).toContain('3 total orders');
     });
 
     it('displays order numbers', () => {
@@ -139,24 +150,46 @@ describe('admin/Orders/Index', () => {
         expect(wrapper.text()).toContain('120.00');
     });
 
-    it('displays status badges', () => {
-        const badges = wrapper.findAll('.badge');
-        const badgeTexts = badges.map((b) => b.text().trim().toLowerCase());
-        expect(badgeTexts).toContain('pending');
-        expect(badgeTexts).toContain('delivered');
-    });
-
     it('renders the search input', () => {
         expect(wrapper.find('input').exists()).toBe(true);
     });
 
-    it('renders an All button and one button per status', () => {
-        const buttons = wrapper.findAll('button');
-        const buttonTexts = buttons.map((b) => b.text().trim().toLowerCase());
-        expect(buttonTexts).toContain('all');
+    it('renders status filter as a select dropdown with all status options', () => {
+        const select = wrapper.find('select');
+        expect(select.exists()).toBe(true);
+        const options = select.findAll('option');
+        const optionTexts = options.map((o) => o.text().trim());
+        expect(optionTexts).toContain('All Statuses');
         baseStatuses.forEach((s) => {
-            expect(buttonTexts).toContain(s.label.toLowerCase());
+            expect(optionTexts).toContain(s.label);
         });
+    });
+
+    it('renders sortable column headers for order number, total, status, and date', () => {
+        const sortButtons = wrapper.findAll('thead button');
+        const texts = sortButtons.map((b) => b.text().trim().toLowerCase());
+        expect(texts.some((t) => t.includes('order'))).toBe(true);
+        expect(texts.some((t) => t.includes('total'))).toBe(true);
+        expect(texts.some((t) => t.includes('status'))).toBe(true);
+        expect(texts.some((t) => t.includes('date'))).toBe(true);
+    });
+
+    it('clicking a sort header calls router.get with sort_by and sort_dir', async () => {
+        const { router } = await import('@inertiajs/vue3');
+        const sortButtons = wrapper.findAll('thead button');
+        await sortButtons[0].trigger('click');
+        expect(router.get).toHaveBeenCalledWith(
+            '/dashboard/orders',
+            expect.objectContaining({ sort_by: expect.any(String), sort_dir: 'asc' }),
+            expect.any(Object),
+        );
+    });
+
+    it('applies status-specific color classes to status badges', () => {
+        const html = wrapper.html();
+        expect(html).toContain('bg-amber-100');    // pending
+        expect(html).toContain('bg-emerald-100');  // delivered
+        expect(html).toContain('bg-red-100');      // cancelled
     });
 
     it('shows empty state when no orders', () => {
