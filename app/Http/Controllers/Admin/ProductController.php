@@ -7,39 +7,26 @@ use App\Http\Requests\Admin\StoreProductRequest;
 use App\Http\Requests\Admin\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProductController extends Controller
 {
+    private const ALLOWED_SORTS = ['name', 'sku', 'price', 'stock_quantity', 'is_active', 'created_at'];
+
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', Product::class);
 
-        $filters = $request->only(['search', 'category_id', 'stock']);
+        $filters = $request->only(['search', 'category_id', 'stock', 'sort_by', 'sort_dir']);
 
-        $products = Product::query()
-            ->with('categories')
-            ->when($filters['search'] ?? null, function ($query, $search): void {
-                $query->where(function ($q) use ($search): void {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('sku', 'like', "%{$search}%");
-                });
-            })
-            ->when($filters['category_id'] ?? null, function ($query, $categoryId): void {
-                $query->whereHas('categories', fn ($q) => $q->where('categories.id', $categoryId));
-            })
-            ->when($filters['stock'] ?? null, function ($query, $stock): void {
-                if ($stock === 'in_stock') {
-                    $query->where('stock_quantity', '>', 0);
-                } elseif ($stock === 'out_of_stock') {
-                    $query->where('stock_quantity', 0);
-                }
-            })
-            ->orderByDesc('created_at')
+        $products = $this->buildProductQuery($filters)
             ->paginate(20)
             ->withQueryString();
 
@@ -52,6 +39,46 @@ class ProductController extends Controller
             'products' => $products,
             'filters' => $filters,
             'categories' => $categories,
+        ]);
+    }
+
+    public function export(Request $request): HttpResponse|StreamedResponse
+    {
+        $this->authorize('viewAny', Product::class);
+
+        $filters = $request->only(['search', 'category_id', 'stock', 'sort_by', 'sort_dir']);
+        $format = $request->input('format', 'csv');
+
+        $products = $this->buildProductQuery($filters)->get();
+
+        if ($format === 'pdf') {
+            return response()->view('admin.products.export-pdf', compact('products'))
+                ->header('Content-Type', 'text/html');
+        }
+
+        $filename = 'products-'.now()->format('Y-m-d').'.csv';
+
+        $callback = function () use ($products): void {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['Name', 'SKU', 'Price', 'Stock', 'Status', 'Categories']);
+
+            foreach ($products as $product) {
+                fputcsv($handle, [
+                    $product->name,
+                    $product->sku ?? '',
+                    number_format($product->price / 100, 2),
+                    $product->stock_quantity,
+                    $product->is_active ? 'Active' : 'Inactive',
+                    $product->categories->pluck('name')->join(', '),
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
     }
 
@@ -135,6 +162,34 @@ class ProductController extends Controller
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Product deleted successfully.');
+    }
+
+    private function buildProductQuery(array $filters): Builder
+    {
+        $sortBy = in_array($filters['sort_by'] ?? null, self::ALLOWED_SORTS)
+            ? $filters['sort_by']
+            : 'created_at';
+        $sortDir = ($filters['sort_dir'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
+
+        return Product::query()
+            ->with('categories')
+            ->when($filters['search'] ?? null, function ($query, $search): void {
+                $query->where(function ($q) use ($search): void {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('sku', 'like', "%{$search}%");
+                });
+            })
+            ->when($filters['category_id'] ?? null, function ($query, $categoryId): void {
+                $query->whereHas('categories', fn ($q) => $q->where('categories.id', $categoryId));
+            })
+            ->when($filters['stock'] ?? null, function ($query, $stock): void {
+                if ($stock === 'in_stock') {
+                    $query->where('stock_quantity', '>', 0);
+                } elseif ($stock === 'out_of_stock') {
+                    $query->where('stock_quantity', 0);
+                }
+            })
+            ->orderBy($sortBy, $sortDir);
     }
 
     private function uniqueSlug(string $name): string

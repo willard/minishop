@@ -288,4 +288,89 @@ class ProductTest extends TestCase
                 ->where('products.data.0.name', 'Red Widget')
             );
     }
+
+    public function test_products_index_can_be_sorted_by_name_ascending(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        Product::factory()->create(['name' => 'Zebra Bag']);
+        Product::factory()->create(['name' => 'Apple Watch']);
+        Product::factory()->create(['name' => 'Mango Shirt']);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index', ['sort_by' => 'name', 'sort_dir' => 'asc']))
+            ->assertInertia(fn ($page) => $page
+                ->where('products.data.0.name', 'Apple Watch')
+                ->where('products.data.1.name', 'Mango Shirt')
+                ->where('products.data.2.name', 'Zebra Bag')
+            );
+    }
+
+    public function test_products_index_can_be_sorted_by_price_descending(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        Product::factory()->create(['name' => 'Cheap', 'price' => 500]);
+        Product::factory()->create(['name' => 'Mid', 'price' => 2000]);
+        Product::factory()->create(['name' => 'Expensive', 'price' => 9999]);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index', ['sort_by' => 'price', 'sort_dir' => 'desc']))
+            ->assertInertia(fn ($page) => $page
+                ->where('products.data.0.name', 'Expensive')
+                ->where('products.data.1.name', 'Mid')
+                ->where('products.data.2.name', 'Cheap')
+            );
+    }
+
+    public function test_products_index_ignores_invalid_sort_column(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        Product::factory(3)->create();
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index', ['sort_by' => 'invalid_column', 'sort_dir' => 'asc']))
+            ->assertOk();
+    }
+
+    public function test_export_csv_returns_csv_download(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        Product::factory()->create(['name' => 'Export Me', 'price' => 1500]);
+
+        $response = $this->actingAs($user)
+            ->get(route('admin.products.export', ['format' => 'csv']));
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+    }
+
+    public function test_export_csv_respects_search_filter(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        Product::factory()->create(['name' => 'Widget Alpha']);
+        Product::factory()->create(['name' => 'Gadget Beta']);
+
+        $response = $this->actingAs($user)
+            ->get(route('admin.products.export', ['format' => 'csv', 'search' => 'Alpha']));
+
+        $response->assertOk();
+        $this->assertStringContainsString('Widget Alpha', $response->streamedContent());
+        $this->assertStringNotContainsString('Gadget Beta', $response->streamedContent());
+    }
+
+    public function test_export_pdf_returns_html_view(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        Product::factory()->create(['name' => 'PDF Product']);
+
+        $response = $this->actingAs($user)
+            ->get(route('admin.products.export', ['format' => 'pdf']));
+
+        $response->assertOk();
+        $response->assertSee('PDF Product');
+    }
+
+    public function test_export_requires_authentication(): void
+    {
+        $this->get(route('admin.products.export'))->assertRedirect(route('login'));
+    }
 }

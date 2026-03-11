@@ -53,6 +53,7 @@ Route::get('dashboard', DashboardController::class)
     ->name('dashboard');
 
 Route::middleware(['auth', 'verified', 'role:super-admin|admin|manager'])->prefix('dashboard')->name('admin.')->group(function () {
+    Route::get('products/export', [ProductController::class, 'export'])->name('products.export');
     Route::resource('products', ProductController::class);
     Route::resource('products.variants', ProductVariantController::class)->except(['index', 'show'])->scoped();
     Route::resource('products.options', ProductOptionController::class)->only(['create', 'store', 'destroy'])->scoped();
