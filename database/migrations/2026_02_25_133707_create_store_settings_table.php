@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('store_settings', function (Blueprint $table) {
             $table->id();
-            $table->string('currency', 3)->default('PHP');
-            $table->string('currency_locale', 10)->default('en-PH');
+            $table->string('currency', 3)->default('CAD');
+            $table->string('currency_locale', 10)->default('en-CA');
             $table->decimal('tax_rate', 5, 2)->default(12.00);
             $table->string('active_payment_gateway', 20)->default('cod');
             $table->text('stripe_public_key')->nullable();

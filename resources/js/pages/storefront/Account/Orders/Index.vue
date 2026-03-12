@@ -85,7 +85,7 @@ function statusColor(status: string): string {
                     <p class="text-xs" style="color: rgba(28, 26, 23, 0.45)">
                         {{
                             new Date(order.created_at).toLocaleDateString(
-                                'en-PH',
+                                'en-CA',
                                 {
                                     year: 'numeric',
                                     month: 'short',

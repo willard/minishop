@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('shipping_city');
             $table->string('shipping_state');
             $table->string('shipping_postcode');
-            $table->string('shipping_country')->default('PH');
+            $table->string('shipping_country')->default('CA');
             $table->text('notes')->nullable();
             $table->timestamps();
         });
