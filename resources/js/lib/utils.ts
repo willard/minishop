@@ -12,8 +12,8 @@ export function toUrl(href: NonNullable<InertiaLinkProps['href']>) {
 
 export function formatPrice(
     cents: number,
-    currency = 'PHP',
-    locale = 'en-PH',
+    currency = 'CAD',
+    locale = 'en-CA',
 ): string {
     return new Intl.NumberFormat(locale, {
         style: 'currency',

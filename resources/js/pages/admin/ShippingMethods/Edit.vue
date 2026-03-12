@@ -121,7 +121,7 @@ const isFree = ref(props.shippingMethod.is_free);
                         :default-value="shippingMethod.price"
                     />
                     <p class="text-xs text-muted-foreground">
-                        In cents — e.g. 20000 = ₱200.00
+                        In cents — e.g. 20000 = $200.00
                     </p>
                     <InputError :message="errors.price" />
                 </div>

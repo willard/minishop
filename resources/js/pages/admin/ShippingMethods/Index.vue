@@ -10,6 +10,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { usePrice } from '@/composables/usePrice';
 import { type BreadcrumbItem } from '@/types';
 
 interface ShippingMethod {
@@ -31,9 +32,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Shipping Methods', href: index().url },
 ];
 
-function formatPrice(cents: number): string {
-    return `₱${(cents / 100).toFixed(2)}`;
-}
+const { formatPrice } = usePrice();
 
 function confirmDelete(method: ShippingMethod): void {
     if (confirm(`Delete "${method.name}"? This cannot be undone.`)) {

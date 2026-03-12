@@ -73,7 +73,7 @@ const form = useForm({
     shipping_city: '',
     shipping_state: '',
     shipping_postcode: '',
-    shipping_country: 'PH',
+    shipping_country: 'CA',
     shipping_method_id: '' as number | '',
     coupon_code: '',
     notes: '',
@@ -399,7 +399,7 @@ function submit(): void {
                                             id="shipping_country"
                                             v-model="form.shipping_country"
                                             maxlength="2"
-                                            placeholder="PH"
+                                            placeholder="CA"
                                             :class="{ 'border-destructive': form.errors.shipping_country }"
                                         />
                                         <InputError :message="form.errors.shipping_country" />

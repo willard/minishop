@@ -98,7 +98,7 @@ function statusColor(status: string): string {
                                     {{
                                         new Date(
                                             order.created_at,
-                                        ).toLocaleDateString('en-PH', {
+                                        ).toLocaleDateString('en-CA', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric',

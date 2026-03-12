@@ -10,6 +10,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { usePrice } from '@/composables/usePrice';
 import { type BreadcrumbItem } from '@/types';
 
 interface Coupon {
@@ -43,18 +44,20 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Coupons', href: index().url },
 ];
 
+const { formatPrice } = usePrice();
+
 function formatValue(coupon: Coupon): string {
     if (coupon.type === 'percentage') {
         return `${coupon.value}%`;
     }
-    return `₱${(coupon.value / 100).toFixed(2)}`;
+    return formatPrice(coupon.value);
 }
 
 function formatMinOrder(coupon: Coupon): string {
     if (coupon.minimum_order_amount === null) {
         return '—';
     }
-    return `₱${(coupon.minimum_order_amount / 100).toFixed(2)}`;
+    return formatPrice(coupon.minimum_order_amount);
 }
 
 function usageLabel(coupon: Coupon): string {

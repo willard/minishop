@@ -133,7 +133,7 @@ defineProps<{
                             :value="address?.city"
                             required
                             autocomplete="address-level2"
-                            placeholder="Manila"
+                            placeholder="Toronto"
                             class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
                             style="
                                 border-color: rgba(28, 26, 23, 0.2);
@@ -163,7 +163,7 @@ defineProps<{
                             name="state"
                             :value="address?.state"
                             autocomplete="address-level1"
-                            placeholder="Metro Manila"
+                            placeholder="Ontario"
                             class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
                             style="
                                 border-color: rgba(28, 26, 23, 0.2);
@@ -190,7 +190,7 @@ defineProps<{
                             :value="address?.postal_code"
                             required
                             autocomplete="postal-code"
-                            placeholder="1000"
+                            placeholder="M5V 3A8"
                             class="rounded-lg border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/20"
                             style="
                                 border-color: rgba(28, 26, 23, 0.2);
@@ -219,10 +219,10 @@ defineProps<{
                             "
                         >
                             <option
-                                value="PH"
-                                :selected="(address?.country ?? 'PH') === 'PH'"
+                                value="CA"
+                                :selected="(address?.country ?? 'CA') === 'CA'"
                             >
-                                Philippines
+                                Canada
                             </option>
                             <option
                                 value="US"
@@ -231,10 +231,10 @@ defineProps<{
                                 United States
                             </option>
                             <option
-                                value="SG"
-                                :selected="address?.country === 'SG'"
+                                value="GB"
+                                :selected="address?.country === 'GB'"
                             >
-                                Singapore
+                                United Kingdom
                             </option>
                             <option
                                 value="AU"
@@ -243,10 +243,10 @@ defineProps<{
                                 Australia
                             </option>
                             <option
-                                value="GB"
-                                :selected="address?.country === 'GB'"
+                                value="SG"
+                                :selected="address?.country === 'SG'"
                             >
-                                United Kingdom
+                                Singapore
                             </option>
                         </select>
                         <InputError :message="errors.country" />

@@ -7,8 +7,8 @@ vi.mock('@inertiajs/vue3', async (importOriginal) => {
         usePage: vi.fn(() => ({
             props: {
                 storeSettings: {
-                    currency: 'PHP',
-                    currencyLocale: 'en-PH',
+                    currency: 'CAD',
+                    currencyLocale: 'en-CA',
                     taxRate: 12,
                 },
             },

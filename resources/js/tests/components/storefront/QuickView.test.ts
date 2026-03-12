@@ -96,7 +96,7 @@ describe('QuickView', () => {
         });
 
         expect(wrapper.text()).toContain('Handmade Mug');
-        expect(wrapper.text()).toContain('₱599.00');
+        expect(wrapper.text()).toContain('$599.00');
         expect(wrapper.text()).toContain('A beautiful handmade mug');
     });
 
@@ -112,14 +112,14 @@ describe('QuickView', () => {
         });
 
         // Initially Small (first value)
-        expect(wrapper.text()).toContain('₱599.00');
+        expect(wrapper.text()).toContain('$599.00');
 
         // Click "Large" button
         const buttons = wrapper.findAll('button');
         const largeButton = buttons.find((b) => b.text() === 'Large');
         await largeButton?.trigger('click');
 
-        expect(wrapper.text()).toContain('₱799.00');
+        expect(wrapper.text()).toContain('$799.00');
     });
 
     it('calls addItem with correct variant data', async () => {

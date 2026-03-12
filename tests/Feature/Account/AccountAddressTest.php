@@ -44,7 +44,7 @@ class AccountAddressTest extends TestCase
                 'city' => 'Makati',
                 'state' => 'Metro Manila',
                 'postal_code' => '1200',
-                'country' => 'PH',
+                'country' => 'CA',
             ])
             ->assertRedirect();
 
@@ -66,7 +66,7 @@ class AccountAddressTest extends TestCase
             'line1' => '123 Sample St',
             'city' => 'Makati',
             'postal_code' => '1200',
-            'country' => 'PH',
+            'country' => 'CA',
         ]);
 
         $this->actingAs($user)->put('/account/address', [
@@ -74,7 +74,7 @@ class AccountAddressTest extends TestCase
             'line1' => '456 New Ave',
             'city' => 'Taguig',
             'postal_code' => '1634',
-            'country' => 'PH',
+            'country' => 'CA',
         ]);
 
         $this->assertDatabaseCount('addresses', 1);

@@ -28,7 +28,7 @@ vi.mock('@/routes/account/orders', () => ({
 }));
 
 vi.mock('@/lib/utils', () => ({
-    formatPrice: (cents: number) => `₱${(cents / 100).toFixed(2)}`,
+    formatPrice: (cents: number) => `$${(cents / 100).toFixed(2)}`,
 }));
 
 const baseOrder = {
@@ -97,11 +97,11 @@ describe('Account/Orders/Show', () => {
 
     it('displays line item quantities and prices', () => {
         expect(wrapper.text()).toContain('Qty: 2');
-        expect(wrapper.text()).toContain('₱30.00');
+        expect(wrapper.text()).toContain('$30.00');
     });
 
     it('displays the order total', () => {
-        expect(wrapper.text()).toContain('₱87.00');
+        expect(wrapper.text()).toContain('$87.00');
     });
 
     it('displays the shipping address name', () => {

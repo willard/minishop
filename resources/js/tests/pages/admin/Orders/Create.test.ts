@@ -169,7 +169,7 @@ describe('admin/Orders/Create', () => {
             items: [{ product_id: 2, variant_id: '', quantity: 1, unit_price: '' }],
             shipping_name: '', shipping_address_line1: '', shipping_address_line2: '',
             shipping_city: '', shipping_state: '', shipping_postcode: '',
-            shipping_country: 'PH', shipping_method_id: '', coupon_code: '', notes: '',
+            shipping_country: 'CA', shipping_method_id: '', coupon_code: '', notes: '',
             errors: {}, processing: false,
             transform: vi.fn().mockReturnThis(),
             post: mockPost,

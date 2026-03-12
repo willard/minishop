@@ -33,7 +33,7 @@ class OrderFactory extends Factory
             'shipping_city' => fake()->city(),
             'shipping_state' => fake()->state(),
             'shipping_postcode' => fake()->postcode(),
-            'shipping_country' => 'PH',
+            'shipping_country' => 'CA',
             'notes' => fake()->optional(0.2)->sentence(),
         ];
     }

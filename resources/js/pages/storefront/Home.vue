@@ -434,7 +434,7 @@ function handleAddToCart(product: StorefrontProduct): void {
                         Free Shipping
                     </p>
                     <p class="text-sm" style="color: rgba(249, 246, 240, 0.55)">
-                        On orders over ₱2,000
+                        On orders over $200
                     </p>
                 </div>
                 <div>

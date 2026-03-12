@@ -24,7 +24,7 @@ vi.mock('@/composables/useCart', () => ({
 
 vi.mock('@/composables/usePrice', () => ({
     usePrice: vi.fn(() => ({
-        formatPrice: (amount: number) => `₱${amount}`,
+        formatPrice: (amount: number) => `$${amount}`,
     })),
 }));
 

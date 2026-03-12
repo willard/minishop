@@ -68,7 +68,7 @@ describe('CartDrawer', () => {
         });
 
         expect(wrapper.text()).toContain('Handmade Mug');
-        expect(wrapper.text()).toContain('₱599.00');
+        expect(wrapper.text()).toContain('$599.00');
     });
 
     it('emits close event when close button is clicked', async () => {
