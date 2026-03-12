@@ -30,7 +30,7 @@ vi.mock('@/routes/account/orders', () => ({
 }));
 
 vi.mock('@/lib/utils', () => ({
-    formatPrice: (cents: number) => `₱${(cents / 100).toFixed(2)}`,
+    formatPrice: (cents: number) => `$${(cents / 100).toFixed(2)}`,
 }));
 
 const makeOrders = (count: number) => ({

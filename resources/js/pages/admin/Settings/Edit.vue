@@ -41,14 +41,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const currencies = [
-    { code: 'PHP', locale: 'en-PH', label: 'PHP — Philippine Peso' },
-    { code: 'USD', locale: 'en-US', label: 'USD — US Dollar' },
-    { code: 'EUR', locale: 'de-DE', label: 'EUR — Euro' },
-    { code: 'GBP', locale: 'en-GB', label: 'GBP — British Pound' },
-    { code: 'JPY', locale: 'ja-JP', label: 'JPY — Japanese Yen' },
-    { code: 'AUD', locale: 'en-AU', label: 'AUD — Australian Dollar' },
     { code: 'CAD', locale: 'en-CA', label: 'CAD — Canadian Dollar' },
+    { code: 'USD', locale: 'en-US', label: 'USD — US Dollar' },
+    { code: 'GBP', locale: 'en-GB', label: 'GBP — British Pound' },
+    { code: 'EUR', locale: 'de-DE', label: 'EUR — Euro' },
+    { code: 'AUD', locale: 'en-AU', label: 'AUD — Australian Dollar' },
     { code: 'SGD', locale: 'en-SG', label: 'SGD — Singapore Dollar' },
+    { code: 'JPY', locale: 'ja-JP', label: 'JPY — Japanese Yen' },
+    { code: 'PHP', locale: 'en-PH', label: 'PHP — Philippine Peso' },
     { code: 'MYR', locale: 'ms-MY', label: 'MYR — Malaysian Ringgit' },
     { code: 'IDR', locale: 'id-ID', label: 'IDR — Indonesian Rupiah' },
 ];

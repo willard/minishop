@@ -104,7 +104,7 @@ function handleSearchSubmit(): void {
             class="py-2 text-center text-xs tracking-widest uppercase"
             style="background-color: #1c1a17; color: #f9f6f0"
         >
-            Free shipping on orders over ₱2,000
+            Free shipping on orders over $200
         </div>
 
         <!-- Navbar -->

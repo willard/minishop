@@ -36,6 +36,12 @@ vi.mock('@/components/ui/badge', () => ({
     },
 }));
 
+vi.mock('@/composables/usePrice', () => ({
+    usePrice: vi.fn(() => ({
+        formatPrice: (cents: number) => `$${(cents / 100).toFixed(2)}`,
+    })),
+}));
+
 vi.mock('@/actions/App/Http/Controllers/Admin/CouponController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/coupons' })),
     create: vi.fn(() => ({ url: '/dashboard/coupons/create' })),
@@ -117,7 +123,7 @@ describe('admin/Coupons/Index', () => {
     });
 
     it('formats fixed value correctly', () => {
-        expect(wrapper.text()).toContain('₱50.00');
+        expect(wrapper.text()).toContain('$50.00');
     });
 
     it('shows an empty state when there are no coupons', () => {

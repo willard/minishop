@@ -92,7 +92,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                             required
                         >
                             <option value="percentage">Percentage (%)</option>
-                            <option value="fixed">Fixed Amount (₱)</option>
+                            <option value="fixed">Fixed Amount ($)</option>
                         </select>
                         <InputError :message="errors.type" />
                     </div>
@@ -110,7 +110,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                             required
                         />
                         <p class="text-xs text-muted-foreground">
-                            % for percentage; cents (100 = ₱1) for fixed
+                            % for percentage; cents (100 = $1) for fixed
                         </p>
                         <InputError :message="errors.value" />
                     </div>
@@ -130,7 +130,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                             placeholder="Leave empty for none"
                         />
                         <p class="text-xs text-muted-foreground">
-                            e.g. 20000 = ₱200 minimum
+                            e.g. 20000 = $200 minimum
                         </p>
                         <InputError :message="errors.minimum_order_amount" />
                     </div>

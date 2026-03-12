@@ -11,10 +11,10 @@ export function usePrice() {
     }>();
 
     const currency = computed(
-        () => page.props?.storeSettings?.currency ?? 'PHP',
+        () => page.props?.storeSettings?.currency ?? 'CAD',
     );
     const locale = computed(
-        () => page.props?.storeSettings?.currencyLocale ?? 'en-PH',
+        () => page.props?.storeSettings?.currencyLocale ?? 'en-CA',
     );
 
     function formatPrice(cents: number): string {

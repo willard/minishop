@@ -104,7 +104,7 @@ const isFree = ref(false);
                         placeholder="e.g. 20000"
                     />
                     <p class="text-xs text-muted-foreground">
-                        In cents — e.g. 20000 = ₱200.00
+                        In cents — e.g. 20000 = $200.00
                     </p>
                     <InputError :message="errors.price" />
                 </div>
