@@ -68,11 +68,11 @@ export function useChat() {
                 try {
                     const event = JSON.parse(raw) as {
                         type: string;
-                        textDelta?: string;
+                        delta?: string;
                         id?: string;
                     };
-                    if (event.type === 'text-delta' && event.textDelta) {
-                        assistantMsg.content += event.textDelta;
+                    if (event.type === 'text_delta' && event.delta) {
+                        assistantMsg.content += event.delta;
                     }
                     if (event.type === 'conversation_id' && event.id) {
                         conversationId.value = event.id;
