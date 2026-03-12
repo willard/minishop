@@ -93,7 +93,10 @@
       "mcp__laravel-boost__last-error",
       "mcp__laravel-boost__database-query",
       "mcp__laravel-boost__tinker",
-      "mcp__Claude_Preview__preview_start"
+      "mcp__Claude_Preview__preview_start",
+      "Bash(git merge:*)",
+      "Bash(git fetch:*)",
+      "Bash(gh api:*)"
     ]
   }
 }

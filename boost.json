@@ -1,20 +1,25 @@
 {
     "agents": [
         "cursor",
-        "claude_code"
+        "claude_code",
+        "gemini"
     ],
     "guidelines": true,
     "herd_mcp": false,
     "mcp": true,
     "nightwatch_mcp": false,
     "packages": [
-        "laravel/fortify"
+        "laravel/fortify",
+        "laravel/ai",
+        "spatie/laravel-permission"
     ],
     "sail": false,
     "skills": [
         "wayfinder-development",
         "inertia-vue-development",
         "tailwindcss-development",
-        "developing-with-fortify"
+        "ai-sdk-development",
+        "developing-with-fortify",
+        "laravel-permission-development"
     ]
 }
