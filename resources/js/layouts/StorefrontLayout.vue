@@ -15,6 +15,7 @@ import {
     show as productShow,
 } from '@/actions/App/Http/Controllers/Storefront/ProductController';
 import CartDrawer from '@/components/storefront/CartDrawer.vue';
+import ChatWidget from '@/components/storefront/ChatWidget.vue';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';
 import type { StorefrontCategory, StorefrontProduct } from '@/types/storefront';
@@ -341,6 +342,9 @@ function handleSearchSubmit(): void {
 
         <!-- Cart Drawer Component -->
         <CartDrawer :is-open="isDrawerOpen" @close="closeDrawer" />
+
+        <!-- Support Chat Widget -->
+        <ChatWidget />
 
         <!-- Footer -->
         <footer

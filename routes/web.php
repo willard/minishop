@@ -21,12 +21,15 @@ use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\PaymentController;
 use App\Http\Controllers\Storefront\ProductController as StorefrontProductController;
+use App\Http\Controllers\Storefront\SupportChatController;
 use App\Http\Controllers\Webhooks\PayMongoWebhookController;
 use App\Http\Controllers\Webhooks\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', HomeController::class)->name('home');
+
+Route::post('/chat', [SupportChatController::class, 'store'])->name('storefront.chat.store');
 
 Route::prefix('products')->name('storefront.products.')->group(function () {
     Route::get('/', [StorefrontProductController::class, 'index'])->name('index');
