@@ -26,14 +26,14 @@ class SupportChatController extends Controller
 
         $stream = $agent->stream($request->string('message'));
 
-        return response()->stream(function () use ($stream): void {
+        return response()->stream(function () use ($stream, $user): void {
             foreach ($stream as $event) {
                 echo "data: {$event}\n\n";
                 ob_flush();
                 flush();
             }
 
-            if ($stream->conversationId) {
+            if ($user && $stream->conversationId) {
                 $payload = json_encode(['type' => 'conversation_id', 'id' => $stream->conversationId]);
                 echo "data: {$payload}\n\n";
                 ob_flush();

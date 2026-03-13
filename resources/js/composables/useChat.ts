@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import { store } from '@/actions/App/Http/Controllers/Storefront/SupportChatController';
 
 export interface ChatMessage {
     id: string;
@@ -31,59 +32,60 @@ export function useChat() {
             document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
                 ?.content ?? '';
 
-        const response = await fetch('/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrf,
-            },
-            body: JSON.stringify({
-                message: text,
-                conversation_id: conversationId.value,
-            }),
-        });
+        try {
+            const response = await fetch(store.url(), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                },
+                body: JSON.stringify({
+                    message: text,
+                    conversation_id: conversationId.value,
+                }),
+            });
 
-        const reader = response.body!.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
+            const reader = response.body!.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
-                break;
-            }
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop() ?? '';
-
-            for (const line of lines) {
-                if (!line.startsWith('data: ')) {
-                    continue;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    break;
                 }
-                const raw = line.slice(6);
-                if (raw === '[DONE]') {
-                    isStreaming.value = false;
-                    return;
-                }
-                try {
-                    const event = JSON.parse(raw) as {
-                        type: string;
-                        delta?: string;
-                        id?: string;
-                    };
-                    if (event.type === 'text_delta' && event.delta) {
-                        assistantMsg.content += event.delta;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() ?? '';
+
+                for (const line of lines) {
+                    if (!line.startsWith('data: ')) {
+                        continue;
                     }
-                    if (event.type === 'conversation_id' && event.id) {
-                        conversationId.value = event.id;
+                    const raw = line.slice(6);
+                    if (raw === '[DONE]') {
+                        return;
                     }
-                } catch {
-                    // ignore unparseable lines
+                    try {
+                        const event = JSON.parse(raw) as {
+                            type: string;
+                            delta?: string;
+                            id?: string;
+                        };
+                        if (event.type === 'text_delta' && event.delta) {
+                            assistantMsg.content += event.delta;
+                        }
+                        if (event.type === 'conversation_id' && event.id) {
+                            conversationId.value = event.id;
+                        }
+                    } catch {
+                        // ignore unparseable lines
+                    }
                 }
             }
+        } finally {
+            isStreaming.value = false;
         }
-
-        isStreaming.value = false;
     }
 
     function openChat(): void {
