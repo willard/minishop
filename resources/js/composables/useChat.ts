@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { store } from '@/actions/App/Http/Controllers/Storefront/SupportChatController';
+import { getCsrfToken } from '@/lib/csrf';
 
 export interface ChatMessage {
     id: string;
@@ -28,16 +29,12 @@ export function useChat() {
         messages.value.push(assistantMsg);
         isStreaming.value = true;
 
-        const csrf =
-            document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
-                ?.content ?? '';
-
         try {
             const response = await fetch(store.url(), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrf,
+                    'X-CSRF-TOKEN': getCsrfToken(),
                 },
                 body: JSON.stringify({
                     message: text,

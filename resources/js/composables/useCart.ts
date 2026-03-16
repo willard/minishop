@@ -1,6 +1,7 @@
 import { useLocalStorage } from '@vueuse/core';
 import { computed, ref } from 'vue';
-import type { CartItem } from '@/types/storefront';
+import { getCsrfToken } from '@/lib/csrf';
+import type { CartItem, ServerCart } from '@/types/storefront';
 
 const cartItems = useLocalStorage<CartItem[]>('minishop_cart', []);
 const lastAddedItem = ref<CartItem | null>(null);
@@ -99,6 +100,38 @@ export function useCart() {
         isDrawerOpen.value = false;
     }
 
+    async function syncWithServer(): Promise<ServerCart | null> {
+        if (cartItems.value.length === 0) {
+            return null;
+        }
+
+        try {
+            const response = await fetch('/cart/sync', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                },
+                body: JSON.stringify({
+                    items: cartItems.value.map((item) => ({
+                        product_id: item.productId,
+                        variant_id: item.variantId,
+                        quantity: item.quantity,
+                    })),
+                }),
+            });
+
+            if (response.ok) {
+                return (await response.json()) as ServerCart;
+            }
+        } catch {
+            // Non-critical — local cart remains authoritative if server sync fails
+        }
+
+        return null;
+    }
+
     return {
         cartItems,
         itemCount,
@@ -107,6 +140,7 @@ export function useCart() {
         updateQuantity,
         removeItem,
         clearCart,
+        syncWithServer,
         lastAddedItem,
         isDrawerOpen,
         openDrawer,

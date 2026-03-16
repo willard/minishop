@@ -20,7 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'webhooks/paymongo',
         ]);
 
-        $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
+        $middleware->encryptCookies(except: ['appearance', 'sidebar_state', 'cart_token']);
+
+        $middleware->api(append: [
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        ]);
 
         $middleware->web(append: [
             HandleAppearance::class,

@@ -71,6 +71,22 @@ export interface CartItem {
     variantLabel: string | null;
 }
 
+export interface ServerCartItem {
+    id: number;
+    product_id: number;
+    variant_id: number | null;
+    quantity: number;
+    unit_price: number;
+    subtotal: number;
+}
+
+export interface ServerCart {
+    id: number;
+    item_count: number;
+    subtotal: number;
+    items: ServerCartItem[];
+}
+
 export interface PaginationLink {
     url: string | null;
     label: string;
