@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\ShippingMethodController;
 use App\Http\Controllers\Admin\StoreSettingsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\PaymentController;
@@ -34,6 +35,15 @@ Route::post('/chat', [SupportChatController::class, 'store'])->name('storefront.
 Route::prefix('products')->name('storefront.products.')->group(function () {
     Route::get('/', [StorefrontProductController::class, 'index'])->name('index');
     Route::get('/{product:slug}', [StorefrontProductController::class, 'show'])->name('show');
+});
+
+Route::prefix('cart')->name('storefront.cart.')->group(function () {
+    Route::get('/', [CartController::class, 'show'])->name('show');
+    Route::post('/items', [CartController::class, 'addItem'])->name('items.store');
+    Route::patch('/items/{cartItem}', [CartController::class, 'updateItem'])->name('items.update');
+    Route::delete('/items/{cartItem}', [CartController::class, 'removeItem'])->name('items.destroy');
+    Route::delete('/', [CartController::class, 'clear'])->name('clear');
+    Route::post('/sync', [CartController::class, 'sync'])->name('sync');
 });
 
 Route::prefix('checkout')->name('storefront.checkout.')->group(function () {
