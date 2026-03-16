@@ -35,9 +35,11 @@ trait ManagesCartItems
             $unitPrice = $variant->price ?? $product->price;
         }
 
+        $variantId = $validated['variant_id'] ?? null;
+
         $existing = $cart->items()
             ->where('product_id', $validated['product_id'])
-            ->where('variant_id', $validated['variant_id'] ?? null)
+            ->when($variantId === null, fn ($q) => $q->whereNull('variant_id'), fn ($q) => $q->where('variant_id', $variantId))
             ->first();
 
         if ($existing) {
@@ -45,7 +47,7 @@ trait ManagesCartItems
         } else {
             $cart->items()->create([
                 'product_id' => $validated['product_id'],
-                'variant_id' => $validated['variant_id'] ?? null,
+                'variant_id' => $variantId,
                 'quantity' => $validated['quantity'],
                 'unit_price' => $unitPrice,
             ]);
@@ -135,10 +137,21 @@ trait ManagesCartItems
                 $unitPrice = $variant->price ?? $product->price;
             }
 
-            $cart->items()->updateOrCreate(
-                ['product_id' => $item['product_id'], 'variant_id' => $variantId],
-                ['quantity' => $item['quantity'], 'unit_price' => $unitPrice],
-            );
+            $cartItem = $cart->items()
+                ->where('product_id', $item['product_id'])
+                ->when($variantId === null, fn ($q) => $q->whereNull('variant_id'), fn ($q) => $q->where('variant_id', $variantId))
+                ->first();
+
+            if ($cartItem) {
+                $cartItem->update(['quantity' => $item['quantity'], 'unit_price' => $unitPrice]);
+            } else {
+                $cart->items()->create([
+                    'product_id' => $item['product_id'],
+                    'variant_id' => $variantId,
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $unitPrice,
+                ]);
+            }
         }
 
         $cart->load(['items.product.images', 'items.variant']);
