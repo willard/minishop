@@ -1,5 +1,6 @@
 import { useLocalStorage } from '@vueuse/core';
 import { computed, ref } from 'vue';
+import { getCsrfToken } from '@/lib/csrf';
 import type { CartItem, ServerCart } from '@/types/storefront';
 
 const cartItems = useLocalStorage<CartItem[]>('minishop_cart', []);
@@ -110,10 +111,7 @@ export function useCart() {
                 headers: {
                     'Content-Type': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN':
-                        document
-                            .querySelector('meta[name="csrf-token"]')
-                            ?.getAttribute('content') ?? '',
+                    'X-CSRF-TOKEN': getCsrfToken(),
                 },
                 body: JSON.stringify({
                     items: cartItems.value.map((item) => ({

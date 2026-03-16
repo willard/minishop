@@ -45,11 +45,14 @@ class Cart extends Model
                     ->first();
 
                 if ($guestCart && $guestCart->id !== $userCart->id) {
+                    $userCart->load('items');
+                    $userItemsByKey = $userCart->items->keyBy(
+                        fn ($item) => $item->product_id.'-'.($item->variant_id ?? 'null')
+                    );
+
                     foreach ($guestCart->items as $guestItem) {
-                        $existing = $userCart->items()
-                            ->where('product_id', $guestItem->product_id)
-                            ->where('variant_id', $guestItem->variant_id)
-                            ->first();
+                        $key = $guestItem->product_id.'-'.($guestItem->variant_id ?? 'null');
+                        $existing = $userItemsByKey->get($key);
 
                         if ($existing) {
                             $existing->increment('quantity', $guestItem->quantity);

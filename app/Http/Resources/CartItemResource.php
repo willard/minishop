@@ -17,7 +17,7 @@ class CartItemResource extends JsonResource
             'unit_price' => $this->unit_price,
             'subtotal' => $this->unit_price * $this->quantity,
             'product' => new ProductResource($this->whenLoaded('product')),
-            'variant' => $this->when($this->variant_id !== null, fn () => $this->whenLoaded('variant')),
+            'variant' => $this->whenLoaded('variant'),
         ];
     }
 }
