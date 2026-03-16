@@ -111,4 +111,16 @@ describe('CartDrawer', () => {
         await buttons[0].trigger('click'); // Decrement
         expect(mockUseCart.updateQuantity).toHaveBeenCalledWith(1, null, 0);
     });
+
+    it('shows a View Cart link in the footer when cart has items', () => {
+        cartItemsRef.value = mockCartItems;
+        itemCountRef.value = 1;
+        subtotalRef.value = 59900;
+
+        const wrapper = mount(CartDrawer, {
+            props: { isOpen: true },
+        });
+
+        expect(wrapper.text()).toContain('View Cart');
+    });
 });

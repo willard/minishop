@@ -2,6 +2,7 @@
 import { Link } from '@inertiajs/vue3';
 import { ShoppingBag, X, Trash2, ArrowRight } from 'lucide-vue-next';
 import { create as checkoutCreate } from '@/actions/App/Http/Controllers/Storefront/CheckoutController';
+import { show as cartShow } from '@/actions/App/Http/Controllers/Storefront/CartController';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';
 
@@ -257,13 +258,14 @@ function close(): void {
                     <ArrowRight class="size-4" />
                 </Link>
 
-                <button
-                    class="w-full text-center text-xs font-semibold tracking-widest uppercase transition-opacity hover:opacity-60"
+                <Link
+                    :href="cartShow().url"
+                    class="flex w-full items-center justify-center text-xs font-semibold tracking-widest uppercase transition-opacity hover:opacity-60"
                     style="color: #1c1a17"
                     @click="close"
                 >
-                    Continue Shopping
-                </button>
+                    View Cart
+                </Link>
             </div>
         </div>
     </Transition>
