@@ -124,11 +124,6 @@ describe('storefront/Cart', () => {
     it('calls updateQuantity with incremented value when + is clicked', async () => {
         const wrapper = mount(CartPage);
 
-        const plusButtons = wrapper.findAll('button').filter((b) =>
-            b.find('svg').exists() && b.attributes('aria-label') !== 'Remove item'
-        );
-        // The first non-remove button with svg is Minus, second is Plus (mobile row)
-        // Find plus button by position in quantity controls
         const quantityControls = wrapper.findAll('.rounded-full.border');
         const plusBtn = quantityControls[0].findAll('button')[1];
         await plusBtn.trigger('click');
