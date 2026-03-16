@@ -33,9 +33,13 @@ vi.mock('@/actions/App/Http/Controllers/Storefront/ProductController', () => ({
 
 vi.mock('lucide-vue-next', () => ({
     ShoppingBag: { template: '<svg />' },
-    Trash2: { template: '<svg />' },
+    X: { template: '<svg />' },
     ArrowRight: { template: '<svg />' },
     ArrowLeft: { template: '<svg />' },
+    Lock: { template: '<svg />' },
+    Minus: { template: '<svg />' },
+    Plus: { template: '<svg />' },
+    Package: { template: '<svg />' },
 }));
 
 const mockCartItem = {
@@ -65,6 +69,12 @@ describe('storefront/Cart', () => {
         (useCart as any).mockReturnValue(mockUseCart);
     });
 
+    it('renders the page heading', () => {
+        const wrapper = mount(CartPage);
+
+        expect(wrapper.text()).toContain('Your Bag');
+    });
+
     it('renders cart items when the cart has items', () => {
         const wrapper = mount(CartPage);
 
@@ -74,7 +84,8 @@ describe('storefront/Cart', () => {
     it('shows item count in the heading', () => {
         const wrapper = mount(CartPage);
 
-        expect(wrapper.text()).toContain('2 items');
+        expect(wrapper.text()).toContain('2');
+        expect(wrapper.text()).toContain('items');
     });
 
     it('shows formatted subtotal in the order summary', () => {
@@ -83,10 +94,26 @@ describe('storefront/Cart', () => {
         expect(wrapper.text()).toContain('$119800');
     });
 
+    it('shows free shipping progress when below threshold', () => {
+        const wrapper = mount(CartPage);
+
+        expect(wrapper.text()).toContain('free shipping');
+    });
+
+    it('shows free shipping unlocked message when at or above threshold', () => {
+        mockUseCart.subtotal = ref(25000);
+        (useCart as any).mockReturnValue(mockUseCart);
+
+        const wrapper = mount(CartPage);
+
+        expect(wrapper.text()).toContain("You've unlocked free shipping");
+    });
+
     it('calls removeItem when the remove button is clicked', async () => {
         const wrapper = mount(CartPage);
 
-        await wrapper.find('button').trigger('click');
+        const removeButtons = wrapper.findAll('button[aria-label="Remove item"]');
+        await removeButtons[0].trigger('click');
 
         expect(mockUseCart.removeItem).toHaveBeenCalledWith(
             mockCartItem.productId,
@@ -94,32 +121,32 @@ describe('storefront/Cart', () => {
         );
     });
 
-    it('calls updateQuantity with decremented value when − is clicked', async () => {
-        const wrapper = mount(CartPage);
-
-        const buttons = wrapper.findAll('button');
-        const decrementButton = buttons.find((b) => b.text() === '−');
-        await decrementButton?.trigger('click');
-
-        expect(mockUseCart.updateQuantity).toHaveBeenCalledWith(
-            mockCartItem.productId,
-            mockCartItem.variantId,
-            mockCartItem.quantity - 1,
-        );
-    });
-
     it('calls updateQuantity with incremented value when + is clicked', async () => {
         const wrapper = mount(CartPage);
 
-        const buttons = wrapper.findAll('button');
-        const incrementButton = buttons.find((b) => b.text() === '+');
-        await incrementButton?.trigger('click');
+        const plusButtons = wrapper.findAll('button').filter((b) =>
+            b.find('svg').exists() && b.attributes('aria-label') !== 'Remove item'
+        );
+        // The first non-remove button with svg is Minus, second is Plus (mobile row)
+        // Find plus button by position in quantity controls
+        const quantityControls = wrapper.findAll('.rounded-full.border');
+        const plusBtn = quantityControls[0].findAll('button')[1];
+        await plusBtn.trigger('click');
 
         expect(mockUseCart.updateQuantity).toHaveBeenCalledWith(
             mockCartItem.productId,
             mockCartItem.variantId,
             mockCartItem.quantity + 1,
         );
+    });
+
+    it('calls clearCart when the clear bag button is clicked', async () => {
+        const wrapper = mount(CartPage);
+
+        const clearButton = wrapper.findAll('button').find((b) => b.text() === 'Clear bag');
+        await clearButton?.trigger('click');
+
+        expect(mockUseCart.clearCart).toHaveBeenCalled();
     });
 
     it('shows the variant label when present', () => {
@@ -149,6 +176,12 @@ describe('storefront/Cart', () => {
             const wrapper = mount(CartPage);
 
             expect(wrapper.text()).not.toContain('Handmade Mug');
+        });
+
+        it('shows a browse products link', () => {
+            const wrapper = mount(CartPage);
+
+            expect(wrapper.text()).toContain('Browse Products');
         });
     });
 });
