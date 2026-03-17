@@ -11,8 +11,6 @@ class StripeRefundService
 {
     private StripeClient $stripe;
 
-    public function __construct() {}
-
     /**
      * Issue a refund against the order's payment intent.
      *

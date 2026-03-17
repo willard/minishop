@@ -57,6 +57,8 @@ class ProcessReturnAction
     public function issueRefund(OrderReturn $orderReturn): void
     {
         DB::transaction(function () use ($orderReturn): void {
+            $orderReturn->loadMissing('order', 'items');
+
             $order = $orderReturn->order;
             $refundAmount = $orderReturn->items->sum('subtotal');
 

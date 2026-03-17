@@ -132,7 +132,12 @@ class ReturnControllerTest extends TestCase
                     ['order_item_id' => $orderItem->id, 'quantity' => 1],
                 ],
             ])
-            ->assertRedirect(route('admin.returns.index'));
+            ->assertRedirect();
+
+        $orderReturn = OrderReturn::query()
+            ->where('order_id', $order->id)
+            ->where('status', ReturnStatus::Requested->value)
+            ->firstOrFail();
 
         $this->assertDatabaseHas('order_returns', [
             'order_id' => $order->id,

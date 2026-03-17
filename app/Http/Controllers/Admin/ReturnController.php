@@ -12,7 +12,6 @@ use App\Http\Resources\OrderReturnResource;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderReturn;
-use App\Models\ReturnItem;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -97,7 +96,7 @@ class ReturnController extends Controller
             ->get()
             ->keyBy('id');
 
-        DB::transaction(function () use ($data, $order, $orderItems): OrderReturn {
+        $orderReturn = DB::transaction(function () use ($data, $order, $orderItems): OrderReturn {
             /** @var OrderReturn $orderReturn */
             $orderReturn = OrderReturn::query()->create([
                 'return_number' => '',
@@ -107,6 +106,8 @@ class ReturnController extends Controller
                 'notes' => $data['notes'] ?? null,
                 'admin_notes' => $data['admin_notes'] ?? null,
             ]);
+
+            $itemsToCreate = [];
 
             foreach ($data['items'] as $item) {
                 $orderItem = $orderItems->get($item['order_item_id']);
@@ -118,19 +119,20 @@ class ReturnController extends Controller
                 $quantity = min((int) $item['quantity'], $orderItem->quantity);
                 $unitPrice = $orderItem->unit_price;
 
-                ReturnItem::query()->create([
-                    'return_id' => $orderReturn->id,
+                $itemsToCreate[] = [
                     'order_item_id' => $orderItem->id,
                     'quantity' => $quantity,
                     'unit_price' => $unitPrice,
                     'subtotal' => $unitPrice * $quantity,
-                ]);
+                ];
             }
+
+            $orderReturn->items()->createMany($itemsToCreate);
 
             return $orderReturn;
         });
 
-        return redirect()->route('admin.returns.index')
+        return redirect()->route('admin.returns.show', $orderReturn)
             ->with('success', 'Return request created successfully.');
     }
 
@@ -217,7 +219,7 @@ class ReturnController extends Controller
                 ->with('error', 'This return cannot be refunded in its current status.');
         }
 
-        $processReturn->issueRefund($return->load('items'));
+        $processReturn->issueRefund($return);
 
         return redirect()->route('admin.returns.show', $return)
             ->with('success', 'Refund issued successfully.');
