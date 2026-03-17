@@ -40,6 +40,10 @@ class RoleAndPermissionSeeder extends Seeder
             'shipping-methods.create',
             'shipping-methods.update',
             'shipping-methods.delete',
+            'returns.view',
+            'returns.create',
+            'returns.update',
+            'returns.refund',
             'settings.view',
             'settings.update',
             'activity-log.view',
@@ -65,6 +69,7 @@ class RoleAndPermissionSeeder extends Seeder
             'customers.view',
             'coupons.view', 'coupons.create', 'coupons.update', 'coupons.delete',
             'shipping-methods.view', 'shipping-methods.create', 'shipping-methods.update', 'shipping-methods.delete',
+            'returns.view', 'returns.create', 'returns.update', 'returns.refund',
             'activity-log.view',
             'users.view', 'users.create', 'users.update', 'users.delete',
         ]);

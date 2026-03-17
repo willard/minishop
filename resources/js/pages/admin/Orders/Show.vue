@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { ArrowLeft, Download } from 'lucide-vue-next';
+import { ArrowLeft, Download, Plus } from 'lucide-vue-next';
 import {
     index,
     invoice,
     update,
 } from '@/actions/App/Http/Controllers/Admin/OrderController';
+import {
+    show as showReturn,
+    create as createReturn,
+} from '@/actions/App/Http/Controllers/Admin/ReturnController';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,6 +42,25 @@ interface Customer {
     };
 }
 
+interface ReturnItemSummary {
+    id: number;
+    quantity: number;
+    subtotal: number;
+    order_item: { product_name: string } | null;
+}
+
+interface OrderReturnSummary {
+    id: number;
+    return_number: string;
+    status: string;
+    status_label: string;
+    reason_label: string;
+    refund_amount: number;
+    restocked: boolean;
+    created_at: string;
+    items: ReturnItemSummary[];
+}
+
 interface Order {
     id: number;
     order_number: string;
@@ -57,6 +80,7 @@ interface Order {
     notes: string | null;
     customer: Customer;
     items: OrderItem[];
+    returns: OrderReturnSummary[];
     created_at: string;
 }
 
@@ -277,6 +301,60 @@ function statusVariant(
                         <span>${{ formatPrice(order.total_amount) }}</span>
                     </div>
                 </div>
+            </div>
+
+            <!-- Returns -->
+            <div class="rounded-lg border border-sidebar-border p-4">
+                <div class="mb-4 flex items-center justify-between">
+                    <h2 class="font-semibold">Returns</h2>
+                    <Link
+                        :href="createReturn({ mergeQuery: { order_id: order.id } }).url"
+                    >
+                        <Button variant="outline" size="sm">
+                            <Plus class="mr-1 size-4" />
+                            New Return
+                        </Button>
+                    </Link>
+                </div>
+                <div v-if="order.returns.length > 0" class="space-y-2">
+                    <div
+                        v-for="orderReturn in order.returns"
+                        :key="orderReturn.id"
+                        class="flex items-center justify-between rounded border border-sidebar-border px-3 py-2 text-sm"
+                    >
+                        <div class="space-y-0.5">
+                            <p class="font-mono font-medium">
+                                {{ orderReturn.return_number }}
+                            </p>
+                            <p class="text-xs text-muted-foreground">
+                                {{ orderReturn.reason_label }} &middot;
+                                {{ orderReturn.items.length }} item(s)
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span
+                                v-if="orderReturn.refund_amount > 0"
+                                class="text-xs text-muted-foreground"
+                            >
+                                ${{ formatPrice(orderReturn.refund_amount) }}
+                            </span>
+                            <Badge
+                                :variant="statusVariant(orderReturn.status)"
+                                class="capitalize text-xs"
+                            >
+                                {{ orderReturn.status_label }}
+                            </Badge>
+                            <Link :href="showReturn(orderReturn.return_number).url">
+                                <Button variant="ghost" size="sm" class="h-7 px-2 text-xs">
+                                    View
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+                <p v-else class="text-sm text-muted-foreground">
+                    No returns for this order.
+                </p>
             </div>
 
             <!-- Update Status -->

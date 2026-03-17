@@ -34,6 +34,9 @@ vi.mock('@/actions/App/Http/Controllers/Admin/CategoryController', () => ({
 vi.mock('@/actions/App/Http/Controllers/Admin/OrderController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/orders' })),
 }));
+vi.mock('@/actions/App/Http/Controllers/Admin/ReturnController', () => ({
+    index: vi.fn(() => ({ url: '/dashboard/returns' })),
+}));
 vi.mock('@/actions/App/Http/Controllers/Admin/CustomerController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/customers' })),
 }));
@@ -103,6 +106,7 @@ const ALL_NAV_TITLES = [
     'Products',
     'Categories',
     'Orders',
+    'Returns',
     'Customers',
     'Users',
     'Coupons',

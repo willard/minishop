@@ -177,7 +177,7 @@ class OrderController extends Controller
     {
         $this->authorize('view', $order);
 
-        $order->load(['customer.user', 'items.product', 'items.variant']);
+        $order->load(['customer.user', 'items.product', 'items.variant', 'returns.items.orderItem']);
 
         return Inertia::render('admin/Orders/Show', [
             'order' => $order,
