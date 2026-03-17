@@ -68,7 +68,7 @@ const sortBy = ref(props.filters.sort_by ?? 'created_at');
 const sortDir = ref(props.filters.sort_dir ?? 'desc');
 
 let searchTimeout: ReturnType<typeof setTimeout>;
-watch(search, (value) => {
+watch(search, () => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
         applyFilters();
@@ -302,8 +302,10 @@ function statusVariant(
                             :href="link.url"
                             class="rounded px-2 py-1 hover:bg-muted"
                             :class="{ 'bg-muted font-medium': link.active }"
-                            v-html="link.label"
-                        />
+                        >
+                            <!-- eslint-disable-next-line vue/no-v-html -->
+                            <span v-html="link.label" />
+                        </Link>
                         <span
                             v-else
                             class="rounded px-2 py-1 text-muted-foreground"
