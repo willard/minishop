@@ -7,6 +7,7 @@ import {
     show,
     create,
 } from '@/actions/App/Http/Controllers/Admin/ReturnController';
+import { usePrice } from '@/composables/usePrice';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -100,9 +101,7 @@ function toggleSort(column: string): void {
     applyFilters();
 }
 
-function formatPrice(cents: number): string {
-    return (cents / 100).toFixed(2);
-}
+const { formatPrice } = usePrice();
 
 function statusVariant(
     status: string,

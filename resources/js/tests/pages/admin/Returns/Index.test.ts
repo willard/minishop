@@ -44,6 +44,12 @@ vi.mock('@/components/ui/badge', () => ({
     },
 }));
 
+vi.mock('@/composables/usePrice', () => ({
+    usePrice: vi.fn(() => ({
+        formatPrice: (cents: number) => `$${(cents / 100).toFixed(2)}`,
+    })),
+}));
+
 vi.mock('@/actions/App/Http/Controllers/Admin/ReturnController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/returns' })),
     create: vi.fn(() => ({ url: '/dashboard/returns/create' })),

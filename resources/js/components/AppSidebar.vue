@@ -21,8 +21,8 @@ import { index as categoriesIndex } from '@/actions/App/Http/Controllers/Admin/C
 import { index as couponsIndex } from '@/actions/App/Http/Controllers/Admin/CouponController';
 import { index as customersIndex } from '@/actions/App/Http/Controllers/Admin/CustomerController';
 import { index as ordersIndex } from '@/actions/App/Http/Controllers/Admin/OrderController';
-import { index as returnsIndex } from '@/actions/App/Http/Controllers/Admin/ReturnController';
 import { index as productsIndex } from '@/actions/App/Http/Controllers/Admin/ProductController';
+import { index as returnsIndex } from '@/actions/App/Http/Controllers/Admin/ReturnController';
 import { index as shippingMethodsIndex } from '@/actions/App/Http/Controllers/Admin/ShippingMethodController';
 import { edit as settingsEdit } from '@/actions/App/Http/Controllers/Admin/StoreSettingsController';
 import { index as usersIndex } from '@/actions/App/Http/Controllers/Admin/UserController';

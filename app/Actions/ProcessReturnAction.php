@@ -23,18 +23,25 @@ class ProcessReturnAction
         DB::transaction(function () use ($orderReturn): void {
             $orderReturn->load('items.orderItem');
 
+            $variantQtys = [];
+            $productQtys = [];
+
             foreach ($orderReturn->items as $returnItem) {
                 $orderItem = $returnItem->orderItem;
 
                 if ($orderItem->variant_id) {
-                    ProductVariant::query()
-                        ->where('id', $orderItem->variant_id)
-                        ->increment('stock_quantity', $returnItem->quantity);
+                    $variantQtys[$orderItem->variant_id] = ($variantQtys[$orderItem->variant_id] ?? 0) + $returnItem->quantity;
                 } else {
-                    Product::query()
-                        ->where('id', $orderItem->product_id)
-                        ->increment('stock_quantity', $returnItem->quantity);
+                    $productQtys[$orderItem->product_id] = ($productQtys[$orderItem->product_id] ?? 0) + $returnItem->quantity;
                 }
+            }
+
+            foreach ($variantQtys as $variantId => $qty) {
+                ProductVariant::query()->where('id', $variantId)->increment('stock_quantity', $qty);
+            }
+
+            foreach ($productQtys as $productId => $qty) {
+                Product::query()->where('id', $productId)->increment('stock_quantity', $qty);
             }
 
             $orderReturn->update([

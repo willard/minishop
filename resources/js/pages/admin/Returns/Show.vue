@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head, Link, router } from '@inertiajs/vue3';
+import { usePrice } from '@/composables/usePrice';
 import { ArrowLeft, CheckCircle, Package, RefreshCw, XCircle } from 'lucide-vue-next';
 import {
     index,
@@ -9,10 +10,10 @@ import {
     refund,
     update,
 } from '@/actions/App/Http/Controllers/Admin/ReturnController';
+import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import InputError from '@/components/InputError.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 
@@ -71,9 +72,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: props.orderReturn.return_number, href: '#' },
 ];
 
-function formatPrice(cents: number): string {
-    return (cents / 100).toFixed(2);
-}
+const { formatPrice } = usePrice();
 
 function statusVariant(
     status: string,
@@ -95,9 +94,6 @@ function canTransitionTo(status: string): boolean {
     return props.orderReturn.allowed_transitions.includes(status);
 }
 
-function performAction(actionUrl: string): void {
-    router.post(actionUrl);
-}
 </script>
 
 <template>
@@ -267,7 +263,7 @@ function performAction(actionUrl: string): void {
                     <Button
                         v-if="canTransitionTo('approved')"
                         variant="default"
-                        @click="performAction(approve(orderReturn.return_number).url)"
+                        @click="router.post(approve(orderReturn.return_number).url)"
                     >
                         <CheckCircle class="mr-2 size-4" />
                         Approve Return
@@ -275,7 +271,7 @@ function performAction(actionUrl: string): void {
                     <Button
                         v-if="canTransitionTo('rejected')"
                         variant="destructive"
-                        @click="performAction(reject(orderReturn.return_number).url)"
+                        @click="router.post(reject(orderReturn.return_number).url)"
                     >
                         <XCircle class="mr-2 size-4" />
                         Reject Return
@@ -283,7 +279,7 @@ function performAction(actionUrl: string): void {
                     <Button
                         v-if="canTransitionTo('received')"
                         variant="outline"
-                        @click="performAction(receive(orderReturn.return_number).url)"
+                        @click="router.post(receive(orderReturn.return_number).url)"
                     >
                         <Package class="mr-2 size-4" />
                         Mark as Received &amp; Restock
@@ -291,7 +287,7 @@ function performAction(actionUrl: string): void {
                     <Button
                         v-if="canTransitionTo('refunded')"
                         variant="default"
-                        @click="performAction(refund(orderReturn.return_number).url)"
+                        @click="router.post(refund(orderReturn.return_number).url)"
                     >
                         <RefreshCw class="mr-2 size-4" />
                         Issue Stripe Refund

@@ -61,6 +61,12 @@ vi.mock('@/components/InputError.vue', () => ({
     },
 }));
 
+vi.mock('@/composables/usePrice', () => ({
+    usePrice: vi.fn(() => ({
+        formatPrice: (cents: number) => `${(cents / 100).toFixed(2)}`,
+    })),
+}));
+
 vi.mock('@/actions/App/Http/Controllers/Admin/ReturnController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/returns' })),
     store: vi.fn(() => ({ url: '/dashboard/returns' })),

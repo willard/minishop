@@ -6,6 +6,7 @@ import {
     index,
     store,
 } from '@/actions/App/Http/Controllers/Admin/ReturnController';
+import { usePrice } from '@/composables/usePrice';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -82,9 +83,7 @@ const form = useForm({
     items: [] as { order_item_id: number; quantity: number }[],
 });
 
-function formatPrice(cents: number): string {
-    return (cents / 100).toFixed(2);
-}
+const { formatPrice } = usePrice();
 
 const refundTotal = computed(() =>
     selectedItems.value.reduce(
