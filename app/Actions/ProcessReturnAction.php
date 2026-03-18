@@ -54,16 +54,22 @@ class ProcessReturnAction
     /**
      * Issue the Stripe refund, update return status, and mark order as Refunded if fully refunded.
      */
+    /**
+     * Issue the Stripe refund, update return status, and mark order as Refunded if fully refunded.
+     *
+     * The Stripe call is intentionally made before the DB transaction so that a
+     * transactional failure cannot leave money refunded with no audit record.
+     */
     public function issueRefund(OrderReturn $orderReturn): void
     {
-        DB::transaction(function () use ($orderReturn): void {
-            $orderReturn->loadMissing('order', 'items');
+        $orderReturn->loadMissing('order', 'items');
 
-            $order = $orderReturn->order;
-            $refundAmount = $orderReturn->items->sum('subtotal');
+        $order = $orderReturn->order;
+        $refundAmount = $orderReturn->items->sum('subtotal');
 
-            $stripeRefundId = $this->stripeRefundService->refund($order, $refundAmount);
+        $stripeRefundId = $this->stripeRefundService->refund($order, $refundAmount);
 
+        DB::transaction(function () use ($orderReturn, $order, $refundAmount, $stripeRefundId): void {
             $orderReturn->update([
                 'status' => ReturnStatus::Refunded,
                 'refund_amount' => $refundAmount,
@@ -71,7 +77,6 @@ class ProcessReturnAction
                 'refunded_at' => now(),
             ]);
 
-            // Mark order as Refunded when the full order amount has been refunded
             $totalRefunded = $order->returns()
                 ->where('status', ReturnStatus::Refunded->value)
                 ->sum('refund_amount');

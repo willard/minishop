@@ -96,6 +96,7 @@ class ReturnController extends Controller
             ->get()
             ->keyBy('id');
 
+        /** @var OrderReturn $orderReturn */
         $orderReturn = DB::transaction(function () use ($data, $order, $orderItems): OrderReturn {
             /** @var OrderReturn $orderReturn */
             $orderReturn = OrderReturn::query()->create([
@@ -131,6 +132,8 @@ class ReturnController extends Controller
 
             return $orderReturn;
         });
+
+        $orderReturn->refresh();
 
         return redirect()->route('admin.returns.show', $orderReturn)
             ->with('success', 'Return request created successfully.');
