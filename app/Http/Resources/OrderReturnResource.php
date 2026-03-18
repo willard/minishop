@@ -34,7 +34,9 @@ class OrderReturnResource extends JsonResource
                 'status' => $this->order->status->value,
                 'status_label' => $this->order->status->label(),
             ]),
-            'items' => ReturnItemResource::collection($this->whenLoaded('items')),
+            'items' => $this->whenLoaded('items', fn () => $this->items->map(
+                fn ($item) => (new ReturnItemResource($item))->toArray($request),
+            )->values()),
         ];
     }
 }
