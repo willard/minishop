@@ -9,6 +9,7 @@ vi.mock('@inertiajs/vue3', () => ({
         template: '<a href="#"><slot /></a>',
         props: ['href'],
     },
+    router: { get: vi.fn() },
     useForm: vi.fn(() => ({
         order_id: null,
         reason: '',
@@ -70,6 +71,9 @@ vi.mock('@/composables/usePrice', () => ({
 vi.mock('@/actions/App/Http/Controllers/Admin/ReturnController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/returns' })),
     store: vi.fn(() => ({ url: '/dashboard/returns' })),
+    create: vi.fn((options?: { mergeQuery?: Record<string, unknown> }) => ({
+        url: '/dashboard/returns/create' + (options?.mergeQuery ? '?' + new URLSearchParams(options.mergeQuery as Record<string, string>).toString() : ''),
+    })),
 }));
 
 const baseReasons = [
@@ -148,19 +152,29 @@ describe('Returns/Create', () => {
         expect(options).toContain('Wrong Item Received');
     });
 
-    it('shows the order_id input when no order is provided', () => {
+    it('shows the order number search input when no order is provided', () => {
         const wrapper = mountPage({ order: null });
-        expect(wrapper.find('input#order_id').exists()).toBe(true);
+        expect(wrapper.find('input#order_number').exists()).toBe(true);
     });
 
-    it('does not show the order_id input when an order is pre-loaded', () => {
+    it('shows a Find button when no order is provided', () => {
+        const wrapper = mountPage({ order: null });
+        expect(wrapper.text()).toContain('Find');
+    });
+
+    it('does not show the order number search input when an order is pre-loaded', () => {
         const wrapper = mountPage();
-        expect(wrapper.find('input#order_id').exists()).toBe(false);
+        expect(wrapper.find('input#order_number').exists()).toBe(false);
     });
 
-    it('renders the submit button', () => {
+    it('renders the submit button when an order is pre-loaded', () => {
         const wrapper = mountPage();
         expect(wrapper.text()).toContain('Create Return');
+    });
+
+    it('does not render the submit button when no order is provided', () => {
+        const wrapper = mountPage({ order: null });
+        expect(wrapper.text()).not.toContain('Create Return');
     });
 
     it('renders customer notes textarea', () => {

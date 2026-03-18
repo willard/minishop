@@ -70,6 +70,11 @@ class ReturnController extends Controller
             $order = Order::query()
                 ->with(['items.product', 'items.variant'])
                 ->findOrFail($request->integer('order_id'));
+        } elseif ($request->has('order_number')) {
+            $order = Order::query()
+                ->with(['items.product', 'items.variant'])
+                ->where('order_number', strtoupper($request->string('order_number')))
+                ->firstOrFail();
         }
 
         return Inertia::render('admin/Returns/Create', [

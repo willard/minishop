@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ArrowLeft, Minus, Plus } from 'lucide-vue-next';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { ArrowLeft, Minus, Plus, Search } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import {
+    create,
     index,
     store,
 } from '@/actions/App/Http/Controllers/Admin/ReturnController';
-import { usePrice } from '@/composables/usePrice';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { usePrice } from '@/composables/usePrice';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 
@@ -61,7 +62,7 @@ interface ReturnItemEntry {
     unit_price: number;
 }
 
-const orderIdInput = ref(props.order?.id?.toString() ?? '');
+const orderNumberInput = ref('');
 const selectedItems = ref<ReturnItemEntry[]>([]);
 
 if (props.order) {
@@ -104,8 +105,14 @@ function decrementQty(item: ReturnItemEntry): void {
     }
 }
 
+function findOrder(): void {
+    if (orderNumberInput.value.trim()) {
+        router.get(create({ mergeQuery: { order_number: orderNumberInput.value.trim() } }).url);
+    }
+}
+
 function submit(): void {
-    form.order_id = props.order?.id ?? parseInt(orderIdInput.value);
+    form.order_id = props.order!.id;
     form.items = selectedItems.value.map((item) => ({
         order_item_id: item.order_item_id,
         quantity: item.quantity,
@@ -141,16 +148,24 @@ function submit(): void {
                     </p>
                 </div>
 
-                <div v-else class="grid gap-2">
-                    <Label for="order_id">Order ID</Label>
-                    <Input
-                        id="order_id"
-                        v-model="orderIdInput"
-                        type="number"
-                        placeholder="Enter order ID"
-                        required
-                    />
-                    <InputError :message="form.errors.order_id" />
+                <div v-else class="rounded-lg border border-sidebar-border p-4">
+                    <h2 class="mb-3 text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+                        Find Order
+                    </h2>
+                    <div class="flex gap-2">
+                        <Input
+                            id="order_number"
+                            v-model="orderNumberInput"
+                            type="text"
+                            placeholder="e.g. ORD-000001"
+                            class="font-mono"
+                            @keydown.enter.prevent="findOrder"
+                        />
+                        <Button type="button" variant="outline" @click="findOrder">
+                            <Search class="mr-2 size-4" />
+                            Find
+                        </Button>
+                    </div>
                 </div>
 
                 <!-- Reason -->
@@ -277,7 +292,7 @@ function submit(): void {
                     <InputError :message="form.errors.admin_notes" />
                 </div>
 
-                <div class="flex gap-3">
+                <div v-if="order" class="flex gap-3">
                     <Button type="submit" :disabled="form.processing">
                         {{ form.processing ? 'Creating...' : 'Create Return' }}
                     </Button>
