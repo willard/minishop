@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { ShoppingBag, X, Trash2, ArrowRight } from 'lucide-vue-next';
-import { create as checkoutCreate } from '@/actions/App/Http/Controllers/Storefront/CheckoutController';
 import { show as cartShow } from '@/actions/App/Http/Controllers/Storefront/CartController';
+import { create as checkoutCreate } from '@/actions/App/Http/Controllers/Storefront/CheckoutController';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';
 

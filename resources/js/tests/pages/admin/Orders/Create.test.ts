@@ -1,6 +1,6 @@
+import { useForm } from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useForm } from '@inertiajs/vue3';
 import CreateOrderPage from '@/pages/admin/Orders/Create.vue';
 
 const mockPost = vi.fn();
