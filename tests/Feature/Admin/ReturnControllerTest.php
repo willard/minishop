@@ -54,7 +54,8 @@ class ReturnControllerTest extends TestCase
     public function test_super_admin_can_view_returns_index(): void
     {
         $user = User::factory()->superAdmin()->create();
-        OrderReturn::factory(3)->create();
+        OrderReturn::factory(2)->create(['created_at' => now()->subMinutes(10)]);
+        $orderReturn = OrderReturn::factory()->requested()->create(['created_at' => now()]);
 
         $this->actingAs($user)
             ->get(route('admin.returns.index'))
@@ -63,6 +64,21 @@ class ReturnControllerTest extends TestCase
                 fn ($page) => $page
                     ->component('admin/Returns/Index')
                     ->has('returns.data', 3)
+                    ->has('returns.data.0', fn ($item) => $item
+                        ->where('id', $orderReturn->id)
+                        ->where('return_number', $orderReturn->return_number)
+                        ->where('status', $orderReturn->status->value)
+                        ->where('status_label', $orderReturn->status->label())
+                        ->where('reason', $orderReturn->reason->value)
+                        ->where('reason_label', $orderReturn->reason->label())
+                        ->where('refund_amount', $orderReturn->refund_amount)
+                        ->where('restocked', false)
+                        ->has('order')
+                        ->where('order.id', $orderReturn->order->id)
+                        ->where('order.order_number', $orderReturn->order->order_number)
+                        ->missing('data')
+                        ->etc()
+                    )
             );
     }
 

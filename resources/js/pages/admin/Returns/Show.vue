@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Form, Head, Link, router } from '@inertiajs/vue3';
-import { usePrice } from '@/composables/usePrice';
 import { ArrowLeft, CheckCircle, Package, RefreshCw, XCircle } from 'lucide-vue-next';
 import {
     index,
@@ -14,6 +13,7 @@ import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { usePrice } from '@/composables/usePrice';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 

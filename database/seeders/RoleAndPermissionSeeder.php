@@ -81,6 +81,7 @@ class RoleAndPermissionSeeder extends Seeder
             'categories.view',
             'orders.view', 'orders.create', 'orders.update', 'orders.invoice',
             'customers.view',
+            'returns.view', 'returns.create', 'returns.update',
         ]);
 
         // customer role: no admin permissions — access scoped to own data via policies

@@ -7,10 +7,10 @@ import {
     show,
     create,
 } from '@/actions/App/Http/Controllers/Admin/ReturnController';
-import { usePrice } from '@/composables/usePrice';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { usePrice } from '@/composables/usePrice';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 
@@ -28,7 +28,7 @@ interface OrderReturn {
     refund_amount: number;
     restocked: boolean;
     created_at: string;
-    order: OrderSummary;
+    order: OrderSummary | null;
 }
 
 interface Pagination {
@@ -102,6 +102,10 @@ function toggleSort(column: string): void {
 }
 
 const { formatPrice } = usePrice();
+
+function returnUrl(returnNumber: string): string {
+    return show(returnNumber).url;
+}
 
 function statusVariant(
     status: string,
@@ -238,7 +242,7 @@ function statusVariant(
                                 {{ orderReturn.return_number }}
                             </td>
                             <td class="px-4 py-3 font-mono text-xs text-muted-foreground">
-                                {{ orderReturn.order.order_number }}
+                                {{ orderReturn.order?.order_number ?? '—' }}
                             </td>
                             <td class="px-4 py-3 text-muted-foreground">
                                 {{ orderReturn.reason_label }}
@@ -267,7 +271,7 @@ function statusVariant(
                                 }}
                             </td>
                             <td class="px-4 py-3 text-right">
-                                <Link :href="show(orderReturn.return_number).url">
+                                <Link v-if="orderReturn.return_number" :href="returnUrl(orderReturn.return_number)">
                                     <Button variant="ghost" size="sm">
                                         <Eye class="size-4" />
                                     </Button>

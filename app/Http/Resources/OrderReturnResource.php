@@ -27,13 +27,13 @@ class OrderReturnResource extends JsonResource
             'created_at' => $this->created_at->toISOString(),
             'updated_at' => $this->updated_at->toISOString(),
             'allowed_transitions' => $this->status->allowedTransitions(),
-            'order' => $this->whenLoaded('order', fn () => [
+            'order' => $this->order ? [
                 'id' => $this->order->id,
                 'order_number' => $this->order->order_number,
                 'total_amount' => $this->order->total_amount,
                 'status' => $this->order->status->value,
                 'status_label' => $this->order->status->label(),
-            ]),
+            ] : null,
             'items' => $this->whenLoaded('items', fn () => $this->items->map(
                 fn ($item) => (new ReturnItemResource($item))->toArray($request),
             )->values()),

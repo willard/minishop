@@ -49,7 +49,7 @@ class ReturnController extends Controller
             ->orderBy($sortBy, $sortDir)
             ->paginate(20)
             ->withQueryString()
-            ->through(fn (OrderReturn $r) => new OrderReturnResource($r));
+            ->through(fn (OrderReturn $r) => (new OrderReturnResource($r))->resolve());
 
         return Inertia::render('admin/Returns/Index', [
             'returns' => $returns,
@@ -131,6 +131,12 @@ class ReturnController extends Controller
                     'unit_price' => $unitPrice,
                     'subtotal' => $unitPrice * $quantity,
                 ];
+            }
+
+            if (empty($itemsToCreate)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'items' => 'None of the submitted items belong to this order.',
+                ]);
             }
 
             $orderReturn->items()->createMany($itemsToCreate);

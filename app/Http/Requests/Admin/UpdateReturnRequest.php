@@ -18,4 +18,12 @@ class UpdateReturnRequest extends FormRequest
             'admin_notes' => ['nullable', 'string', 'max:2000'],
         ];
     }
+
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        return [
+            'admin_notes.max' => 'Admin notes may not exceed 2000 characters.',
+        ];
+    }
 }
