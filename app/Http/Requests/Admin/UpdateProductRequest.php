@@ -12,6 +12,13 @@ class UpdateProductRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'stock_quantity' => $this->input('stock_quantity') ?? 0,
+        ]);
+    }
+
     public function rules(): array
     {
         $productId = $this->route('product')?->id;

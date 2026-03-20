@@ -92,6 +92,35 @@ class ProductTest extends TestCase
             ->assertSessionHasErrors('sku');
     }
 
+    public function test_store_product_defaults_stock_quantity_to_zero_when_omitted(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.products.store'), [
+                'name' => 'Test Product',
+                'price' => 1999,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', ['name' => 'Test Product', 'stock_quantity' => 0]);
+    }
+
+    public function test_update_product_defaults_stock_quantity_to_zero_when_omitted(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $product = Product::factory()->create(['stock_quantity' => 5]);
+
+        $this->actingAs($user)
+            ->put(route('admin.products.update', $product), [
+                'name' => $product->name,
+                'price' => $product->price,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'stock_quantity' => 0]);
+    }
+
     public function test_compare_price_must_be_greater_than_price(): void
     {
         $user = User::factory()->superAdmin()->create();
