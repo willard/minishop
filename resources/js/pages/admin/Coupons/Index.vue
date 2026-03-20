@@ -9,8 +9,8 @@ import {
 } from '@/actions/App/Http/Controllers/Admin/CouponController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import AppLayout from '@/layouts/AppLayout.vue';
 import { usePrice } from '@/composables/usePrice';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 
 interface Coupon {

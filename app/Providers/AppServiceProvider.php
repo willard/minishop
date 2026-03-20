@@ -6,9 +6,11 @@ use App\Http\Responses\LoginResponse;
 use App\Http\Responses\RegisterResponse;
 use App\Models\Coupon;
 use App\Models\Order;
+use App\Models\OrderReturn;
 use App\Models\Product;
 use App\Observers\CouponObserver;
 use App\Observers\OrderObserver;
+use App\Observers\OrderReturnObserver;
 use App\Observers\ProductObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -43,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
     protected function registerObservers(): void
     {
         Order::observe(OrderObserver::class);
+        OrderReturn::observe(OrderReturnObserver::class);
         Product::observe(ProductObserver::class);
         Coupon::observe(CouponObserver::class);
     }

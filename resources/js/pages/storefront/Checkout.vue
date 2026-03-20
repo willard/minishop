@@ -16,12 +16,12 @@ import {
 import { computed, ref } from 'vue';
 import { store } from '@/actions/App/Http/Controllers/Storefront/CheckoutController';
 import { index as productsIndex } from '@/actions/App/Http/Controllers/Storefront/ProductController';
-import { store as loginStore } from '@/routes/login';
-import { store as registerStore } from '@/routes/register';
 import InputError from '@/components/InputError.vue';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';
 import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
+import { store as loginStore } from '@/routes/login';
+import { store as registerStore } from '@/routes/register';
 
 interface ShippingMethod {
     id: number;
