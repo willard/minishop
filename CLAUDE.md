@@ -151,6 +151,25 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Every change must be programmatically tested. Write a new test or update an existing test, then run the affected tests to make sure they pass.
 - Run the minimum number of tests needed to ensure code quality and speed. Use `php artisan test --compact` with a specific filename or filter.
 
+## Form & Validation Edge Cases
+
+When writing tests for any form submission (store/update), always include tests for **omitting optional fields**. Optional fields often have database constraints (NOT NULL, defaults) that are not enforced at the validation layer — these bugs only surface in the browser when a user leaves a field blank.
+
+For every `nullable` field in a Form Request that maps to a `NOT NULL` database column with a default value, add a test that omits the field and asserts the default is saved:
+
+```php
+public function test_store_defaults_stock_quantity_to_zero_when_omitted(): void
+{
+    $this->actingAs(User::factory()->superAdmin()->create())
+        ->post(route('admin.products.store'), ['name' => 'Test', 'price' => 1000])
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('products', ['name' => 'Test', 'stock_quantity' => 0]);
+}
+```
+
+This prevents the class of bug where tests pass (factories always provide values) but the browser fails (users leave fields empty).
+
 === inertia-laravel/v2 rules ===
 
 # Inertia

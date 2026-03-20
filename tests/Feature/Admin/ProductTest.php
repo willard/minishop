@@ -92,6 +92,79 @@ class ProductTest extends TestCase
             ->assertSessionHasErrors('sku');
     }
 
+    public function test_store_product_defaults_stock_quantity_to_zero_when_omitted(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.products.store'), [
+                'name' => 'Test Product',
+                'price' => 1999,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', ['name' => 'Test Product', 'stock_quantity' => 0]);
+    }
+
+    public function test_update_product_defaults_stock_quantity_to_zero_when_omitted(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $product = Product::factory()->create(['stock_quantity' => 0]);
+
+        $this->actingAs($user)
+            ->put(route('admin.products.update', $product), [
+                'name' => $product->name,
+                'price' => $product->price,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'stock_quantity' => 0]);
+    }
+
+    public function test_update_product_preserves_existing_stock_quantity_when_omitted(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $product = Product::factory()->create(['stock_quantity' => 99]);
+
+        $this->actingAs($user)
+            ->put(route('admin.products.update', $product), [
+                'name' => 'Updated Name',
+                'price' => $product->price,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'stock_quantity' => 99]);
+    }
+
+    public function test_store_product_defaults_is_active_to_true_when_omitted(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.products.store'), [
+                'name' => 'Test Product',
+                'price' => 1999,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', ['name' => 'Test Product', 'is_active' => true]);
+    }
+
+    public function test_update_product_preserves_existing_is_active_when_omitted(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $product = Product::factory()->create(['is_active' => false]);
+
+        $this->actingAs($user)
+            ->put(route('admin.products.update', $product), [
+                'name' => $product->name,
+                'price' => $product->price,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'is_active' => false]);
+    }
+
     public function test_compare_price_must_be_greater_than_price(): void
     {
         $user = User::factory()->superAdmin()->create();

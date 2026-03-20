@@ -11,6 +11,14 @@ class StoreProductRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'stock_quantity' => $this->input('stock_quantity') ?? 0,
+            'is_active' => $this->input('is_active') ?? true,
+        ]);
+    }
+
     public function rules(): array
     {
         return [
