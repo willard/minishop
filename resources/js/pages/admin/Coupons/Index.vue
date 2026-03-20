@@ -67,6 +67,15 @@ function usageLabel(coupon: Coupon): string {
     return `${coupon.used_count} / ${coupon.usage_limit}`;
 }
 
+function formatDate(date: string | null): string {
+    if (!date) return '—';
+    return new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    });
+}
+
 function confirmDelete(coupon: Coupon): void {
     if (confirm(`Delete coupon "${coupon.code}"? This cannot be undone.`)) {
         router.delete(destroy(coupon).url);
@@ -166,7 +175,7 @@ function confirmDelete(coupon: Coupon): void {
                                 {{ formatMinOrder(coupon) }}
                             </td>
                             <td class="px-4 py-3 text-muted-foreground">
-                                {{ coupon.expiry_date ?? '—' }}
+                                {{ formatDate(coupon.expiry_date) }}
                             </td>
                             <td class="px-4 py-3 text-muted-foreground">
                                 {{ usageLabel(coupon) }}
