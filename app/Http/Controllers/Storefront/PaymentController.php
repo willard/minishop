@@ -36,7 +36,7 @@ class PaymentController extends Controller
 
         $settings = StoreSettings::current();
 
-        Stripe::setApiKey($settings->stripe_secret_key);
+        Stripe::setApiKey(config('services.stripe.secret'));
 
         $intent = PaymentIntent::create([
             'amount' => $order->total_amount,
