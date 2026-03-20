@@ -24,6 +24,14 @@ class CategoryTest extends TestCase
         $this->get(route('admin.categories.index'))->assertRedirect(route('login'));
     }
 
+    public function test_category_show_route_is_not_accessible(): void
+    {
+        $category = Category::factory()->create();
+
+        // show was removed from the resource; GET on the category URI returns 405
+        $this->get("/dashboard/categories/{$category->slug}")->assertStatus(405);
+    }
+
     public function test_super_admin_can_view_categories_index(): void
     {
         $user = User::factory()->superAdmin()->create();

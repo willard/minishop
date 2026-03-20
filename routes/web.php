@@ -74,7 +74,7 @@ Route::middleware(['auth', 'verified', 'role:super-admin|admin|manager'])->prefi
     Route::post('products/{product}/images', [ProductImageController::class, 'store'])->name('products.images.store');
     Route::put('products/{product}/images/reorder', [ProductImageController::class, 'reorder'])->name('products.images.reorder');
     Route::delete('products/{product}/images/{image}', [ProductImageController::class, 'destroy'])->name('products.images.destroy');
-    Route::resource('categories', CategoryController::class);
+    Route::resource('categories', CategoryController::class)->except(['show']);
     Route::resource('orders', OrderController::class)->except(['edit']);
     Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
     Route::resource('returns', ReturnController::class)->only(['index', 'create', 'store', 'show', 'update']);
