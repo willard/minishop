@@ -144,7 +144,7 @@ class ProductController extends Controller
         $this->authorize('update', $product);
 
         $data = $request->validated();
-        $data['is_active'] = $request->boolean('is_active', true);
+        $data['is_active'] = $request->has('is_active') ? $request->boolean('is_active') : $product->is_active;
         unset($data['category_ids']);
 
         $product->update($data);
