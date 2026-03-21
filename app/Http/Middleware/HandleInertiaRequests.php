@@ -53,7 +53,7 @@ class HandleInertiaRequests extends Middleware
                 'currencyLocale' => $settings->currency_locale,
                 'taxRate' => (float) $settings->tax_rate,
                 'activeGateway' => $settings->active_payment_gateway,
-                'stripePublicKey' => $settings->stripe_public_key,
+                'stripePublicKey' => config('services.stripe.key'),
             ],
             'shippingMethods' => fn () => ShippingMethod::active()
                 ->orderBy('sort_order')

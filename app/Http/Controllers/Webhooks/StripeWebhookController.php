@@ -6,7 +6,6 @@ use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
-use App\Models\StoreSettings;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Mail;
@@ -17,12 +16,11 @@ class StripeWebhookController extends Controller
 {
     public function __invoke(Request $request): Response
     {
-        $settings = StoreSettings::current();
         $payload = $request->getContent();
         $sigHeader = $request->header('Stripe-Signature');
 
         try {
-            $event = Webhook::constructEvent($payload, $sigHeader, $settings->stripe_webhook_secret);
+            $event = Webhook::constructEvent($payload, $sigHeader, config('services.stripe.webhook_secret'));
         } catch (SignatureVerificationException) {
             return response('Invalid signature', 400);
         }
