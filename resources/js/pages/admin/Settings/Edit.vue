@@ -18,9 +18,6 @@ interface Settings {
     currency_locale: string;
     tax_rate: number;
     active_payment_gateway: string;
-    stripe_public_key: string | null;
-    stripe_secret_key: string | null;
-    stripe_webhook_secret: string | null;
     paymongo_public_key: string | null;
     paymongo_secret_key: string | null;
     paymongo_webhook_secret: string | null;
@@ -29,8 +26,6 @@ interface Settings {
 
 const props = defineProps<{
     settings: Settings;
-    hasStripeSecretKey: boolean;
-    hasStripeWebhookSecret: boolean;
     hasPaymongoSecretKey: boolean;
     hasPaymongoWebhookSecret: boolean;
 }>();
@@ -58,9 +53,6 @@ const form = useForm({
     currency_locale: props.settings.currency_locale,
     tax_rate: props.settings.tax_rate,
     active_payment_gateway: props.settings.active_payment_gateway,
-    stripe_public_key: props.settings.stripe_public_key ?? '',
-    stripe_secret_key: '',
-    stripe_webhook_secret: '',
     paymongo_public_key: props.settings.paymongo_public_key ?? '',
     paymongo_secret_key: '',
     paymongo_webhook_secret: '',
@@ -197,116 +189,6 @@ function submit() {
                         </label>
                         <InputError
                             :message="form.errors.active_payment_gateway"
-                        />
-                    </div>
-                </section>
-
-                <!-- Stripe Keys -->
-                <section
-                    v-if="form.active_payment_gateway === 'stripe'"
-                    class="flex flex-col gap-4"
-                >
-                    <h2 class="border-b pb-2 text-base font-semibold">
-                        Stripe Keys
-                    </h2>
-
-                    <div class="grid gap-2">
-                        <Label for="stripe_public_key">Publishable Key</Label>
-                        <Input
-                            id="stripe_public_key"
-                            v-model="form.stripe_public_key"
-                            placeholder="pk_live_..."
-                        />
-                        <InputError :message="form.errors.stripe_public_key" />
-                    </div>
-
-                    <div class="grid gap-2">
-                        <Label for="stripe_secret_key">
-                            Secret Key
-                            <span
-                                v-if="hasStripeSecretKey"
-                                class="ml-1 text-xs text-muted-foreground"
-                                >(leave blank to keep existing)</span
-                            >
-                        </Label>
-                        <div class="relative">
-                            <Input
-                                id="stripe_secret_key"
-                                v-model="form.stripe_secret_key"
-                                :type="
-                                    showFields.stripe_secret_key
-                                        ? 'text'
-                                        : 'password'
-                                "
-                                :placeholder="
-                                    hasStripeSecretKey
-                                        ? '••••••••'
-                                        : 'sk_live_...'
-                                "
-                            />
-                            <button
-                                type="button"
-                                class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                @click="toggleVisibility('stripe_secret_key')"
-                            >
-                                <EyeOff
-                                    v-if="showFields.stripe_secret_key"
-                                    class="size-4"
-                                />
-                                <Eye v-else class="size-4" />
-                            </button>
-                        </div>
-                        <InputError :message="form.errors.stripe_secret_key" />
-                    </div>
-
-                    <div class="grid gap-2">
-                        <Label for="stripe_webhook_secret">
-                            Webhook Secret
-                            <span
-                                v-if="hasStripeWebhookSecret"
-                                class="ml-1 text-xs text-muted-foreground"
-                                >(leave blank to keep existing)</span
-                            >
-                        </Label>
-                        <div class="relative">
-                            <Input
-                                id="stripe_webhook_secret"
-                                v-model="form.stripe_webhook_secret"
-                                :type="
-                                    showFields.stripe_webhook_secret
-                                        ? 'text'
-                                        : 'password'
-                                "
-                                :placeholder="
-                                    hasStripeWebhookSecret
-                                        ? '••••••••'
-                                        : 'whsec_...'
-                                "
-                            />
-                            <button
-                                type="button"
-                                class="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                @click="
-                                    toggleVisibility('stripe_webhook_secret')
-                                "
-                            >
-                                <EyeOff
-                                    v-if="showFields.stripe_webhook_secret"
-                                    class="size-4"
-                                />
-                                <Eye v-else class="size-4" />
-                            </button>
-                        </div>
-                        <p class="text-xs text-muted-foreground">
-                            Webhook endpoint:
-                            <code class="font-mono"
-                                >{{
-                                    $page.props.ziggy?.url ?? ''
-                                }}/webhooks/stripe</code
-                            >
-                        </p>
-                        <InputError
-                            :message="form.errors.stripe_webhook_secret"
                         />
                     </div>
                 </section>

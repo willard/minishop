@@ -6,7 +6,6 @@ use App\Enums\OrderStatus;
 use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
 use App\Models\ShippingMethod;
-use App\Models\StoreSettings;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -17,6 +16,12 @@ class StripeWebhookTest extends TestCase
     use RefreshDatabase;
 
     private string $webhookSecret = 'whsec_test_stripe_secret';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['services.stripe.webhook_secret' => $this->webhookSecret]);
+    }
 
     private function buildSignatureHeader(string $payload): string
     {
@@ -42,8 +47,6 @@ class StripeWebhookTest extends TestCase
 
     public function test_stripe_webhook_requires_valid_signature(): void
     {
-        StoreSettings::current()->update(['stripe_webhook_secret' => $this->webhookSecret]);
-
         $payload = json_encode(['type' => 'payment_intent.succeeded', 'data' => ['object' => ['id' => 'pi_test_123']]]);
 
         $this->postJson(route('webhooks.stripe'), json_decode($payload, true), [
@@ -53,17 +56,12 @@ class StripeWebhookTest extends TestCase
 
     public function test_stripe_webhook_rejects_missing_signature(): void
     {
-        StoreSettings::current()->update(['stripe_webhook_secret' => $this->webhookSecret]);
-
         $this->postJson(route('webhooks.stripe'), [])
             ->assertStatus(400);
     }
 
     public function test_stripe_webhook_marks_order_as_paid_on_payment_intent_succeeded(): void
     {
-        $settings = StoreSettings::current();
-        $settings->update(['stripe_webhook_secret' => $this->webhookSecret]);
-
         $order = $this->makeOrder();
 
         $eventPayload = json_encode([
@@ -96,9 +94,6 @@ class StripeWebhookTest extends TestCase
 
     public function test_stripe_webhook_does_not_double_process_paid_order(): void
     {
-        $settings = StoreSettings::current();
-        $settings->update(['stripe_webhook_secret' => $this->webhookSecret]);
-
         $shippingMethod = ShippingMethod::factory()->create();
         $order = Order::factory()->create([
             'payment_intent_id' => 'pi_test_456',
@@ -130,9 +125,6 @@ class StripeWebhookTest extends TestCase
     {
         Mail::fake();
 
-        $settings = StoreSettings::current();
-        $settings->update(['stripe_webhook_secret' => $this->webhookSecret]);
-
         $order = $this->makeOrder();
 
         $eventPayload = json_encode([
@@ -163,9 +155,6 @@ class StripeWebhookTest extends TestCase
     public function test_stripe_webhook_does_not_queue_email_for_already_paid_order(): void
     {
         Mail::fake();
-
-        $settings = StoreSettings::current();
-        $settings->update(['stripe_webhook_secret' => $this->webhookSecret]);
 
         $shippingMethod = ShippingMethod::factory()->create();
         $order = Order::factory()->create([
@@ -200,9 +189,6 @@ class StripeWebhookTest extends TestCase
 
     public function test_stripe_webhook_ignores_unhandled_event_types(): void
     {
-        $settings = StoreSettings::current();
-        $settings->update(['stripe_webhook_secret' => $this->webhookSecret]);
-
         $eventPayload = json_encode([
             'type' => 'customer.created',
             'data' => ['object' => ['id' => 'cus_test']],

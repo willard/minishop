@@ -24,16 +24,11 @@ class StoreSettingsController extends Controller
                 'currency_locale' => $settings->currency_locale,
                 'tax_rate' => $settings->tax_rate,
                 'active_payment_gateway' => $settings->active_payment_gateway,
-                'stripe_public_key' => $settings->stripe_public_key,
-                'stripe_secret_key' => $settings->stripe_secret_key ? '••••••••' : null,
-                'stripe_webhook_secret' => $settings->stripe_webhook_secret ? '••••••••' : null,
                 'paymongo_public_key' => $settings->paymongo_public_key,
                 'paymongo_secret_key' => $settings->paymongo_secret_key ? '••••••••' : null,
                 'paymongo_webhook_secret' => $settings->paymongo_webhook_secret ? '••••••••' : null,
                 'low_stock_threshold' => $settings->low_stock_threshold,
             ],
-            'hasStripeSecretKey' => ! empty($settings->stripe_secret_key),
-            'hasStripeWebhookSecret' => ! empty($settings->stripe_webhook_secret),
             'hasPaymongoSecretKey' => ! empty($settings->paymongo_secret_key),
             'hasPaymongoWebhookSecret' => ! empty($settings->paymongo_webhook_secret),
         ]);
@@ -50,13 +45,12 @@ class StoreSettingsController extends Controller
             'currency_locale',
             'tax_rate',
             'active_payment_gateway',
-            'stripe_public_key',
             'paymongo_public_key',
             'low_stock_threshold',
         ]);
 
         // Only update secret keys if a new non-masked value is provided
-        foreach (['stripe_secret_key', 'stripe_webhook_secret', 'paymongo_secret_key', 'paymongo_webhook_secret'] as $key) {
+        foreach (['paymongo_secret_key', 'paymongo_webhook_secret'] as $key) {
             $value = $request->input($key);
             if ($value && $value !== '••••••••') {
                 $data[$key] = $value;

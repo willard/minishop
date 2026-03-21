@@ -99,7 +99,7 @@ class OrderEmailTest extends TestCase
     public function test_confirmation_email_queued_after_stripe_webhook_payment_success(): void
     {
         Mail::fake();
-        StoreSettings::current()->update(['stripe_webhook_secret' => $this->stripeWebhookSecret]);
+        config(['services.stripe.webhook_secret' => $this->stripeWebhookSecret]);
 
         $shippingMethod = ShippingMethod::factory()->create();
         $order = Order::factory()->create([

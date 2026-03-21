@@ -41,7 +41,6 @@ class StoreSettingsTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->component('admin/Settings/Edit')
                 ->has('settings')
-                ->has('hasStripeSecretKey')
                 ->has('hasPaymongoSecretKey')
             );
     }
@@ -119,51 +118,6 @@ class StoreSettingsTest extends TestCase
                 'low_stock_threshold' => 10,
             ])
             ->assertSessionHasErrors('tax_rate');
-    }
-
-    public function test_masked_secret_key_is_not_overwritten(): void
-    {
-        $user = User::factory()->superAdmin()->create();
-        $settings = StoreSettings::current();
-        $settings->update(['stripe_secret_key' => 'sk_live_original_secret']);
-
-        $this->actingAs($user)
-            ->put(route('admin.settings.update'), [
-                'currency' => 'USD',
-                'currency_locale' => 'en-US',
-                'tax_rate' => 10,
-                'active_payment_gateway' => 'stripe',
-                'stripe_secret_key' => '••••••••',
-                'low_stock_threshold' => 10,
-            ]);
-
-        $this->assertDatabaseHas('store_settings', [
-            'id' => $settings->id,
-        ]);
-
-        // Re-fetch and decrypt to verify the original key wasn't overwritten
-        $updated = StoreSettings::find($settings->id);
-        $this->assertSame('sk_live_original_secret', $updated->stripe_secret_key);
-    }
-
-    public function test_new_secret_key_replaces_existing(): void
-    {
-        $user = User::factory()->superAdmin()->create();
-        $settings = StoreSettings::current();
-        $settings->update(['stripe_secret_key' => 'sk_live_old_secret']);
-
-        $this->actingAs($user)
-            ->put(route('admin.settings.update'), [
-                'currency' => 'USD',
-                'currency_locale' => 'en-US',
-                'tax_rate' => 10,
-                'active_payment_gateway' => 'stripe',
-                'stripe_secret_key' => 'sk_live_new_secret',
-                'low_stock_threshold' => 10,
-            ]);
-
-        $updated = StoreSettings::find($settings->id);
-        $this->assertSame('sk_live_new_secret', $updated->stripe_secret_key);
     }
 
     public function test_super_admin_can_update_low_stock_threshold(): void
