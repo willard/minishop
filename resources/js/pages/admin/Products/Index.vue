@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ChevronDown, ChevronUp, ChevronsUpDown, Download, Eye, FileText, PackagePlus, Pencil, Trash2 } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import bulkAction from '@/actions/App/Http/Controllers/Admin/ProductBulkActionController';
 import {
     index,
     create,
@@ -139,6 +140,102 @@ function buildExportUrl(format: 'csv' | 'pdf'): string {
 
 const isFiltered =
     props.filters.search || props.filters.category_id || props.filters.stock;
+
+// ── Bulk selection ────────────────────────────────────────────────────────────
+
+const selectedIds = ref<number[]>([]);
+
+const allOnPageSelected = computed(
+    () =>
+        props.products.data.length > 0 &&
+        props.products.data.every((p) => selectedIds.value.includes(p.id)),
+);
+
+const someOnPageSelected = computed(
+    () => props.products.data.some((p) => selectedIds.value.includes(p.id)) && !allOnPageSelected.value,
+);
+
+function isSelected(id: number): boolean {
+    return selectedIds.value.includes(id);
+}
+
+function toggleSelect(id: number): void {
+    if (isSelected(id)) {
+        selectedIds.value = selectedIds.value.filter((i) => i !== id);
+    } else {
+        selectedIds.value = [...selectedIds.value, id];
+    }
+}
+
+function toggleSelectAll(): void {
+    const pageIds = props.products.data.map((p) => p.id);
+    if (allOnPageSelected.value) {
+        selectedIds.value = selectedIds.value.filter((id) => !pageIds.includes(id));
+    } else {
+        const newIds = pageIds.filter((id) => !selectedIds.value.includes(id));
+        selectedIds.value = [...selectedIds.value, ...newIds];
+    }
+}
+
+// ── Bulk actions ──────────────────────────────────────────────────────────────
+
+type ModalType = 'assign_category' | 'update_stock' | 'update_price' | null;
+
+const showModal = ref<ModalType>(null);
+const bulkCategoryId = ref<string>('');
+const bulkStockQuantity = ref<string>('0');
+const bulkPriceInput = ref<string>('');
+const processing = ref(false);
+const bulkErrors = ref<Record<string, string>>({});
+
+function handleBulkAction(action: string): void {
+    bulkErrors.value = {};
+
+    if (action === 'delete') {
+        const n = selectedIds.value.length;
+        if (!confirm(`Delete ${n} selected product${n !== 1 ? 's' : ''}? This cannot be undone.`)) return;
+        submitBulkAction('delete');
+    } else if (action === 'activate' || action === 'deactivate') {
+        submitBulkAction(action);
+    } else {
+        showModal.value = action as ModalType;
+    }
+}
+
+function submitBulkAction(action: string, extra: Record<string, unknown> = {}): void {
+    processing.value = true;
+    bulkErrors.value = {};
+
+    router.post(
+        bulkAction().url,
+        { product_ids: selectedIds.value, action, ...extra },
+        {
+            onFinish: () => {
+                processing.value = false;
+            },
+            onSuccess: () => {
+                selectedIds.value = [];
+                showModal.value = null;
+            },
+            onError: (errs) => {
+                bulkErrors.value = errs;
+            },
+        },
+    );
+}
+
+function submitAssignCategory(): void {
+    submitBulkAction('assign_category', { category_id: bulkCategoryId.value || null });
+}
+
+function submitUpdateStock(): void {
+    submitBulkAction('update_stock', { stock_quantity: parseInt(bulkStockQuantity.value, 10) });
+}
+
+function submitUpdatePrice(): void {
+    const dollars = parseFloat(bulkPriceInput.value);
+    submitBulkAction('update_price', { price: isNaN(dollars) ? null : Math.round(dollars * 100) });
+}
 </script>
 
 <template>
@@ -224,13 +321,88 @@ const isFiltered =
                 </select>
             </div>
 
-            <!-- Table -->
+            <!-- Bulk action toolbar -->
             <div
-                class="overflow-hidden rounded-lg border border-sidebar-border"
+                v-if="selectedIds.length > 0"
+                class="flex flex-wrap items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2.5"
             >
+                <span class="text-sm font-medium">
+                    {{ selectedIds.length }}
+                    {{ selectedIds.length === 1 ? 'product' : 'products' }} selected
+                </span>
+                <div class="ml-auto flex flex-wrap items-center gap-2">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        :disabled="processing"
+                        @click="handleBulkAction('activate')"
+                    >
+                        Activate
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        :disabled="processing"
+                        @click="handleBulkAction('deactivate')"
+                    >
+                        Deactivate
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        :disabled="processing"
+                        @click="handleBulkAction('assign_category')"
+                    >
+                        Assign Category
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        :disabled="processing"
+                        @click="handleBulkAction('update_stock')"
+                    >
+                        Update Stock
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        :disabled="processing"
+                        @click="handleBulkAction('update_price')"
+                    >
+                        Update Price
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="destructive"
+                        :disabled="processing"
+                        @click="handleBulkAction('delete')"
+                    >
+                        Delete
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        @click="selectedIds = []"
+                    >
+                        Clear
+                    </Button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-hidden rounded-lg border border-sidebar-border">
                 <table class="w-full text-sm">
                     <thead class="bg-muted/50 text-muted-foreground">
                         <tr>
+                            <th class="w-10 px-4 py-3">
+                                <input
+                                    type="checkbox"
+                                    :checked="allOnPageSelected"
+                                    :class="someOnPageSelected ? 'opacity-60' : ''"
+                                    class="size-4 cursor-pointer rounded accent-primary"
+                                    @change="toggleSelectAll"
+                                />
+                            </th>
                             <th class="px-4 py-3 text-left font-medium">
                                 <button
                                     class="flex items-center gap-1 hover:text-foreground"
@@ -297,7 +469,7 @@ const isFiltered =
                     <tbody class="divide-y divide-sidebar-border">
                         <tr v-if="products.data.length === 0">
                             <td
-                                colspan="7"
+                                colspan="8"
                                 class="px-4 py-8 text-center text-muted-foreground"
                             >
                                 <template v-if="isFiltered">
@@ -317,7 +489,16 @@ const isFiltered =
                             v-for="product in products.data"
                             :key="product.id"
                             class="transition-colors hover:bg-muted/30"
+                            :class="{ 'bg-primary/5': isSelected(product.id) }"
                         >
+                            <td class="w-10 px-4 py-3">
+                                <input
+                                    type="checkbox"
+                                    :checked="isSelected(product.id)"
+                                    class="size-4 cursor-pointer rounded accent-primary"
+                                    @change="toggleSelect(product.id)"
+                                />
+                            </td>
                             <td class="px-4 py-3 font-medium">
                                 {{ product.name }}
                             </td>
@@ -421,6 +602,103 @@ const isFiltered =
                         v-html="link.label"
                     />
                 </template>
+            </div>
+        </div>
+
+        <!-- Assign Category Modal -->
+        <div
+            v-if="showModal === 'assign_category'"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            @click.self="showModal = null"
+        >
+            <div class="w-full max-w-sm rounded-lg border border-sidebar-border bg-background p-6 shadow-lg">
+                <h2 class="mb-1 text-lg font-semibold">Assign Category</h2>
+                <p class="mb-4 text-sm text-muted-foreground">
+                    Add a category to {{ selectedIds.length }} selected
+                    {{ selectedIds.length === 1 ? 'product' : 'products' }}.
+                </p>
+                <select
+                    v-model="bulkCategoryId"
+                    class="mb-1 h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                    <option value="">Select a category…</option>
+                    <option
+                        v-for="cat in categories"
+                        :key="cat.id"
+                        :value="String(cat.id)"
+                    >
+                        {{ cat.name }}
+                    </option>
+                </select>
+                <p v-if="bulkErrors.category_id" class="mb-3 text-xs text-destructive">
+                    {{ bulkErrors.category_id }}
+                </p>
+                <div class="mt-4 flex justify-end gap-2">
+                    <Button variant="outline" @click="showModal = null">Cancel</Button>
+                    <Button :disabled="processing" @click="submitAssignCategory">Apply</Button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Stock Modal -->
+        <div
+            v-if="showModal === 'update_stock'"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            @click.self="showModal = null"
+        >
+            <div class="w-full max-w-sm rounded-lg border border-sidebar-border bg-background p-6 shadow-lg">
+                <h2 class="mb-1 text-lg font-semibold">Update Stock</h2>
+                <p class="mb-4 text-sm text-muted-foreground">
+                    Set the stock quantity for {{ selectedIds.length }} selected
+                    {{ selectedIds.length === 1 ? 'product' : 'products' }}.
+                </p>
+                <Input
+                    v-model="bulkStockQuantity"
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    class="mb-1"
+                />
+                <p v-if="bulkErrors.stock_quantity" class="mb-3 text-xs text-destructive">
+                    {{ bulkErrors.stock_quantity }}
+                </p>
+                <div class="mt-4 flex justify-end gap-2">
+                    <Button variant="outline" @click="showModal = null">Cancel</Button>
+                    <Button :disabled="processing" @click="submitUpdateStock">Apply</Button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Price Modal -->
+        <div
+            v-if="showModal === 'update_price'"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            @click.self="showModal = null"
+        >
+            <div class="w-full max-w-sm rounded-lg border border-sidebar-border bg-background p-6 shadow-lg">
+                <h2 class="mb-1 text-lg font-semibold">Update Price</h2>
+                <p class="mb-4 text-sm text-muted-foreground">
+                    Set the price for {{ selectedIds.length }} selected
+                    {{ selectedIds.length === 1 ? 'product' : 'products' }}.
+                </p>
+                <div class="relative mb-1">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">$</span>
+                    <Input
+                        v-model="bulkPriceInput"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        class="pl-7"
+                    />
+                </div>
+                <p v-if="bulkErrors.price" class="mb-3 text-xs text-destructive">
+                    {{ bulkErrors.price }}
+                </p>
+                <div class="mt-4 flex justify-end gap-2">
+                    <Button variant="outline" @click="showModal = null">Cancel</Button>
+                    <Button :disabled="processing" @click="submitUpdatePrice">Apply</Button>
+                </div>
             </div>
         </div>
     </AppLayout>

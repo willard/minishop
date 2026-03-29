@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\ProductBulkActionController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductImageController;
 use App\Http\Controllers\Admin\ProductOptionController;
@@ -68,6 +69,7 @@ Route::get('dashboard', DashboardController::class)
 
 Route::middleware(['auth', 'verified', 'role:super-admin|admin|manager'])->prefix('dashboard')->name('admin.')->group(function () {
     Route::get('products/export', [ProductController::class, 'export'])->name('products.export');
+    Route::post('products/bulk', ProductBulkActionController::class)->name('products.bulk');
     Route::resource('products', ProductController::class);
     Route::resource('products.variants', ProductVariantController::class)->except(['index', 'show'])->scoped();
     Route::resource('products.options', ProductOptionController::class)->only(['create', 'store', 'destroy'])->scoped();
