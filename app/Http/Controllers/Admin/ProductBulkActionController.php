@@ -12,11 +12,10 @@ class ProductBulkActionController extends Controller
 {
     public function __invoke(BulkProductActionRequest $request): RedirectResponse
     {
-        $this->authorize('viewAny', Product::class);
-
         $data = $request->validated();
         $ids = $data['product_ids'];
         $count = count($ids);
+        $noun = Str::plural('product', $count);
 
         match ($data['action']) {
             'delete' => Product::query()->whereIn('id', $ids)->get()->each->delete(),
@@ -33,12 +32,12 @@ class ProductBulkActionController extends Controller
         };
 
         $message = match ($data['action']) {
-            'delete' => "{$count} ".Str::plural('product', $count).' deleted successfully.',
-            'activate' => "{$count} ".Str::plural('product', $count).' activated.',
-            'deactivate' => "{$count} ".Str::plural('product', $count).' deactivated.',
-            'assign_category' => "Category assigned to {$count} ".Str::plural('product', $count).'.',
-            'update_stock' => "Stock updated for {$count} ".Str::plural('product', $count).'.',
-            'update_price' => "Price updated for {$count} ".Str::plural('product', $count).'.',
+            'delete' => "{$count} {$noun} deleted successfully.",
+            'activate' => "{$count} {$noun} activated.",
+            'deactivate' => "{$count} {$noun} deactivated.",
+            'assign_category' => "Category assigned to {$count} {$noun}.",
+            'update_stock' => "Stock updated for {$count} {$noun}.",
+            'update_price' => "Price updated for {$count} {$noun}.",
         };
 
         return redirect()->route('admin.products.index')->with('success', $message);
