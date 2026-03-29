@@ -11,6 +11,7 @@ import {
     show as showOrder,
 } from '@/actions/App/Http/Controllers/Admin/OrderController';
 import { index as productsIndex } from '@/actions/App/Http/Controllers/Admin/ProductController';
+import RevenueChart from '@/components/RevenueChart.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -36,6 +37,11 @@ interface LowStockProduct {
     stock_quantity: number;
 }
 
+interface RevenuePoint {
+    label: string;
+    revenue: number;
+}
+
 defineProps<{
     totalRevenue: number;
     totalOrders: number;
@@ -44,6 +50,7 @@ defineProps<{
     lowStockThreshold: number;
     recentOrders: RecentOrder[];
     lowStockProducts: LowStockProduct[];
+    revenueChart: RevenuePoint[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -154,6 +161,16 @@ function statusVariant(
                     <p class="text-xs text-muted-foreground">
                         Products with &le; {{ lowStockThreshold }} units
                     </p>
+                </div>
+            </div>
+
+            <!-- Revenue Chart -->
+            <div class="overflow-hidden rounded-xl border border-sidebar-border">
+                <div class="border-b border-sidebar-border bg-muted/50 px-4 py-3">
+                    <h2 class="text-sm font-semibold">Revenue — Last 12 Months</h2>
+                </div>
+                <div class="p-4">
+                    <RevenueChart :data="revenueChart" />
                 </div>
             </div>
 
