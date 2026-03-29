@@ -7,6 +7,7 @@ import {
     Tooltip,
     type TooltipItem,
 } from 'chart.js';
+import { useDark } from '@vueuse/core';
 import { computed } from 'vue';
 import { Bar } from 'vue-chartjs';
 
@@ -26,25 +27,22 @@ const CURRENCY_FORMAT: Intl.NumberFormatOptions = {
     maximumFractionDigits: 2,
 };
 
-function isDarkMode(): boolean {
-    return (
-        typeof window !== 'undefined' &&
-        document.documentElement.classList.contains('dark')
-    );
-}
+const isDark = useDark();
 
-const tickColor = isDarkMode() ? '#9ca3af' : '#6b7280';
-const barColor = isDarkMode()
-    ? 'rgba(139, 92, 246, 0.7)'
-    : 'rgba(109, 40, 217, 0.75)';
-const gridColor = isDarkMode() ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+const tickColor = computed(() => (isDark.value ? '#9ca3af' : '#6b7280'));
+const barColor = computed(() =>
+    isDark.value ? 'rgba(139, 92, 246, 0.7)' : 'rgba(109, 40, 217, 0.75)',
+);
+const gridColor = computed(() =>
+    isDark.value ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+);
 
 const chartData = computed(() => ({
     labels: props.data.map((d) => d.label),
     datasets: [
         {
             data: props.data.map((d) => d.revenue / 100),
-            backgroundColor: barColor,
+            backgroundColor: barColor.value,
             borderRadius: 4,
             borderSkipped: false as const,
         },
@@ -66,13 +64,13 @@ const chartOptions = computed(() => ({
     scales: {
         x: {
             grid: { display: false },
-            ticks: { color: tickColor, font: { size: 11 } },
+            ticks: { color: tickColor.value, font: { size: 11 } },
             border: { display: false },
         },
         y: {
-            grid: { color: gridColor },
+            grid: { color: gridColor.value },
             ticks: {
-                color: tickColor,
+                color: tickColor.value,
                 font: { size: 11 },
                 callback: (value: number | string) =>
                     `$${Number(value).toLocaleString()}`,
