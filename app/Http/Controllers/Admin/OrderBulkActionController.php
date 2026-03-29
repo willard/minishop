@@ -13,9 +13,6 @@ use Illuminate\Support\Str;
 
 class OrderBulkActionController extends Controller
 {
-    /**
-     * @return array<string, string[]>
-     */
     private static function allowedTransitions(): array
     {
         return [
@@ -34,38 +31,33 @@ class OrderBulkActionController extends Controller
 
         $orders = Order::query()->whereIn('id', $data['order_ids'])->get();
         $count = $orders->count();
-        $noun = Str::plural('order', $count);
 
         if ($data['action'] === 'delete') {
             $orders->each->delete();
 
             return redirect()->route('admin.orders.index')
-                ->with('success', "{$count} {$noun} deleted successfully.");
+                ->with('success', "{$count} ".Str::plural('order', $count).' deleted successfully.');
         }
 
         $targetStatus = $data['status'];
         $transitions = self::allowedTransitions();
         $notifiable = [OrderStatus::Shipped->value, OrderStatus::Delivered->value, OrderStatus::Cancelled->value];
+        $shouldNotify = in_array($targetStatus, $notifiable);
 
-        $updatedCount = 0;
+        $updatable = $orders->filter(
+            fn (Order $order) => in_array($targetStatus, $transitions[$order->status->value] ?? [])
+        );
 
-        foreach ($orders as $order) {
-            $allowed = $transitions[$order->status->value] ?? [];
-
-            if (! in_array($targetStatus, $allowed)) {
-                continue;
-            }
-
+        $updatable->each(function (Order $order) use ($targetStatus, $shouldNotify): void {
             $order->update(['status' => $targetStatus]);
 
-            if (in_array($targetStatus, $notifiable)) {
+            if ($shouldNotify) {
                 Mail::to($order->customer->user->email)
                     ->queue(new OrderStatusChangedMail($order->load(['items', 'customer.user', 'shippingMethod'])));
             }
+        });
 
-            $updatedCount++;
-        }
-
+        $updatedCount = $updatable->count();
         $skippedCount = $count - $updatedCount;
         $updatedNoun = Str::plural('order', $updatedCount);
 
