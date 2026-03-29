@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ChevronDown, ChevronUp, ChevronsUpDown, Eye, ShoppingCart, Trash2 } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import bulkAction from '@/actions/App/Http/Controllers/Admin/OrderBulkActionController';
 import {
     index,
     create,
@@ -133,6 +134,96 @@ function confirmDelete(order: Order): void {
         router.delete(destroy(order).url);
     }
 }
+
+// ── Bulk selection ────────────────────────────────────────────────────────────
+
+const selectedIds = ref<number[]>([]);
+
+watch(() => props.orders.data, () => {
+    selectedIds.value = [];
+});
+
+const allOnPageSelected = computed(
+    () =>
+        props.orders.data.length > 0 &&
+        props.orders.data.every((o) => selectedIds.value.includes(o.id)),
+);
+
+const someOnPageSelected = computed(
+    () => props.orders.data.some((o) => selectedIds.value.includes(o.id)) && !allOnPageSelected.value,
+);
+
+function isSelected(id: number): boolean {
+    return selectedIds.value.includes(id);
+}
+
+function toggleSelect(id: number): void {
+    if (isSelected(id)) {
+        selectedIds.value = selectedIds.value.filter((i) => i !== id);
+    } else {
+        selectedIds.value = [...selectedIds.value, id];
+    }
+}
+
+function toggleSelectAll(): void {
+    const pageIds = props.orders.data.map((o) => o.id);
+    if (allOnPageSelected.value) {
+        selectedIds.value = selectedIds.value.filter((id) => !pageIds.includes(id));
+    } else {
+        const newIds = pageIds.filter((id) => !selectedIds.value.includes(id));
+        selectedIds.value = [...selectedIds.value, ...newIds];
+    }
+}
+
+// ── Bulk actions ──────────────────────────────────────────────────────────────
+
+const showStatusModal = ref(false);
+const bulkStatusValue = ref<string>('');
+const processing = ref(false);
+const bulkErrors = ref<Record<string, string>>({});
+
+function handleBulkAction(action: string): void {
+    bulkErrors.value = {};
+
+    if (action === 'delete') {
+        const n = selectedIds.value.length;
+        if (!confirm(`Delete ${n} selected order${n !== 1 ? 's' : ''}? This cannot be undone.`)) return;
+        submitBulkAction('delete');
+    } else if (action === 'update_status') {
+        bulkStatusValue.value = '';
+        showStatusModal.value = true;
+    }
+}
+
+function submitBulkAction(action: string, extra: Record<string, unknown> = {}): void {
+    processing.value = true;
+    bulkErrors.value = {};
+
+    router.post(
+        bulkAction().url,
+        { order_ids: selectedIds.value, action, ...extra },
+        {
+            onFinish: () => {
+                processing.value = false;
+            },
+            onSuccess: () => {
+                selectedIds.value = [];
+                showStatusModal.value = false;
+            },
+            onError: (errs) => {
+                bulkErrors.value = errs;
+            },
+        },
+    );
+}
+
+function submitUpdateStatus(): void {
+    if (!bulkStatusValue.value) {
+        bulkErrors.value = { status: 'Please select a status.' };
+        return;
+    }
+    submitBulkAction('update_status', { status: bulkStatusValue.value });
+}
 </script>
 
 <template>
@@ -180,6 +271,42 @@ function confirmDelete(order: Order): void {
                 </select>
             </div>
 
+            <!-- Bulk action toolbar -->
+            <div
+                v-if="selectedIds.length > 0"
+                class="flex flex-wrap items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2.5"
+            >
+                <span class="text-sm font-medium">
+                    {{ selectedIds.length }}
+                    {{ selectedIds.length === 1 ? 'order' : 'orders' }} selected
+                </span>
+                <div class="ml-auto flex flex-wrap items-center gap-2">
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        :disabled="processing"
+                        @click="handleBulkAction('update_status')"
+                    >
+                        Update Status
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="destructive"
+                        :disabled="processing"
+                        @click="handleBulkAction('delete')"
+                    >
+                        Delete
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        @click="selectedIds = []"
+                    >
+                        Clear
+                    </Button>
+                </div>
+            </div>
+
             <!-- Table -->
             <div
                 class="overflow-hidden rounded-lg border border-sidebar-border"
@@ -187,6 +314,15 @@ function confirmDelete(order: Order): void {
                 <table class="w-full text-sm">
                     <thead class="bg-muted/50 text-muted-foreground">
                         <tr>
+                            <th class="w-10 px-4 py-3">
+                                <input
+                                    type="checkbox"
+                                    :checked="allOnPageSelected"
+                                    :class="someOnPageSelected ? 'opacity-60' : ''"
+                                    class="size-4 cursor-pointer rounded accent-primary"
+                                    @change="toggleSelectAll"
+                                />
+                            </th>
                             <th class="px-4 py-3 text-left font-medium">
                                 <button
                                     class="flex items-center gap-1 hover:text-foreground"
@@ -242,7 +378,7 @@ function confirmDelete(order: Order): void {
                     <tbody class="divide-y divide-sidebar-border">
                         <tr v-if="orders.data.length === 0">
                             <td
-                                colspan="6"
+                                colspan="7"
                                 class="px-4 py-8 text-center text-muted-foreground"
                             >
                                 {{
@@ -256,7 +392,16 @@ function confirmDelete(order: Order): void {
                             v-for="order in orders.data"
                             :key="order.id"
                             class="transition-colors hover:bg-muted/30"
+                            :class="{ 'bg-primary/5': isSelected(order.id) }"
                         >
+                            <td class="w-10 px-4 py-3">
+                                <input
+                                    type="checkbox"
+                                    :checked="isSelected(order.id)"
+                                    class="size-4 cursor-pointer rounded accent-primary"
+                                    @change="toggleSelect(order.id)"
+                                />
+                            </td>
                             <td class="px-4 py-3 font-mono text-xs font-medium">
                                 {{ order.order_number }}
                             </td>
@@ -326,6 +471,55 @@ function confirmDelete(order: Order): void {
                         v-html="link.label"
                     />
                 </template>
+            </div>
+        </div>
+
+        <!-- Update Status Modal -->
+        <div
+            v-if="showStatusModal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            @click.self="showStatusModal = false"
+        >
+            <div class="w-full max-w-sm rounded-lg border border-sidebar-border bg-background p-6 shadow-lg">
+                <h2 class="mb-4 text-lg font-semibold">Update Order Status</h2>
+                <p class="mb-4 text-sm text-muted-foreground">
+                    Orders where this transition is not valid will be skipped.
+                </p>
+
+                <div class="mb-4">
+                    <label class="mb-1.5 block text-sm font-medium">New Status</label>
+                    <select
+                        v-model="bulkStatusValue"
+                        class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                    >
+                        <option value="">Select a status…</option>
+                        <option
+                            v-for="s in statuses"
+                            :key="s.value"
+                            :value="s.value"
+                        >
+                            {{ s.label }}
+                        </option>
+                    </select>
+                    <p v-if="bulkErrors.status" class="mt-1 text-xs text-destructive">
+                        {{ bulkErrors.status }}
+                    </p>
+                </div>
+
+                <div class="flex justify-end gap-2">
+                    <Button
+                        variant="outline"
+                        @click="showStatusModal = false"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        :disabled="processing"
+                        @click="submitUpdateStatus"
+                    >
+                        Update
+                    </Button>
+                </div>
             </div>
         </div>
     </AppLayout>

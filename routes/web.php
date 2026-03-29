@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OrderBulkActionController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductBulkActionController;
 use App\Http\Controllers\Admin\ProductController;
@@ -77,6 +78,7 @@ Route::middleware(['auth', 'verified', 'role:super-admin|admin|manager'])->prefi
     Route::put('products/{product}/images/reorder', [ProductImageController::class, 'reorder'])->name('products.images.reorder');
     Route::delete('products/{product}/images/{image}', [ProductImageController::class, 'destroy'])->name('products.images.destroy');
     Route::resource('categories', CategoryController::class)->except(['show']);
+    Route::post('orders/bulk', OrderBulkActionController::class)->name('orders.bulk');
     Route::resource('orders', OrderController::class)->except(['edit']);
     Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
     Route::resource('returns', ReturnController::class)->only(['index', 'create', 'store', 'show', 'update']);

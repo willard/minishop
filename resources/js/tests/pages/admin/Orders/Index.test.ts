@@ -9,7 +9,11 @@ vi.mock('@inertiajs/vue3', () => ({
         template: '<a href="#"><slot /></a>',
         props: ['href'],
     },
-    router: { delete: vi.fn(), get: vi.fn() },
+    router: { delete: vi.fn(), get: vi.fn(), post: vi.fn() },
+}));
+
+vi.mock('@/actions/App/Http/Controllers/Admin/OrderBulkActionController', () => ({
+    default: vi.fn(() => ({ url: '/dashboard/orders/bulk', method: 'post' })),
 }));
 
 vi.mock('@/layouts/AppLayout.vue', () => ({
@@ -221,5 +225,84 @@ describe('admin/Orders/Index', () => {
 
     it('renders the New Order button', () => {
         expect(wrapper.text()).toContain('New Order');
+    });
+
+    describe('bulk actions', () => {
+        it('renders a checkbox in the table header for select-all', () => {
+            const headerCheckbox = wrapper.find('thead input[type="checkbox"]');
+            expect(headerCheckbox.exists()).toBe(true);
+        });
+
+        it('renders a checkbox for each order row', () => {
+            const rowCheckboxes = wrapper.findAll('tbody input[type="checkbox"]');
+            expect(rowCheckboxes).toHaveLength(baseOrders.data.length);
+        });
+
+        it('bulk action toolbar is hidden when no orders are selected', () => {
+            expect(wrapper.text()).not.toContain('selected');
+            expect(wrapper.text()).not.toContain('Update Status');
+        });
+
+        it('bulk action toolbar appears after selecting an order', async () => {
+            const checkbox = wrapper.find('tbody input[type="checkbox"]');
+            await checkbox.trigger('change');
+            expect(wrapper.text()).toContain('1 order selected');
+            expect(wrapper.text()).toContain('Update Status');
+            expect(wrapper.text()).toContain('Delete');
+        });
+
+        it('shows correct count when multiple orders are selected', async () => {
+            const checkboxes = wrapper.findAll('tbody input[type="checkbox"]');
+            await checkboxes[0].trigger('change');
+            await checkboxes[1].trigger('change');
+            expect(wrapper.text()).toContain('2 orders selected');
+        });
+
+        it('select-all checkbox selects all orders on the page', async () => {
+            const headerCheckbox = wrapper.find('thead input[type="checkbox"]');
+            await headerCheckbox.trigger('change');
+            expect(wrapper.text()).toContain(`${baseOrders.data.length} orders selected`);
+        });
+
+        it('clicking Clear deselects all and hides the toolbar', async () => {
+            const checkbox = wrapper.find('tbody input[type="checkbox"]');
+            await checkbox.trigger('change');
+            expect(wrapper.text()).toContain('1 order selected');
+
+            const clearButton = wrapper.findAll('button').find((b) => b.text().trim() === 'Clear');
+            await clearButton!.trigger('click');
+            expect(wrapper.text()).not.toContain('selected');
+        });
+
+        it('clicking Update Status opens the status modal', async () => {
+            const checkbox = wrapper.find('tbody input[type="checkbox"]');
+            await checkbox.trigger('change');
+
+            const updateStatusButton = wrapper.findAll('button').find((b) => b.text().trim() === 'Update Status');
+            await updateStatusButton!.trigger('click');
+
+            expect(wrapper.text()).toContain('Update Order Status');
+        });
+
+        it('status modal contains all status options', async () => {
+            const checkbox = wrapper.find('tbody input[type="checkbox"]');
+            await checkbox.trigger('change');
+
+            const updateStatusButton = wrapper.findAll('button').find((b) => b.text().trim() === 'Update Status');
+            await updateStatusButton!.trigger('click');
+
+            const modalSelects = wrapper.findAll('select');
+            const modalSelect = modalSelects[modalSelects.length - 1];
+            const optionTexts = modalSelect.findAll('option').map((o) => o.text().trim());
+            baseStatuses.forEach((s) => {
+                expect(optionTexts).toContain(s.label);
+            });
+        });
+
+        it('selected row is highlighted', async () => {
+            const rows = wrapper.findAll('tbody tr');
+            await rows[0].find('input[type="checkbox"]').trigger('change');
+            expect(rows[0].classes()).toContain('bg-primary/5');
+        });
     });
 });

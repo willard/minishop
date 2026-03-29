@@ -22,4 +22,19 @@ enum OrderStatus: string
             self::Refunded => 'Refunded',
         };
     }
+
+    /**
+     * @return array<string, string[]>
+     */
+    public static function transitions(): array
+    {
+        return [
+            self::Pending->value => [self::Processing->value, self::Cancelled->value],
+            self::Processing->value => [self::Shipped->value, self::Cancelled->value],
+            self::Shipped->value => [self::Delivered->value, self::Cancelled->value],
+            self::Delivered->value => [self::Refunded->value],
+            self::Cancelled->value => [],
+            self::Refunded->value => [],
+        ];
+    }
 }
