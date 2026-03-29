@@ -13,11 +13,14 @@ class DashboardTest extends TestCase
 {
     use RefreshDatabase;
 
+    private User $admin;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->seed(RoleAndPermissionSeeder::class);
+        $this->admin = User::factory()->superAdmin()->create();
     }
 
     public function test_guests_are_redirected_from_dashboard(): void
@@ -27,9 +30,7 @@ class DashboardTest extends TestCase
 
     public function test_admin_can_view_dashboard(): void
     {
-        $admin = User::factory()->superAdmin()->create();
-
-        $this->actingAs($admin)
+        $this->actingAs($this->admin)
             ->get(route('dashboard'))
             ->assertOk()
             ->assertInertia(
@@ -45,9 +46,7 @@ class DashboardTest extends TestCase
 
     public function test_revenue_chart_has_12_months(): void
     {
-        $admin = User::factory()->superAdmin()->create();
-
-        $this->actingAs($admin)
+        $this->actingAs($this->admin)
             ->get(route('dashboard'))
             ->assertInertia(
                 fn ($page) => $page
@@ -59,23 +58,12 @@ class DashboardTest extends TestCase
 
     public function test_revenue_chart_excludes_cancelled_and_refunded_orders(): void
     {
-        $admin = User::factory()->superAdmin()->create();
+        Order::factory()->create(['total_amount' => 5000, 'status' => OrderStatus::Delivered]);
+        Order::factory()->create(['total_amount' => 3000, 'status' => OrderStatus::Cancelled]);
+        Order::factory()->create(['total_amount' => 2000, 'status' => OrderStatus::Refunded]);
 
-        Order::factory()->create([
-            'total_amount' => 5000,
-            'status' => OrderStatus::Delivered,
-        ]);
-        Order::factory()->create([
-            'total_amount' => 3000,
-            'status' => OrderStatus::Cancelled,
-        ]);
-        Order::factory()->create([
-            'total_amount' => 2000,
-            'status' => OrderStatus::Refunded,
-        ]);
-
-        // Index 11 is the current month (range goes from 11 months ago → current)
-        $this->actingAs($admin)
+        // revenueChart index 11 is the current month (range: 11 months ago → now)
+        $this->actingAs($this->admin)
             ->get(route('dashboard'))
             ->assertInertia(
                 fn ($page) => $page
@@ -86,16 +74,14 @@ class DashboardTest extends TestCase
 
     public function test_revenue_chart_sums_revenue_per_month(): void
     {
-        $admin = User::factory()->superAdmin()->create();
-
         Order::factory()->count(3)->create([
             'total_amount' => 1000,
             'status' => OrderStatus::Delivered,
             'created_at' => now(),
         ]);
 
-        // Index 11 is the current month (range goes from 11 months ago → current)
-        $this->actingAs($admin)
+        // revenueChart index 11 is the current month (range: 11 months ago → now)
+        $this->actingAs($this->admin)
             ->get(route('dashboard'))
             ->assertInertia(
                 fn ($page) => $page->where('revenueChart.11.revenue', 3000),
