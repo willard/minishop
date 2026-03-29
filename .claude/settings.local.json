@@ -96,7 +96,28 @@
       "mcp__Claude_Preview__preview_start",
       "Bash(git merge:*)",
       "Bash(git fetch:*)",
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "Bash(find /Users/willardmacay/Devs/ai/minishop/config -type f -name \"*.php\" | xargs basename -a)",
+      "Bash(find /Users/willardmacay/Devs/ai/minishop/app/Http/Controllers/Storefront -type f -name \"*.php\" | xargs basename -a)",
+      "Bash(find /Users/willardmacay/Devs/ai/minishop/app/Http/Controllers/Api/V1 -type f -name \"*.php\" | xargs basename -a)",
+      "Bash(grep -r \"Laravel\\\\\\\\\\\\AI\\\\|AI::\\\\|Prompt::\\\\|Chat\" /Users/willardmacay/Devs/ai/minishop/app --include=\"*.php\" 2>/dev/null | head -10)",
+      "mcp__laravel-boost__list-artisan-commands",
+      "Bash(grep -n \"new.*Controller\\\\|app\\(.*Controller\" /Users/willardmacay/Devs/ai/minishop/app/Http/Controllers/Storefront/*.php 2>/dev/null | head -20)",
+      "Bash(grep -r \"Route::\" /Users/willardmacay/Devs/ai/minishop/routes/*.php 2>/dev/null | grep -i chat)",
+      "Bash(grep:*)",
+      "Bash(gh repo:*)",
+      "mcp__laravel-boost__database-schema",
+      "Bash(for pr:*)",
+      "Bash(do echo:*)",
+      "Bash(done)",
+      "mcp__laravel-boost__list-routes",
+      "Bash(gh run:*)",
+      "Bash(ls /Users/willardmacay/Devs/ai/minishop/.env*)",
+      "Bash(php -r \":*)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "laravel-boost"
+  ]
 }
