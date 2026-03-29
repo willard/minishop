@@ -229,61 +229,125 @@ Vue components must have a single root element.
 
 ## What is Minishop?
 
-Minishop is a **headless ecommerce platform for small businesses**. The backend is a Laravel 12 API/web app; the frontend admin dashboard is built with Inertia.js v2 + Vue 3 + Tailwind CSS v4.
+Minishop is a **headless ecommerce platform for small businesses**. The backend is a Laravel 13 app; the frontend admin dashboard is built with Inertia.js v3 + Vue 3 + Tailwind CSS v4.
 
 ## Admin Dashboard
 
 - The main admin dashboard lives at `/dashboard` (`resources/js/pages/Dashboard.vue`).
 - All store management (products, orders, customers, etc.) is done through this dashboard.
 - Use `AppSidebarLayout` for all admin pages to stay consistent with the existing layout.
-- Admin routes should be grouped under the `auth` middleware and optionally an `admin` role/gate.
+- Admin routes are grouped under the `auth`, `verified`, and `role:super-admin|admin|manager` middleware, prefixed `/dashboard`, and named `admin.*`.
 
-## Planned Features
+## Implemented Features
 
 ### Core Ecommerce
-- **Products** — CRUD with images, variants (size/color), stock tracking, SKU, categories, and tags
+- **Products** — full CRUD, images (product-level + variant-specific), variants (size/color option matrix), stock tracking, SKU, categories, sorting, export (CSV/PDF), bulk actions (activate, deactivate, assign category, update stock, update price, delete)
 - **Categories** — hierarchical categories with slugs
-- **Orders** — order lifecycle (pending → processing → shipped → delivered → cancelled/refunded)
-- **Customers** — customer profiles linked to `users`, purchase history, addresses
+- **Orders** — full lifecycle (`pending → processing → shipped → delivered → cancelled/refunded`), manual order creation, invoice PDF generation, bulk actions (update status, delete), email notifications on status changes
+- **Customers** — profiles linked to `users`, order history
 - **Cart** — persistent server-side cart per session/user
 - **Checkout** — address collection, order summary, payment step
+- **Returns & Refunds** — return requests, approval/rejection workflow, refund processing
 
 ### Inventory & Catalog
-- **Stock management** — low-stock alerts, out-of-stock handling
-- **Product variants** — multiple options per product (e.g. size + color matrix)
-- **Product images** — multiple images per product/variant
+- **Stock management** — low-stock alerts, out-of-stock handling, `low_stock_notified` flag
+- **Product variants** — structured option types (e.g. size + colour), nested CRUD under products
+- **Product images** — multiple images per product or variant; `variant_id IS NULL` = product-level image
 
 ### Payments & Finance
-- **Payment gateway integration** — Stripe (primary), PayMongo (for PH market)
-- **Invoices** — auto-generated PDF invoices per order
-- **Discount codes / Coupons** — percentage or fixed amount, expiry, usage limits
+- **Stripe** — payment intent flow; keys read from `.env` via `config/services.php`
+- **PayMongo** — checkout session flow for PH market; webhook handling
+- **Invoices** — auto-generated PDF per order (barryvdh/laravel-dompdf)
+- **Coupons** — percentage or fixed discount, expiry, usage limits
 
-### Storefront (Headless API)
-- **Public API** — RESTful API endpoints for storefront consumption (products, categories, cart, checkout)
-- **API versioning** — `/api/v1/` prefix
-- **Sanctum auth** — for storefront user sessions
+### Storefront
+- **Public storefront** — home, product catalogue, product detail, cart, checkout
+- **AI support chat** — powered by `laravel/ai` SDK
 
 ### Admin Dashboard Panels
-- **Dashboard overview** — sales summary, recent orders, low-stock alerts, revenue chart
-- **Order management** — list, filter, update status, view details
-- **Product management** — create/edit/delete products and variants
-- **Customer management** — view customer list, order history
-- **Coupon management** — create/manage discount codes
-- **Settings** — store name, currency, tax rate, shipping options
+- **Dashboard overview** — KPI cards (revenue, orders, customers, products), revenue chart (dark-mode reactive)
+- **Order management** — list with search/filter/sort, status update, bulk status update, invoice download
+- **Product management** — list with search/filter/sort/export, full CRUD, bulk actions
+- **Customer management** — list, order history view
+- **Coupon management** — full CRUD
+- **Returns management** — list, approve/reject/receive/refund workflow
+- **User management** — admin user CRUD with roles
+- **Settings** — store name, currency (CAD default), tax rate, shipping methods (flat-rate)
+- **Activity log** — admin action history via Spatie Activity Log
 
 ### Supporting Features
-- **Shipping** — flat-rate and per-item shipping rules; integration-ready for courier APIs
-- **Tax** — configurable tax rate applied at checkout
-- **Search** — product search with filters (price range, category, availability)
-- **Activity log** — admin action history
-- **Notifications** — email notifications for new orders, shipped orders (queued jobs)
+- **Shipping** — shipping method CRUD; applied at checkout
+- **Tax** — configurable rate (%) stored in `StoreSettings`, applied at checkout
+- **Email notifications** — queued mailables for order confirmation and status changes (shipped/delivered/cancelled)
+- **Roles & Permissions** — Spatie Laravel Permission; roles: `super-admin`, `admin`, `manager`, `customer`
+- **Canadian localization** — CAD currency, CA country defaults
+
+## Remaining / Planned Features
+
+- **Product tags** — tagging system for products
+- **Headless API** — RESTful `/api/v1/` endpoints for external storefront consumption
+- **Sanctum auth** — API authentication for storefront user sessions
+- **Search** — advanced product search with price range, category, and availability filters
+- **Discount improvements** — bulk coupon generation, referral codes
+
+## Laravel Best Practices
+
+Always activate the `laravel-best-practices` skill when writing or reviewing Laravel PHP code.
+
+### Key Patterns in This Codebase
+
+**Eager loading** — always eager-load relations to avoid N+1 queries:
+```php
+Order::query()->with(['customer.user', 'items', 'shippingMethod'])->get();
+```
+
+**Authorization** — every controller action calls `$this->authorize()` against the model policy. Permissions follow the pattern `resource.action` (e.g. `orders.update`, `products.delete`):
+```php
+$this->authorize('update', $order);
+```
+
+**Form Requests** — all validation and authorization lives in Form Request classes, never inline:
+```php
+public function __invoke(BulkOrderActionRequest $request): RedirectResponse
+```
+
+**Single-purpose Action classes** — complex business logic is extracted to `app/Actions/`:
+```php
+$order = app(CreateOrderAction::class)->execute($data);
+```
+
+**Enum-driven state** — status values are PHP 8.1 backed enums with helper methods. Shared logic (e.g. allowed transitions) lives on the enum itself:
+```php
+// app/Enums/OrderStatus.php
+public static function transitions(): array { ... }
+```
+
+**Bulk actions pattern** — bulk operations follow a consistent pattern:
+- Invokable controller: `OrderBulkActionController` (one `__invoke` method, `match` on action)
+- Dedicated Form Request: `BulkOrderActionRequest` (validates IDs + action + action-specific fields)
+- Route registered **before** `Route::resource()` to avoid parameter capture
+- Frontend: checkbox selection → bulk toolbar → optional modal for parameterised actions
+
+**Queued email notifications** — always use `Mail::queue()` or `->queue()` for mailables triggered by user actions:
+```php
+Mail::to($email)->queue(new OrderStatusChangedMail($order));
+```
+
+**Money storage** — all monetary values are stored as integers (cents). Format for display with `number / 100`.
+
+**Route key binding** — the `Order` model uses `order_number` as its route key, not `id`. Use `$order->order_number` in URLs.
+
+**`StoreSettings::current()`** — singleton accessor for store configuration (tax rate, store name, currency). Use this instead of reading config directly.
 
 ## Naming & Route Conventions
 
 - Admin Inertia pages: `resources/js/pages/admin/` (e.g. `admin/Products/Index.vue`)
-- API routes: `routes/api.php` under `/api/v1/`
-- Admin web routes: `routes/web.php` grouped under `/dashboard`
-- Use resource controllers for all CRUD entities
+- Storefront Inertia pages: `resources/js/pages/storefront/`
+- Wayfinder actions: `resources/js/actions/App/Http/Controllers/`
+- Admin web routes: `routes/web.php` grouped under `/dashboard`, named `admin.*`
+- API routes: `routes/api.php` (currently minimal; `/api/v1/` prefix planned)
+- Use `Route::resource()` for all CRUD entities
+- Register standalone routes (export, bulk) **before** the resource route to avoid `{model}` capture
 
 ## Git & GitHub Workflow
 
@@ -302,9 +366,15 @@ Every feature or task must follow this branching workflow — no exceptions:
 5. **Wait for review** — do not merge the PR. The user (willard) will review and merge on GitHub.
 6. **Never push directly to `main`** — all changes go through PRs.
 
-Branch naming conventions:
-- Use lowercase kebab-case: `feature/add-product-variants`, not `Feature/AddProductVariants`
-- Keep names short but descriptive
+Branch naming: lowercase kebab-case (`feature/add-product-variants`, not `Feature/AddProductVariants`).
+
+## PHP Testing (PHPUnit)
+
+- Feature tests live in `tests/Feature/Admin/`, `tests/Feature/Storefront/`, etc.
+- Use `RefreshDatabase` and seed `RoleAndPermissionSeeder` in `setUp()` for any test touching permissions.
+- Use factory states (`->pending()`, `->processing()`, `->superAdmin()`, `->manager()`) before manually setting attributes.
+- Always assert both the happy path and authorization failure (`assertForbidden()`).
+- Run: `php artisan test --compact tests/Feature/Admin/SomeTest.php`
 
 ## Frontend Testing (Vitest)
 
@@ -326,8 +396,10 @@ Vue components must be tested with **Vitest** + **@vue/test-utils**.
 - `npm run test:coverage` — generate coverage report
 
 ### Conventions
-- Every new Vue component or composable must have a corresponding test file.
+- Every new Vue component, composable, or page with logic must have a corresponding test file.
+- Every change to an existing component must include a test update.
 - Use `describe` + `it` blocks. Keep test descriptions readable as plain English.
 - Test what the component renders and how it behaves — avoid testing implementation details.
-- Mock Inertia's `usePage`, `router`, and `Link` where needed using `vi.mock('@inertiajs/vue3')`.
+- Mock Inertia (`vi.mock('@inertiajs/vue3')`) — always include `router: { get, post, delete: vi.fn() }`.
+- Mock Wayfinder action files (`vi.mock('@/actions/...')`).
 - Run `npm run test:run` before opening a PR — all tests must pass.
