@@ -13,23 +13,15 @@ use Illuminate\Support\Str;
 
 class OrderBulkActionController extends Controller
 {
-    private static function allowedTransitions(): array
-    {
-        return [
-            OrderStatus::Pending->value => [OrderStatus::Processing->value, OrderStatus::Cancelled->value],
-            OrderStatus::Processing->value => [OrderStatus::Shipped->value, OrderStatus::Cancelled->value],
-            OrderStatus::Shipped->value => [OrderStatus::Delivered->value, OrderStatus::Cancelled->value],
-            OrderStatus::Delivered->value => [OrderStatus::Refunded->value],
-            OrderStatus::Cancelled->value => [],
-            OrderStatus::Refunded->value => [],
-        ];
-    }
-
     public function __invoke(BulkOrderActionRequest $request): RedirectResponse
     {
         $data = $request->validated();
 
-        $orders = Order::query()->whereIn('id', $data['order_ids'])->get();
+        $orders = Order::query()
+            ->with(['customer.user', 'items', 'shippingMethod'])
+            ->whereIn('id', $data['order_ids'])
+            ->get();
+
         $count = $orders->count();
 
         if ($data['action'] === 'delete') {
@@ -40,7 +32,7 @@ class OrderBulkActionController extends Controller
         }
 
         $targetStatus = $data['status'];
-        $transitions = self::allowedTransitions();
+        $transitions = OrderStatus::transitions();
         $notifiable = [OrderStatus::Shipped->value, OrderStatus::Delivered->value, OrderStatus::Cancelled->value];
         $shouldNotify = in_array($targetStatus, $notifiable);
 
@@ -53,7 +45,7 @@ class OrderBulkActionController extends Controller
 
             if ($shouldNotify) {
                 Mail::to($order->customer->user->email)
-                    ->queue(new OrderStatusChangedMail($order->load(['items', 'customer.user', 'shippingMethod'])));
+                    ->queue(new OrderStatusChangedMail($order));
             }
         });
 
