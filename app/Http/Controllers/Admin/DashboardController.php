@@ -7,6 +7,8 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\StoreSettings;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -45,6 +47,29 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        $monthExpr = DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', created_at)"
+            : "DATE_FORMAT(created_at, '%Y-%m')";
+
+        $revenueByMonth = Order::query()
+            ->whereNotIn('status', ['cancelled', 'refunded'])
+            ->where('created_at', '>=', now()->subMonths(11)->startOfMonth())
+            ->selectRaw("{$monthExpr} as month, SUM(total_amount) as revenue")
+            ->groupByRaw($monthExpr)
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
+
+        $revenueChart = collect(range(11, 0))->map(function (int $i) use ($revenueByMonth): array {
+            $date = Carbon::now()->subMonths($i);
+            $key = $date->format('Y-m');
+
+            return [
+                'label' => $date->format('M Y'),
+                'revenue' => (int) ($revenueByMonth->get($key)?->revenue ?? 0),
+            ];
+        })->values()->all();
+
         return Inertia::render('Dashboard', [
             'totalRevenue' => $totalRevenue,
             'totalOrders' => $totalOrders,
@@ -53,6 +78,7 @@ class DashboardController extends Controller
             'lowStockThreshold' => $threshold,
             'recentOrders' => $recentOrders,
             'lowStockProducts' => $lowStockProducts,
+            'revenueChart' => $revenueChart,
         ]);
     }
 }
