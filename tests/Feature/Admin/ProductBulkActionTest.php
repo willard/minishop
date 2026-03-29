@@ -264,6 +264,23 @@ class ProductBulkActionTest extends TestCase
             ->assertRedirect(route('admin.products.index'));
     }
 
+    public function test_manager_cannot_bulk_delete_products(): void
+    {
+        $user = User::factory()->manager()->create();
+        $products = Product::factory(2)->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.products.bulk'), [
+                'product_ids' => $products->pluck('id')->toArray(),
+                'action' => 'delete',
+            ])
+            ->assertForbidden();
+
+        foreach ($products as $product) {
+            $this->assertModelExists($product);
+        }
+    }
+
     // ── Success message ───────────────────────────────────────────────────────
 
     public function test_success_message_uses_plural_when_multiple_products(): void

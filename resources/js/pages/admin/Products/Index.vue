@@ -145,6 +145,10 @@ const isFiltered =
 
 const selectedIds = ref<number[]>([]);
 
+watch(() => props.products.data, () => {
+    selectedIds.value = [];
+});
+
 const allOnPageSelected = computed(
     () =>
         props.products.data.length > 0 &&

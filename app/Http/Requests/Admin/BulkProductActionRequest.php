@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Models\Product;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -10,7 +9,11 @@ class BulkProductActionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('viewAny', Product::class);
+        if ($this->input('action') === 'delete') {
+            return $this->user()->can('products.delete');
+        }
+
+        return $this->user()->can('products.update');
     }
 
     public function rules(): array

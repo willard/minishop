@@ -13,22 +13,18 @@ class ProductBulkActionController extends Controller
     public function __invoke(BulkProductActionRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        $ids = $data['product_ids'];
-        $count = count($ids);
+
+        $products = Product::query()->whereIn('id', $data['product_ids'])->get();
+        $count = $products->count();
         $noun = Str::plural('product', $count);
 
         match ($data['action']) {
-            'delete' => Product::query()->whereIn('id', $ids)->get()->each->delete(),
-            'activate' => Product::query()->whereIn('id', $ids)->update(['is_active' => true]),
-            'deactivate' => Product::query()->whereIn('id', $ids)->update(['is_active' => false]),
-            'assign_category' => Product::query()->whereIn('id', $ids)
-                ->get()
-                ->each(fn (Product $product) => $product->categories()->syncWithoutDetaching([$data['category_id']])),
-            'update_stock' => Product::query()->whereIn('id', $ids)->update([
-                'stock_quantity' => $data['stock_quantity'],
-                'low_stock_notified' => false,
-            ]),
-            'update_price' => Product::query()->whereIn('id', $ids)->update(['price' => $data['price']]),
+            'delete' => $products->each->delete(),
+            'activate' => $products->each(fn (Product $product) => $product->update(['is_active' => true])),
+            'deactivate' => $products->each(fn (Product $product) => $product->update(['is_active' => false])),
+            'assign_category' => $products->each(fn (Product $product) => $product->categories()->syncWithoutDetaching([$data['category_id']])),
+            'update_stock' => $products->each(fn (Product $product) => $product->update(['stock_quantity' => $data['stock_quantity']])),
+            'update_price' => $products->each(fn (Product $product) => $product->update(['price' => $data['price']])),
         };
 
         $message = match ($data['action']) {
