@@ -24,6 +24,8 @@ interface Product {
     name: string;
     slug: string;
     description: string | null;
+    meta_title: string | null;
+    meta_description: string | null;
     price: number;
     compare_price: number | null;
     stock_quantity: number;
@@ -100,6 +102,35 @@ const selectedCategoryIds = props.product.categories.map((c) => c.id);
                         class="flex w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     />
                     <InputError :message="errors.description" />
+                </div>
+
+                <!-- SEO -->
+                <div class="grid gap-4 rounded-lg border border-sidebar-border p-4">
+                    <p class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">SEO</p>
+                    <div class="grid gap-2">
+                        <Label for="meta_title">Meta Title</Label>
+                        <Input
+                            id="meta_title"
+                            name="meta_title"
+                            :default-value="product.meta_title ?? undefined"
+                            placeholder="Page title for search engines"
+                        />
+                        <p class="text-xs text-muted-foreground">Leave blank to use product name.</p>
+                        <InputError :message="errors.meta_title" />
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="meta_description">Meta Description</Label>
+                        <textarea
+                            id="meta_description"
+                            name="meta_description"
+                            rows="3"
+                            :value="product.meta_description ?? ''"
+                            placeholder="Brief description for search results"
+                            class="flex w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                        />
+                        <p class="text-xs text-muted-foreground">Recommended: 150–160 characters.</p>
+                        <InputError :message="errors.meta_description" />
+                    </div>
                 </div>
 
                 <!-- Price & Compare Price -->

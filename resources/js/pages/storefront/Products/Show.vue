@@ -8,15 +8,18 @@ import { computed, ref, watch } from 'vue';
 
 const { y: scrollY } = useWindowScroll();
 const showStickyBar = computed(() => scrollY.value > 600);
-import { index as productsIndex } from '@/actions/App/Http/Controllers/Storefront/ProductController';
+import { index as productsIndex, show as showProduct } from '@/actions/App/Http/Controllers/Storefront/ProductController';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';
 import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
-import type { StorefrontProduct, StorefrontVariant } from '@/types/storefront';
+import type { StorefrontProduct, StorefrontRelatedProduct, StorefrontVariant } from '@/types/storefront';
 
 const props = defineProps<{
     product: StorefrontProduct;
 }>();
+
+const metaTitle = computed(() => props.product.meta_title || props.product.name);
+const metaDescription = computed(() => props.product.meta_description || props.product.description || '');
 
 const { addItem, lastAddedItem } = useCart();
 const { formatPrice } = usePrice();
@@ -131,7 +134,12 @@ function handleAddToCart(): void {
 </script>
 
 <template>
-    <Head :title="product.name" />
+    <Head :title="metaTitle">
+        <meta name="description" :content="metaDescription" />
+        <meta property="og:title" :content="metaTitle" />
+        <meta property="og:description" :content="metaDescription" />
+        <meta v-if="product.images[0]" property="og:image" :content="product.images[0].url" />
+    </Head>
 
     <StorefrontLayout>
         <!-- Breadcrumb -->
@@ -449,6 +457,53 @@ function handleAddToCart(): void {
                         </div>
                     </div>
                 </div>
+            </div>
+        <!-- Related Products -->
+        <div
+            v-if="product.related_products && product.related_products.length > 0"
+            class="mx-auto max-w-7xl px-6 py-12"
+        >
+            <div
+                class="mb-6 h-px"
+                style="background-color: rgba(28, 26, 23, 0.1)"
+            />
+            <h2
+                class="mb-8 text-2xl font-semibold"
+                style="font-family: 'Cormorant Garamond', serif; color: #1c1a17"
+            >
+                You May Also Like
+            </h2>
+            <div class="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+                <Link
+                    v-for="related in product.related_products"
+                    :key="related.id"
+                    :href="showProduct({ product: related }).url"
+                    class="group flex flex-col"
+                >
+                    <div
+                        class="relative mb-3 aspect-square overflow-hidden rounded-xl"
+                        style="background: linear-gradient(135deg, #e8dfd4 0%, #d4c8b8 100%)"
+                    >
+                        <img
+                            v-if="related.images.length > 0"
+                            :src="related.images[0].url"
+                            :alt="related.images[0].alt_text ?? related.name"
+                            class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div v-else class="flex h-full w-full items-center justify-center">
+                            <span
+                                class="text-4xl font-medium"
+                                style="font-family: 'Cormorant Garamond', serif; color: rgba(28, 26, 23, 0.2)"
+                            >
+                                {{ related.name.charAt(0) }}
+                            </span>
+                        </div>
+                    </div>
+                    <p class="text-sm font-medium" style="color: #1c1a17">{{ related.name }}</p>
+                    <p class="mt-0.5 text-sm" style="color: rgba(28, 26, 23, 0.6)">
+                        {{ formatPrice(related.price) }}
+                    </p>
+                </Link>
             </div>
         </div>
     </StorefrontLayout>

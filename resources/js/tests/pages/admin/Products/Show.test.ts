@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ShowPage from '@/pages/admin/Products/Show.vue';
 
 vi.mock('@inertiajs/vue3', () => ({
@@ -9,7 +9,7 @@ vi.mock('@inertiajs/vue3', () => ({
         template: '<a href="#"><slot /></a>',
         props: ['href'],
     },
-    router: { delete: vi.fn(), put: vi.fn() },
+    router: { delete: vi.fn(), put: vi.fn(), post: vi.fn() },
     useForm: vi.fn((initial: Record<string, unknown>) => ({
         ...initial,
         post: vi.fn(),
@@ -83,11 +83,20 @@ vi.mock('@/actions/App/Http/Controllers/Admin/ProductImageController', () => ({
     })),
 }));
 
+vi.mock('@/actions/App/Http/Controllers/Admin/ProductRelatedController', () => ({
+    store: vi.fn(() => ({ url: '/dashboard/products/test-product/related' })),
+    destroy: vi.fn(() => ({
+        url: '/dashboard/products/test-product/related/other-product',
+    })),
+}));
+
 const baseProduct = {
     id: 1,
     name: 'Test Product',
     slug: 'test-product',
     description: 'A test description',
+    meta_title: null as string | null,
+    meta_description: null as string | null,
     price: 1999,
     compare_price: 2999,
     stock_quantity: 50,
@@ -97,21 +106,39 @@ const baseProduct = {
     images: [] as Array<{
         id: number;
         path: string;
+        url?: string;
         alt_text: string | null;
         sort_order: number;
     }>,
     options: [],
     variants: [],
+    related_products: [] as Array<{
+        id: number;
+        name: string;
+        slug: string;
+        images: Array<{ id: number; path: string; url: string; alt_text: string | null; sort_order: number }>;
+    }>,
 };
 
+const baseAvailableProducts = [
+    { id: 2, name: 'Other Product A', slug: 'other-product-a' },
+    { id: 3, name: 'Other Product B', slug: 'other-product-b' },
+];
+
 describe('admin/Products/Show — Images section', () => {
+    let wrapper: ReturnType<typeof mount>;
+
+    beforeEach(() => {
+        wrapper = mount(ShowPage, {
+            props: { product: baseProduct, availableProducts: baseAvailableProducts },
+        });
+    });
+
     it('renders the Images heading', () => {
-        const wrapper = mount(ShowPage, { props: { product: baseProduct } });
         expect(wrapper.text()).toContain('Images');
     });
 
     it('shows empty state when no images', () => {
-        const wrapper = mount(ShowPage, { props: { product: baseProduct } });
         expect(wrapper.text()).toContain('No images yet');
     });
 
@@ -119,22 +146,12 @@ describe('admin/Products/Show — Images section', () => {
         const product = {
             ...baseProduct,
             images: [
-                {
-                    id: 1,
-                    path: 'products/1/a.jpg',
-                    alt_text: 'Photo A',
-                    sort_order: 0,
-                },
-                {
-                    id: 2,
-                    path: 'products/1/b.jpg',
-                    alt_text: null,
-                    sort_order: 1,
-                },
+                { id: 1, path: 'products/1/a.jpg', alt_text: 'Photo A', sort_order: 0 },
+                { id: 2, path: 'products/1/b.jpg', alt_text: null, sort_order: 1 },
             ],
         };
-        const wrapper = mount(ShowPage, { props: { product } });
-        const imgs = wrapper.findAll('img');
+        const w = mount(ShowPage, { props: { product, availableProducts: baseAvailableProducts } });
+        const imgs = w.findAll('img');
         expect(imgs.length).toBeGreaterThanOrEqual(2);
         expect(imgs[0].attributes('src')).toBe('/storage/products/1/a.jpg');
         expect(imgs[0].attributes('alt')).toBe('Photo A');
@@ -145,26 +162,15 @@ describe('admin/Products/Show — Images section', () => {
         const product = {
             ...baseProduct,
             images: [
-                {
-                    id: 1,
-                    path: 'products/1/a.jpg',
-                    alt_text: null,
-                    sort_order: 0,
-                },
-                {
-                    id: 2,
-                    path: 'products/1/b.jpg',
-                    alt_text: null,
-                    sort_order: 1,
-                },
+                { id: 1, path: 'products/1/a.jpg', alt_text: null, sort_order: 0 },
+                { id: 2, path: 'products/1/b.jpg', alt_text: null, sort_order: 1 },
             ],
         };
-        const wrapper = mount(ShowPage, { props: { product } });
-        expect(wrapper.text()).toContain('Primary');
+        const w = mount(ShowPage, { props: { product, availableProducts: baseAvailableProducts } });
+        expect(w.text()).toContain('Primary');
     });
 
     it('renders file upload input', () => {
-        const wrapper = mount(ShowPage, { props: { product: baseProduct } });
         const fileInput = wrapper.find('input[type="file"]');
         expect(fileInput.exists()).toBe(true);
         expect(fileInput.attributes('multiple')).toBeDefined();
@@ -172,7 +178,6 @@ describe('admin/Products/Show — Images section', () => {
     });
 
     it('renders Upload button', () => {
-        const wrapper = mount(ShowPage, { props: { product: baseProduct } });
         expect(wrapper.text()).toContain('Upload');
     });
 
@@ -180,23 +185,12 @@ describe('admin/Products/Show — Images section', () => {
         const product = {
             ...baseProduct,
             images: [
-                {
-                    id: 1,
-                    path: 'products/1/a.jpg',
-                    alt_text: null,
-                    sort_order: 0,
-                },
-                {
-                    id: 2,
-                    path: 'products/1/b.jpg',
-                    alt_text: null,
-                    sort_order: 1,
-                },
+                { id: 1, path: 'products/1/a.jpg', alt_text: null, sort_order: 0 },
+                { id: 2, path: 'products/1/b.jpg', alt_text: null, sort_order: 1 },
             ],
         };
-        const wrapper = mount(ShowPage, { props: { product } });
-        // Each image has an X (delete) button — find buttons with destructive variant
-        const imageSection = wrapper.findAll('.group');
+        const w = mount(ShowPage, { props: { product, availableProducts: baseAvailableProducts } });
+        const imageSection = w.findAll('.group');
         expect(imageSection).toHaveLength(2);
     });
 
@@ -204,29 +198,95 @@ describe('admin/Products/Show — Images section', () => {
         const product = {
             ...baseProduct,
             images: [
-                {
-                    id: 1,
-                    path: 'products/1/a.jpg',
-                    alt_text: null,
-                    sort_order: 0,
-                },
-                {
-                    id: 2,
-                    path: 'products/1/b.jpg',
-                    alt_text: null,
-                    sort_order: 1,
-                },
-                {
-                    id: 3,
-                    path: 'products/1/c.jpg',
-                    alt_text: null,
-                    sort_order: 2,
-                },
+                { id: 1, path: 'products/1/a.jpg', alt_text: null, sort_order: 0 },
+                { id: 2, path: 'products/1/b.jpg', alt_text: null, sort_order: 1 },
+                { id: 3, path: 'products/1/c.jpg', alt_text: null, sort_order: 2 },
             ],
         };
-        const wrapper = mount(ShowPage, { props: { product } });
-        // The middle image should have both up and down buttons
-        const groups = wrapper.findAll('.group');
+        const w = mount(ShowPage, { props: { product, availableProducts: baseAvailableProducts } });
+        const groups = w.findAll('.group');
         expect(groups).toHaveLength(3);
+    });
+});
+
+describe('admin/Products/Show — SEO section', () => {
+    it('does not render SEO section when meta fields are null', () => {
+        const wrapper = mount(ShowPage, {
+            props: { product: baseProduct, availableProducts: baseAvailableProducts },
+        });
+        expect(wrapper.text()).not.toContain('Meta Title');
+    });
+
+    it('renders meta_title when set', () => {
+        const product = { ...baseProduct, meta_title: 'Custom SEO Title' };
+        const wrapper = mount(ShowPage, {
+            props: { product, availableProducts: baseAvailableProducts },
+        });
+        expect(wrapper.text()).toContain('Custom SEO Title');
+        expect(wrapper.text()).toContain('Meta Title');
+    });
+
+    it('renders meta_description when set', () => {
+        const product = { ...baseProduct, meta_description: 'A short SEO blurb.' };
+        const wrapper = mount(ShowPage, {
+            props: { product, availableProducts: baseAvailableProducts },
+        });
+        expect(wrapper.text()).toContain('A short SEO blurb.');
+        expect(wrapper.text()).toContain('Meta Description');
+    });
+});
+
+describe('admin/Products/Show — Related Products section', () => {
+    it('renders the Related Products heading', () => {
+        const wrapper = mount(ShowPage, {
+            props: { product: baseProduct, availableProducts: baseAvailableProducts },
+        });
+        expect(wrapper.text()).toContain('Related Products');
+    });
+
+    it('shows empty state when no related products', () => {
+        const wrapper = mount(ShowPage, {
+            props: { product: baseProduct, availableProducts: baseAvailableProducts },
+        });
+        expect(wrapper.text()).toContain('No related products yet');
+    });
+
+    it('displays related product names', () => {
+        const product = {
+            ...baseProduct,
+            related_products: [
+                { id: 2, name: 'Related Item', slug: 'related-item', images: [] },
+            ],
+        };
+        const wrapper = mount(ShowPage, {
+            props: { product, availableProducts: baseAvailableProducts },
+        });
+        expect(wrapper.text()).toContain('Related Item');
+    });
+
+    it('renders the product selector dropdown', () => {
+        const wrapper = mount(ShowPage, {
+            props: { product: baseProduct, availableProducts: baseAvailableProducts },
+        });
+        const select = wrapper.findAll('select').find((s) => s.text().includes('Select a product'));
+        expect(select).toBeDefined();
+    });
+
+    it('available products appear as options in the selector', () => {
+        const wrapper = mount(ShowPage, {
+            props: { product: baseProduct, availableProducts: baseAvailableProducts },
+        });
+        const options = wrapper.findAll('option');
+        const texts = options.map((o) => o.text());
+        expect(texts).toContain('Other Product A');
+        expect(texts).toContain('Other Product B');
+    });
+
+    it('Add button is disabled when no product is selected', () => {
+        const wrapper = mount(ShowPage, {
+            props: { product: baseProduct, availableProducts: baseAvailableProducts },
+        });
+        const addButton = wrapper.findAll('button').find((b) => b.text().trim() === 'Add');
+        expect(addButton?.attributes('disabled')).toBeDefined();
     });
 });

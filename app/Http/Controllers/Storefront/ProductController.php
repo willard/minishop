@@ -49,6 +49,9 @@ class ProductController extends Controller
             'options.values',
             'variants.optionValues',
             'variants.images',
+            'relatedProducts' => function ($query): void {
+                $query->where('is_active', true)->with('images')->limit(8);
+            },
         ]);
 
         return Inertia::render('storefront/Products/Show', [

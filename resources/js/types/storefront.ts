@@ -43,11 +43,22 @@ export interface StorefrontVariant {
     images?: StorefrontProductImage[];
 }
 
+export interface StorefrontRelatedProduct {
+    id: number;
+    name: string;
+    slug: string;
+    price: number;
+    compare_price: number | null;
+    images: StorefrontProductImage[];
+}
+
 export interface StorefrontProduct {
     id: number;
     name: string;
     slug: string;
     description: string | null;
+    meta_title: string | null;
+    meta_description: string | null;
     price: number;
     compare_price: number | null;
     sku: string | null;
@@ -57,6 +68,7 @@ export interface StorefrontProduct {
     images: StorefrontProductImage[];
     options?: StorefrontOption[];
     variants?: StorefrontVariant[];
+    related_products?: StorefrontRelatedProduct[];
 }
 
 export interface CartItem {

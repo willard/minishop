@@ -115,10 +115,17 @@ class ProductController extends Controller
     {
         $this->authorize('view', $product);
 
-        $product->load(['categories', 'images', 'options.values', 'variants.optionValues.option', 'variants.images']);
+        $product->load(['categories', 'images', 'options.values', 'variants.optionValues.option', 'variants.images', 'relatedProducts.images']);
+
+        $availableProducts = Product::query()
+            ->where('id', '!=', $product->id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
 
         return Inertia::render('admin/Products/Show', [
             'product' => $product,
+            'availableProducts' => $availableProducts,
         ]);
     }
 

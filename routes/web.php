@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ProductBulkActionController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductImageController;
 use App\Http\Controllers\Admin\ProductOptionController;
+use App\Http\Controllers\Admin\ProductRelatedController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\ReturnController;
 use App\Http\Controllers\Admin\ShippingMethodController;
@@ -74,6 +75,8 @@ Route::middleware(['auth', 'verified', 'role:super-admin|admin|manager'])->prefi
     Route::resource('products', ProductController::class);
     Route::resource('products.variants', ProductVariantController::class)->except(['index', 'show'])->scoped();
     Route::resource('products.options', ProductOptionController::class)->only(['create', 'store', 'destroy'])->scoped();
+    Route::post('products/{product}/related', [ProductRelatedController::class, 'store'])->name('products.related.store');
+    Route::delete('products/{product}/related/{related}', [ProductRelatedController::class, 'destroy'])->name('products.related.destroy');
     Route::post('products/{product}/images', [ProductImageController::class, 'store'])->name('products.images.store');
     Route::put('products/{product}/images/reorder', [ProductImageController::class, 'reorder'])->name('products.images.reorder');
     Route::delete('products/{product}/images/{image}', [ProductImageController::class, 'destroy'])->name('products.images.destroy');
