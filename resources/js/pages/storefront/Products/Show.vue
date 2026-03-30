@@ -134,11 +134,12 @@ function handleAddToCart(): void {
 </script>
 
 <template>
-    <Head :title="metaTitle">
-        <meta name="description" :content="metaDescription" />
-        <meta property="og:title" :content="metaTitle" />
-        <meta property="og:description" :content="metaDescription" />
-        <meta v-if="product.images[0]" property="og:image" :content="product.images[0].url" />
+    <Head>
+        <title>{{ metaTitle }}</title>
+        <meta head-key="description" name="description" :content="metaDescription" />
+        <meta head-key="og:title" property="og:title" :content="metaTitle" />
+        <meta head-key="og:description" property="og:description" :content="metaDescription" />
+        <meta v-if="product.images[0]" head-key="og:image" property="og:image" :content="product.images[0].url" />
     </Head>
 
     <StorefrontLayout>
@@ -505,6 +506,7 @@ function handleAddToCart(): void {
                     </p>
                 </Link>
             </div>
+        </div>
         </div>
     </StorefrontLayout>
 

@@ -13,11 +13,11 @@ class ProductRelatedController extends Controller
     {
         $this->authorize('update', $product);
 
-        $request->validate([
-            'related_product_id' => ['required', 'integer', 'exists:products,id', 'different:product_id'],
+        $validated = $request->validate([
+            'related_product_id' => ['required', 'integer', 'exists:products,id'],
         ]);
 
-        $relatedId = (int) $request->input('related_product_id');
+        $relatedId = (int) $validated['related_product_id'];
 
         if ($relatedId === $product->id) {
             return back()->withErrors(['related_product_id' => 'A product cannot be related to itself.']);
