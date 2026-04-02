@@ -3,27 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreProductRelatedRequest;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 class ProductRelatedController extends Controller
 {
-    public function store(Request $request, Product $product): RedirectResponse
+    public function store(StoreProductRelatedRequest $request, Product $product): RedirectResponse
     {
         $this->authorize('update', $product);
 
-        $validated = $request->validate([
-            'related_product_id' => ['required', 'integer', 'exists:products,id'],
-        ]);
-
-        $relatedId = (int) $validated['related_product_id'];
-
-        if ($relatedId === $product->id) {
-            return back()->withErrors(['related_product_id' => 'A product cannot be related to itself.']);
-        }
-
-        $product->relatedProducts()->syncWithoutDetaching([$relatedId]);
+        $product->relatedProducts()->syncWithoutDetaching([$request->integer('related_product_id')]);
 
         return back()->with('success', 'Related product added.');
     }
