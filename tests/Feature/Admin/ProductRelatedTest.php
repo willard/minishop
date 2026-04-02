@@ -122,6 +122,70 @@ class ProductRelatedTest extends TestCase
         ]);
     }
 
+    // ── Admin Show page ───────────────────────────────────────────────────────
+
+    public function test_admin_show_page_lists_related_products(): void
+    {
+        $product = Product::factory()->create();
+        $related = Product::factory()->create();
+        $product->relatedProducts()->attach($related->id);
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.products.show', $product))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('admin/Products/Show')
+                ->has('product.related_products', 1)
+                ->where('product.related_products.0.id', $related->id)
+            );
+    }
+
+    public function test_admin_show_page_related_products_empty_after_removal(): void
+    {
+        $product = Product::factory()->create();
+        $related = Product::factory()->create();
+        $product->relatedProducts()->attach($related->id);
+
+        $this->actingAs($this->admin())
+            ->delete(route('admin.products.related.destroy', [$product, $related]))
+            ->assertRedirect();
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.products.show', $product))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('product.related_products', 0)
+            );
+    }
+
+    public function test_admin_show_available_products_excludes_current_product(): void
+    {
+        $product = Product::factory()->create();
+        Product::factory(2)->create();
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.products.show', $product))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('availableProducts', 2)
+                ->where('availableProducts', fn ($products) => ! collect($products)->contains('id', $product->id))
+            );
+    }
+
+    public function test_admin_show_available_products_only_includes_active_products(): void
+    {
+        $product = Product::factory()->create();
+        Product::factory()->create();
+        Product::factory()->inactive()->create();
+
+        $this->actingAs($this->admin())
+            ->get(route('admin.products.show', $product))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('availableProducts', 1)
+            );
+    }
+
     // ── SEO fields ────────────────────────────────────────────────────────────
 
     public function test_admin_can_store_product_with_seo_fields(): void

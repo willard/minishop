@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "full-stack",
-      "runtimeExecutable": "composer",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": ["-c", "export PATH=/opt/homebrew/bin:$PATH && /opt/homebrew/bin/composer run dev"],
       "port": 8000,
       "autoPort": true
     },

@@ -103,6 +103,76 @@ class ProductTest extends TestCase
             );
     }
 
+    public function test_product_show_includes_seo_meta_fields(): void
+    {
+        $product = Product::factory()->create([
+            'meta_title' => 'Custom SEO Title',
+            'meta_description' => 'A custom meta description for search engines.',
+        ]);
+
+        $this->get(route('storefront.products.show', $product))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('product.meta_title', 'Custom SEO Title')
+                ->where('product.meta_description', 'A custom meta description for search engines.')
+            );
+    }
+
+    public function test_product_show_related_products_appear_with_correct_slugs(): void
+    {
+        $product = Product::factory()->create();
+        $related1 = Product::factory()->create();
+        $related2 = Product::factory()->create();
+        $product->relatedProducts()->attach([$related1->id, $related2->id]);
+
+        $this->get(route('storefront.products.show', $product))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('product.related_products', 2)
+                ->where('product.related_products.0.slug', $related1->slug)
+                ->where('product.related_products.1.slug', $related2->slug)
+            );
+    }
+
+    public function test_product_show_excludes_inactive_related_products(): void
+    {
+        $product = Product::factory()->create();
+        $activeRelated = Product::factory()->create();
+        $inactiveRelated = Product::factory()->inactive()->create();
+        $product->relatedProducts()->attach([$activeRelated->id, $inactiveRelated->id]);
+
+        $this->get(route('storefront.products.show', $product))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('product.related_products', 1)
+                ->where('product.related_products.0.id', $activeRelated->id)
+            );
+    }
+
+    public function test_product_show_limits_related_products_to_eight(): void
+    {
+        $product = Product::factory()->create();
+        $relatedProducts = Product::factory(10)->create();
+        $product->relatedProducts()->attach($relatedProducts->pluck('id')->toArray());
+
+        $this->get(route('storefront.products.show', $product))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('product.related_products', 8)
+            );
+    }
+
+    public function test_product_show_has_no_related_products_when_none_added(): void
+    {
+        $product = Product::factory()->create();
+
+        $this->get(route('storefront.products.show', $product))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('product.related_products', 0)
+            );
+    }
+
     public function test_product_show_images_only_contains_product_level_images(): void
     {
         $product = Product::factory()->create();
