@@ -11,7 +11,7 @@ import {
     Upload,
     X,
 } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import {
     index,
     edit,
@@ -26,6 +26,10 @@ import {
     create as createOption,
     destroy as destroyOption,
 } from '@/actions/App/Http/Controllers/Admin/ProductOptionController';
+import {
+    store as storeRelated,
+    destroy as destroyRelated,
+} from '@/actions/App/Http/Controllers/Admin/ProductRelatedController';
 import {
     create as createVariant,
     edit as editVariant,
@@ -78,11 +82,26 @@ interface ProductVariant {
     images: ProductImage[];
 }
 
+interface RelatedProduct {
+    id: number;
+    name: string;
+    slug: string;
+    images: ProductImage[];
+}
+
+interface AvailableProduct {
+    id: number;
+    name: string;
+    slug: string;
+}
+
 interface Product {
     id: number;
     name: string;
     slug: string;
     description: string | null;
+    meta_title: string | null;
+    meta_description: string | null;
     price: number;
     compare_price: number | null;
     stock_quantity: number;
@@ -92,10 +111,12 @@ interface Product {
     images: ProductImage[];
     options: ProductOption[];
     variants: ProductVariant[];
+    related_products: RelatedProduct[];
 }
 
 const props = defineProps<{
     product: Product;
+    availableProducts: AvailableProduct[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -180,6 +201,38 @@ function confirmDeleteOption(option: ProductOption): void {
         )
     ) {
         router.delete(destroyOption({ product: props.product, option }).url);
+    }
+}
+
+const selectedRelatedId = ref<number | ''>('');
+const relatedAlreadyAdded = computed(() =>
+    props.product.related_products.map((p) => p.id),
+);
+const availableToAdd = computed(() =>
+    props.availableProducts.filter((p) => !relatedAlreadyAdded.value.includes(p.id)),
+);
+
+function addRelated(): void {
+    if (!selectedRelatedId.value) {
+        return;
+    }
+    router.post(
+        storeRelated(props.product).url,
+        { related_product_id: selectedRelatedId.value },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                selectedRelatedId.value = '';
+            },
+        },
+    );
+}
+
+function confirmRemoveRelated(related: RelatedProduct): void {
+    if (confirm(`Remove "${related.name}" from related products?`)) {
+        router.delete(destroyRelated({ product: props.product, related }).url, {
+            preserveScroll: true,
+        });
     }
 }
 
@@ -383,6 +436,23 @@ function moveImage(fromIndex: number, toIndex: number): void {
                     <p class="text-sm whitespace-pre-wrap">
                         {{ product.description }}
                     </p>
+                </div>
+
+                <!-- SEO -->
+                <div v-if="product.meta_title || product.meta_description" class="px-4 py-3">
+                    <p class="mb-2 text-xs tracking-wide text-muted-foreground uppercase">
+                        SEO
+                    </p>
+                    <div class="flex flex-col gap-2">
+                        <div v-if="product.meta_title">
+                            <p class="text-xs text-muted-foreground">Meta Title</p>
+                            <p class="text-sm">{{ product.meta_title }}</p>
+                        </div>
+                        <div v-if="product.meta_description">
+                            <p class="text-xs text-muted-foreground">Meta Description</p>
+                            <p class="text-sm text-muted-foreground">{{ product.meta_description }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -797,6 +867,73 @@ function moveImage(fromIndex: number, toIndex: number): void {
                                 </Button>
                             </form>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Related Products -->
+            <div class="overflow-hidden rounded-lg border border-sidebar-border">
+                <div class="flex items-center justify-between border-b border-sidebar-border bg-muted/50 px-4 py-3">
+                    <h2 class="text-sm font-semibold">Related Products / Upsells</h2>
+                </div>
+
+                <div v-if="product.related_products.length === 0" class="px-4 py-6 text-center text-sm text-muted-foreground">
+                    No related products yet.
+                </div>
+
+                <div v-else class="divide-y divide-sidebar-border">
+                    <div
+                        v-for="related in product.related_products"
+                        :key="related.id"
+                        class="flex items-center justify-between px-4 py-3"
+                    >
+                        <div class="flex items-center gap-3">
+                            <img
+                                v-if="related.images.length > 0"
+                                :src="`/storage/${related.images[0].path}`"
+                                :alt="related.name"
+                                class="size-10 rounded-md border border-sidebar-border object-cover"
+                            />
+                            <div
+                                v-else
+                                class="flex size-10 items-center justify-center rounded-md border border-sidebar-border bg-muted text-xs text-muted-foreground"
+                            >
+                                —
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium">{{ related.name }}</p>
+                                <p class="font-mono text-xs text-muted-foreground">{{ related.slug }}</p>
+                            </div>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            class="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                            @click="confirmRemoveRelated(related)"
+                        >
+                            <X class="size-3" />
+                        </Button>
+                    </div>
+                </div>
+
+                <div class="border-t border-sidebar-border px-4 py-3">
+                    <div class="flex items-center gap-2">
+                        <select
+                            v-model="selectedRelatedId"
+                            class="flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        >
+                            <option value="">Select a product…</option>
+                            <option
+                                v-for="p in availableToAdd"
+                                :key="p.id"
+                                :value="p.id"
+                            >
+                                {{ p.name }}
+                            </option>
+                        </select>
+                        <Button size="sm" :disabled="!selectedRelatedId" @click="addRelated">
+                            <Plus class="mr-1 size-3" />
+                            Add
+                        </Button>
                     </div>
                 </div>
             </div>
