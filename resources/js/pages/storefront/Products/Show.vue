@@ -12,7 +12,7 @@ import { index as productsIndex, show as showProduct } from '@/actions/App/Http/
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';
 import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
-import type { StorefrontProduct, StorefrontRelatedProduct, StorefrontVariant } from '@/types/storefront';
+import type { StorefrontProduct, StorefrontVariant } from '@/types/storefront';
 
 const props = defineProps<{
     product: StorefrontProduct;
