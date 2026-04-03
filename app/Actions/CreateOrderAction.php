@@ -61,7 +61,7 @@ class CreateOrderAction
                     ->whereRaw('UPPER(code) = ?', [strtoupper($data['coupon_code'])])
                     ->first();
 
-                if ($coupon && $coupon->isValid($subtotal)) {
+                if ($coupon?->isValid($subtotal)) {
                     $discountAmount = $coupon->calculateDiscount($subtotal);
                 }
             }
@@ -72,9 +72,8 @@ class CreateOrderAction
 
             $shippingAmount = $this->resolveShippingAmount($shippingMethod, $data);
 
-            $settings = StoreSettings::current();
             $taxableAmount = max(0, $subtotal - $discountAmount);
-            $taxAmount = (int) round($taxableAmount * (float) ($settings->tax_rate ?? 0) / 100);
+            $taxAmount = (int) round($taxableAmount * (StoreSettings::current()->tax_rate ?? 0) / 100);
             $totalAmount = max(0, $taxableAmount + $shippingAmount + $taxAmount);
 
             $order = Order::query()->create([

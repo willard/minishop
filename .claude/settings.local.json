@@ -113,7 +113,9 @@
       "mcp__laravel-boost__list-routes",
       "Bash(gh run:*)",
       "Bash(ls /Users/willardmacay/Devs/ai/minishop/.env*)",
-      "Bash(php -r \":*)"
+      "Bash(php -r \":*)",
+      "Bash(gh:*)",
+      "Bash(php /tmp/test_session.php)"
     ]
   },
   "enableAllProjectMcpServers": true,

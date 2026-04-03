@@ -20,22 +20,20 @@ class CheckoutShippingRatesController extends Controller
 
         $rates = [];
 
-        foreach ($methods as $method) {
-            if ($method->isFlatRate()) {
-                $rates[] = [
-                    'shipping_method_id' => $method->id,
-                    'carrier' => null,
-                    'service_code' => null,
-                    'name' => $method->name,
-                    'description' => $method->description,
-                    'amount_cents' => $method->effective_price,
-                    'type' => ShippingMethodType::FlatRate->value,
-                    'expected_delivery' => null,
-                ];
-            }
+        foreach ($methods->filter->isFlatRate() as $method) {
+            $rates[] = [
+                'shipping_method_id' => $method->id,
+                'carrier' => null,
+                'service_code' => null,
+                'name' => $method->name,
+                'description' => $method->description,
+                'amount_cents' => $method->effective_price,
+                'type' => ShippingMethodType::FlatRate->value,
+                'expected_delivery' => null,
+            ];
         }
 
-        $calculatedMethods = $methods->filter(fn ($m) => $m->isCalculated());
+        $calculatedMethods = $methods->filter->isCalculated();
         $settings = StoreSettings::current();
 
         if ($calculatedMethods->isNotEmpty() && $settings->origin_postcode) {
@@ -61,11 +59,9 @@ class CheckoutShippingRatesController extends Controller
                     ];
                 }
 
-                // Store quotes in the session so CreateOrderAction can resolve
-                // the authoritative amount without trusting the client.
                 // Using the session (not an external cache) guarantees the same
                 // key is available in the subsequent checkout POST.
-                $request->session()->put('shipping_quotes', collect($carrierRates)->map(fn ($r) => [
+                $request->session()->put('shipping_quotes', $carrierRates->map(fn ($r) => [
                     'carrier' => $r->carrier,
                     'service_code' => $r->serviceCode,
                     'amount_cents' => $r->amountCents,

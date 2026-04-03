@@ -77,16 +77,11 @@ class ShippingRateService
      */
     public function buildShipmentData(string $postcode, string $country, array $items): ShipmentData
     {
-        $settings = StoreSettings::current();
-        $originPostcode = $settings->origin_postcode ?? '';
-
-        $weightGrams = $this->calculateTotalWeight($items);
-
         return new ShipmentData(
-            originPostcode: $originPostcode,
+            originPostcode: StoreSettings::current()->origin_postcode ?? '',
             destinationPostcode: $postcode,
             destinationCountry: $country,
-            weightGrams: max(1, $weightGrams),
+            weightGrams: max(1, $this->calculateTotalWeight($items)),
         );
     }
 
@@ -117,16 +112,10 @@ class ShippingRateService
 
         foreach ($items as $item) {
             $quantity = (int) ($item['quantity'] ?? 1);
-            $variantId = $item['variant_id'] ?? null;
-            $productId = $item['product_id'];
+            $variant = $variants->get($item['variant_id'] ?? null);
+            $product = $products->get($item['product_id']);
 
-            $weight = 500; // default fallback per item
-
-            if ($variantId && isset($variants[$variantId]) && $variants[$variantId]->weight_grams) {
-                $weight = $variants[$variantId]->weight_grams;
-            } elseif (isset($products[$productId]) && $products[$productId]->weight_grams) {
-                $weight = $products[$productId]->weight_grams;
-            }
+            $weight = $variant?->weight_grams ?? $product?->weight_grams ?? 500;
 
             $totalWeight += $weight * $quantity;
         }
