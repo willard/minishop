@@ -66,11 +66,20 @@ class CanadaPostCarrier implements ShippingCarrierContract
         $scenario->appendChild($originNode);
 
         $destination = $doc->createElement('destination');
-        $domestic = $doc->createElement('domestic');
-        $domestic->appendChild($doc->createElement('postal-code', htmlspecialchars(
-            strtoupper(preg_replace('/\s+/', '', $shipment->destinationPostcode))
-        )));
-        $destination->appendChild($domestic);
+        $postcode = strtoupper(preg_replace('/\s+/', '', $shipment->destinationPostcode));
+
+        if ($shipment->destinationCountry === 'US') {
+            $countryNode = $doc->createElement('usa');
+            $countryNode->appendChild($doc->createElement('zip-code', htmlspecialchars($postcode)));
+        } elseif ($shipment->destinationCountry === 'CA') {
+            $countryNode = $doc->createElement('domestic');
+            $countryNode->appendChild($doc->createElement('postal-code', htmlspecialchars($postcode)));
+        } else {
+            $countryNode = $doc->createElement('international');
+            $countryNode->appendChild($doc->createElement('country-code', htmlspecialchars($shipment->destinationCountry)));
+        }
+
+        $destination->appendChild($countryNode);
         $scenario->appendChild($destination);
 
         return $doc->saveXML();
