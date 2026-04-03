@@ -15,6 +15,7 @@ class StoreSettings extends Model
         'paymongo_secret_key',
         'paymongo_webhook_secret',
         'low_stock_threshold',
+        'origin_postcode',
     ];
 
     protected function casts(): array

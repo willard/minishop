@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Enums\ShippingMethodType;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
@@ -34,6 +35,9 @@ class CreateOrderAction
      *     }>,
      *     coupon_code: string|null,
      *     shipping_method_id: int|null,
+     *     carrier: string|null,
+     *     service_code: string|null,
+     *     session_id: string|null,
      *     shipping_name: string,
      *     shipping_address_line1: string,
      *     shipping_address_line2: string|null,
@@ -65,7 +69,8 @@ class CreateOrderAction
             $shippingMethod = isset($data['shipping_method_id'])
                 ? ShippingMethod::query()->find($data['shipping_method_id'])
                 : null;
-            $shippingAmount = $shippingMethod ? ($shippingMethod->is_free ? 0 : $shippingMethod->price) : 0;
+
+            $shippingAmount = $this->resolveShippingAmount($shippingMethod, $data);
 
             $settings = StoreSettings::current();
             $taxableAmount = max(0, $subtotal - $discountAmount);
@@ -121,5 +126,43 @@ class CreateOrderAction
 
             return $order;
         });
+    }
+
+    /**
+     * Resolves the shipping amount server-side.
+     * For calculated methods, looks up the amount from the session-cached quotes
+     * rather than trusting any client-supplied value.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function resolveShippingAmount(?ShippingMethod $shippingMethod, array $data): int
+    {
+        if (! $shippingMethod) {
+            return 0;
+        }
+
+        if ($shippingMethod->is_free) {
+            return 0;
+        }
+
+        if ($shippingMethod->type === ShippingMethodType::Calculated) {
+            $carrier = $data['carrier'] ?? null;
+            $serviceCode = $data['service_code'] ?? null;
+            $sessionQuotes = $data['session_quotes'] ?? [];
+
+            if ($carrier && $serviceCode && ! empty($sessionQuotes)) {
+                $quote = collect($sessionQuotes)->first(
+                    fn ($q) => $q['carrier'] === $carrier && $q['service_code'] === $serviceCode
+                );
+
+                if ($quote) {
+                    return (int) $quote['amount_cents'];
+                }
+            }
+
+            return 0;
+        }
+
+        return $shippingMethod->price;
     }
 }

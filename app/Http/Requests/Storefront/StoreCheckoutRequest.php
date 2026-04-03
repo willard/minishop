@@ -24,6 +24,8 @@ class StoreCheckoutRequest extends FormRequest
             'postcode' => ['required', 'string', 'max:20'],
             'country' => ['required', 'string', 'size:2'],
             'shipping_method_id' => ['required', 'integer', 'exists:shipping_methods,id'],
+            'carrier' => ['nullable', 'string', 'in:canada_post'],
+            'service_code' => ['nullable', 'string', 'max:50'],
             'coupon_code' => ['nullable', 'string', 'max:50'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'items' => ['required', 'array', 'min:1'],

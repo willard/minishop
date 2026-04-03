@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Enums\ShippingMethodType;
+use App\Models\ShippingMethod;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ShippingMethod>
+ * @extends Factory<ShippingMethod>
  */
 class ShippingMethodFactory extends Factory
 {
@@ -23,6 +25,9 @@ class ShippingMethodFactory extends Factory
             'is_free' => false,
             'is_active' => true,
             'sort_order' => fake()->numberBetween(0, 10),
+            'type' => ShippingMethodType::FlatRate->value,
+            'carrier' => null,
+            'service_code' => null,
         ];
     }
 
@@ -34,5 +39,16 @@ class ShippingMethodFactory extends Factory
     public function inactive(): static
     {
         return $this->state(['is_active' => false]);
+    }
+
+    public function calculated(): static
+    {
+        return $this->state([
+            'type' => ShippingMethodType::Calculated->value,
+            'carrier' => 'canada_post',
+            'service_code' => 'DOM.EP',
+            'price' => 0,
+            'is_free' => false,
+        ]);
     }
 }

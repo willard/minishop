@@ -24,6 +24,7 @@ class Product extends Model
         'compare_price',
         'sku',
         'stock_quantity',
+        'weight_grams',
         'is_active',
         'low_stock_notified',
     ];
@@ -34,6 +35,7 @@ class Product extends Model
             'price' => 'integer',
             'compare_price' => 'integer',
             'stock_quantity' => 'integer',
+            'weight_grams' => 'integer',
             'is_active' => 'boolean',
             'low_stock_notified' => 'boolean',
         ];

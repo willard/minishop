@@ -192,6 +192,66 @@ class CheckoutTest extends TestCase
         $this->assertDatabaseCount('orders', 2);
     }
 
+    public function test_shipping_amount_is_resolved_from_session_quote(): void
+    {
+        $product = Product::factory()->create(['price' => 5000, 'stock_quantity' => 5]);
+        $calculatedMethod = ShippingMethod::factory()->calculated()->create(['service_code' => 'DOM.EP']);
+
+        // Pre-seed the session with a quote as the shipping-rates endpoint would
+        $this->withSession([
+            'shipping_quotes' => [
+                ['carrier' => 'canada_post', 'service_code' => 'DOM.EP', 'amount_cents' => 1250],
+            ],
+        ]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'shipping_method_id' => $calculatedMethod->id,
+            'carrier' => 'canada_post',
+            'service_code' => 'DOM.EP',
+            'items' => [['product_id' => $product->id, 'variant_id' => null, 'quantity' => 1]],
+        ]))->assertRedirect();
+
+        $this->assertDatabaseHas('orders', ['shipping_amount' => 1250]);
+    }
+
+    public function test_calculated_shipping_falls_back_to_zero_when_no_quote_in_session(): void
+    {
+        $product = Product::factory()->create(['price' => 5000, 'stock_quantity' => 5]);
+        $calculatedMethod = ShippingMethod::factory()->calculated()->create();
+
+        // No shipping_quotes in session — rates were never fetched or session expired
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'shipping_method_id' => $calculatedMethod->id,
+            'carrier' => 'canada_post',
+            'service_code' => 'DOM.EP',
+            'items' => [['product_id' => $product->id, 'variant_id' => null, 'quantity' => 1]],
+        ]))->assertRedirect();
+
+        $this->assertDatabaseHas('orders', ['shipping_amount' => 0]);
+    }
+
+    public function test_calculated_shipping_is_zero_when_service_code_does_not_match_quote(): void
+    {
+        $product = Product::factory()->create(['price' => 5000, 'stock_quantity' => 5]);
+        $calculatedMethod = ShippingMethod::factory()->calculated()->create(['service_code' => 'DOM.EP']);
+
+        // Session has DOM.XP but request submits DOM.EP — attacker trying to swap to cheaper rate
+        $this->withSession([
+            'shipping_quotes' => [
+                ['carrier' => 'canada_post', 'service_code' => 'DOM.XP', 'amount_cents' => 2500],
+            ],
+        ]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'shipping_method_id' => $calculatedMethod->id,
+            'carrier' => 'canada_post',
+            'service_code' => 'DOM.EP',
+            'items' => [['product_id' => $product->id, 'variant_id' => null, 'quantity' => 1]],
+        ]))->assertRedirect();
+
+        $this->assertDatabaseHas('orders', ['shipping_amount' => 0]);
+    }
+
     public function test_confirmation_page_renders_with_order(): void
     {
         $product = Product::factory()->create(['price' => 5000, 'stock_quantity' => 5]);
