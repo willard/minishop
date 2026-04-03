@@ -34,6 +34,13 @@ return [
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
     ],
 
+    'canada_post' => [
+        'username' => env('CANADA_POST_USERNAME'),
+        'password' => env('CANADA_POST_PASSWORD'),
+        'customer_number' => env('CANADA_POST_CUSTOMER_NUMBER'),
+        'sandbox' => env('CANADA_POST_SANDBOX', true),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

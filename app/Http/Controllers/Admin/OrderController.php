@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\CreateOrderAction;
 use App\Enums\OrderStatus;
+use App\Enums\ShippingMethodType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreOrderRequest;
 use App\Http\Requests\Admin\UpdateOrderRequest;
@@ -105,6 +106,7 @@ class OrderController extends Controller
 
         $shippingMethods = ShippingMethod::query()
             ->active()
+            ->where('type', ShippingMethodType::FlatRate)
             ->orderBy('sort_order')
             ->get(['id', 'name', 'price', 'is_free']);
 

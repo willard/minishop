@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Enums\ShippingMethodType;
+use Database\Factories\ShippingMethodFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ShippingMethod extends Model
 {
-    /** @use HasFactory<\Database\Factories\ShippingMethodFactory> */
+    /** @use HasFactory<ShippingMethodFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -17,6 +20,9 @@ class ShippingMethod extends Model
         'is_free',
         'is_active',
         'sort_order',
+        'type',
+        'carrier',
+        'service_code',
     ];
 
     protected function casts(): array
@@ -26,12 +32,23 @@ class ShippingMethod extends Model
             'is_free' => 'boolean',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
+            'type' => ShippingMethodType::class,
         ];
     }
 
-    public function scopeActive(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    public function isCalculated(): bool
+    {
+        return $this->type === ShippingMethodType::Calculated;
+    }
+
+    public function isFlatRate(): bool
+    {
+        return $this->type === ShippingMethodType::FlatRate;
     }
 
     public function getEffectivePriceAttribute(): int

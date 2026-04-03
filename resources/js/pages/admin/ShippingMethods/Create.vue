@@ -22,6 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const isFree = ref(false);
+const methodType = ref<'flat_rate' | 'calculated'>('flat_rate');
 </script>
 
 <template>
@@ -77,8 +78,48 @@ const isFree = ref(false);
                     <InputError :message="errors.description" />
                 </div>
 
-                <!-- Free shipping toggle -->
-                <div class="flex items-center gap-2">
+                <!-- Type -->
+                <div class="grid gap-2">
+                    <Label for="type">Type</Label>
+                    <select
+                        id="type"
+                        name="type"
+                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                        @change="(e) => (methodType = (e.target as HTMLSelectElement).value as 'flat_rate' | 'calculated')"
+                    >
+                        <option value="flat_rate">Flat Rate</option>
+                        <option value="calculated">Calculated (Live Carrier Rate)</option>
+                    </select>
+                    <InputError :message="errors.type" />
+                </div>
+
+                <!-- Calculated fields -->
+                <template v-if="methodType === 'calculated'">
+                    <div class="grid gap-2">
+                        <Label for="carrier">Carrier <span class="text-destructive">*</span></Label>
+                        <select
+                            id="carrier"
+                            name="carrier"
+                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                        >
+                            <option value="canada_post">Canada Post</option>
+                        </select>
+                        <InputError :message="errors.carrier" />
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="service_code">Service Code <span class="text-destructive">*</span></Label>
+                        <Input
+                            id="service_code"
+                            name="service_code"
+                            placeholder="e.g. DOM.EP"
+                        />
+                        <p class="text-xs text-muted-foreground">Canada Post service code (e.g. DOM.EP = Expedited Parcel)</p>
+                        <InputError :message="errors.service_code" />
+                    </div>
+                </template>
+
+                <!-- Free shipping toggle (flat rate only) -->
+                <div v-if="methodType === 'flat_rate'" class="flex items-center gap-2">
                     <Checkbox
                         id="is_free"
                         name="is_free"
@@ -90,8 +131,8 @@ const isFree = ref(false);
                     >
                 </div>
 
-                <!-- Price (hidden when free) -->
-                <div v-if="!isFree" class="grid max-w-xs gap-2">
+                <!-- Price (flat rate only, hidden when free) -->
+                <div v-if="methodType === 'flat_rate' && !isFree" class="grid max-w-xs gap-2">
                     <Label for="price"
                         >Price (cents)
                         <span class="text-destructive">*</span></Label

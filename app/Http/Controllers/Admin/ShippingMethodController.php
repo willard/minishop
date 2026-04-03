@@ -40,7 +40,7 @@ class ShippingMethodController extends Controller
         $data = $request->validated();
         $data['is_free'] = $request->boolean('is_free');
         $data['is_active'] = $request->boolean('is_active', true);
-        if ($data['is_free']) {
+        if ($data['is_free'] || ($data['type'] ?? 'flat_rate') === 'calculated') {
             $data['price'] = 0;
         }
 
@@ -66,7 +66,7 @@ class ShippingMethodController extends Controller
         $data = $request->validated();
         $data['is_free'] = $request->boolean('is_free');
         $data['is_active'] = $request->boolean('is_active', true);
-        if ($data['is_free']) {
+        if ($data['is_free'] || ($data['type'] ?? 'flat_rate') === 'calculated') {
             $data['price'] = 0;
         }
 

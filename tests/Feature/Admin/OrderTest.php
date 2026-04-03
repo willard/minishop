@@ -3,12 +3,14 @@
 namespace Tests\Feature\Admin;
 
 use App\Enums\OrderStatus;
+use App\Enums\ShippingMethodType;
 use App\Models\Coupon;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\ShippingMethod;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -556,6 +558,24 @@ class OrderTest extends TestCase
             ->assertInertia(fn (AssertableJson $page) => $page
                 ->has('products', 1, fn (AssertableJson $p) => $p
                     ->has('variants', 1)
+                    ->etc()
+                )
+            );
+    }
+
+    public function test_create_order_form_only_shows_flat_rate_shipping_methods(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+
+        ShippingMethod::factory()->create(['name' => 'Standard', 'is_active' => true, 'type' => ShippingMethodType::FlatRate]);
+        ShippingMethod::factory()->create(['name' => 'Canada Post', 'is_active' => true, 'type' => ShippingMethodType::Calculated]);
+
+        $this->actingAs($user)
+            ->get(route('admin.orders.create'))
+            ->assertOk()
+            ->assertInertia(fn (AssertableJson $page) => $page
+                ->has('shippingMethods', 1, fn (AssertableJson $m) => $m
+                    ->where('name', 'Standard')
                     ->etc()
                 )
             );

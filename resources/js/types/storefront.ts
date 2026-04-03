@@ -99,6 +99,17 @@ export interface ServerCart {
     items: ServerCartItem[];
 }
 
+export interface ShippingRate {
+    shipping_method_id: number | null;
+    carrier: string | null;
+    service_code: string | null;
+    name: string;
+    description: string | null;
+    amount_cents: number;
+    type: 'flat_rate' | 'calculated';
+    expected_delivery: string | null;
+}
+
 export interface PaginationLink {
     url: string | null;
     label: string;

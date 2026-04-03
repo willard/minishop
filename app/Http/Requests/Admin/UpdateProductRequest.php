@@ -32,6 +32,7 @@ class UpdateProductRequest extends FormRequest
             'compare_price' => ['nullable', 'integer', 'min:0', 'gt:price'],
             'sku' => ['nullable', 'string', 'max:100', Rule::unique('products', 'sku')->ignore($productId)],
             'stock_quantity' => ['sometimes', 'nullable', 'integer'],
+            'weight_grams' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:100000'],
             'is_active' => ['sometimes', 'nullable', 'boolean'],
             'category_ids' => ['nullable', 'array'],
             'category_ids.*' => ['integer', 'exists:categories,id'],

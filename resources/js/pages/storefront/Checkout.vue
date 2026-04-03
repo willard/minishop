@@ -13,15 +13,17 @@ import {
     CheckCircle2,
     X,
 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { store } from '@/actions/App/Http/Controllers/Storefront/CheckoutController';
 import { index as productsIndex } from '@/actions/App/Http/Controllers/Storefront/ProductController';
 import InputError from '@/components/InputError.vue';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';
+import { useShippingRates } from '@/composables/useShippingRates';
 import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 import { store as loginStore } from '@/routes/login';
 import { store as registerStore } from '@/routes/register';
+import type { ShippingRate } from '@/types/storefront';
 
 interface ShippingMethod {
     id: number;
@@ -29,6 +31,7 @@ interface ShippingMethod {
     description: string | null;
     price: number;
     is_free: boolean;
+    type: 'flat_rate' | 'calculated';
 }
 
 const page = usePage<{
@@ -70,9 +73,9 @@ const form = useForm({
     state: '',
     postcode: '',
     country: 'CA',
-    shipping_method_id: computed(
-        () => shippingMethods.value[0]?.id ?? null,
-    ) as unknown as number | null,
+    shipping_method_id: null as number | null,
+    carrier: null as string | null,
+    service_code: null as string | null,
     coupon_code: '',
     notes: '',
     items: computed(() =>
@@ -84,19 +87,61 @@ const form = useForm({
     ),
 });
 
-const selectedShippingMethod = computed(
-    () =>
-        shippingMethods.value.find((m) => m.id === form.shipping_method_id) ??
-        shippingMethods.value[0] ??
-        null,
+const postcodeRef = computed(() => form.postcode);
+const countryRef = computed(() => form.country);
+const {
+    rates: apiRates,
+    isLoading: ratesLoading,
+    fetchError: ratesError,
+} = useShippingRates(postcodeRef, countryRef, cartItems);
+
+// If API has returned rates, show those; otherwise fall back to the flat-rate
+// methods passed as Inertia page props for immediate display on load.
+const displayedRates = computed((): ShippingRate[] => {
+    if (apiRates.value.length > 0) {
+        return apiRates.value;
+    }
+    return shippingMethods.value.map((m) => ({
+        shipping_method_id: m.id,
+        carrier: null,
+        service_code: null,
+        name: m.name,
+        description: m.description,
+        amount_cents: m.is_free ? 0 : m.price,
+        type: 'flat_rate' as const,
+        expected_delivery: null,
+    }));
+});
+
+const selectedRate = ref<ShippingRate | null>(null);
+
+function selectRate(rate: ShippingRate): void {
+    selectedRate.value = rate;
+    form.shipping_method_id = rate.shipping_method_id;
+    form.carrier = rate.carrier;
+    form.service_code = rate.service_code;
+}
+
+// Auto-select the first rate on initial load and when rates refresh
+watch(
+    displayedRates,
+    (newRates) => {
+        if (newRates.length > 0 && selectedRate.value === null) {
+            selectRate(newRates[0]);
+        }
+    },
+    { immediate: true },
 );
 
-const shippingAmount = computed(() => {
-    if (!selectedShippingMethod.value) return 0;
-    return selectedShippingMethod.value.is_free
-        ? 0
-        : selectedShippingMethod.value.price;
+// When API rates arrive after the user has already filled in address, re-select
+// the first rate so the displayed amount stays consistent
+watch(apiRates, (newRates) => {
+    if (newRates.length > 0) {
+        selectRate(newRates[0]);
+    }
 });
+
+const shippingAmount = computed(() => selectedRate.value?.amount_cents ?? 0);
 
 const taxRate = computed(() => (storeSettings.value?.taxRate ?? 12) / 100);
 const taxAmount = computed(() => Math.round(subtotal.value * taxRate.value));
@@ -962,51 +1007,90 @@ function submit(): void {
                             />
                             Shipping Method
                         </h2>
-                        <div class="space-y-3">
+
+                        <!-- Loading skeleton -->
+                        <div v-if="ratesLoading" class="space-y-3">
+                            <div
+                                v-for="n in 3"
+                                :key="n"
+                                class="h-16 animate-pulse rounded-xl"
+                                style="background-color: rgba(28, 26, 23, 0.07)"
+                            />
+                        </div>
+
+                        <!-- Rates list -->
+                        <div v-else class="space-y-3">
+                            <!-- Error notice (flat rates still shown below) -->
+                            <p
+                                v-if="ratesError"
+                                class="mb-2 rounded-lg px-4 py-2 text-xs"
+                                style="
+                                    background-color: rgba(192, 92, 58, 0.08);
+                                    color: #c05c3a;
+                                "
+                            >
+                                {{ ratesError }}
+                            </p>
+
                             <label
-                                v-for="method in shippingMethods"
-                                :key="method.id"
+                                v-for="rate in displayedRates"
+                                :key="`${rate.carrier ?? 'flat'}-${rate.service_code ?? rate.shipping_method_id}`"
                                 class="flex cursor-pointer items-start gap-4 rounded-xl border px-4 py-4 transition-colors"
                                 :style="
-                                    form.shipping_method_id === method.id
+                                    selectedRate?.service_code === rate.service_code &&
+                                    selectedRate?.carrier === rate.carrier &&
+                                    selectedRate?.shipping_method_id === rate.shipping_method_id
                                         ? 'border-color: #1c1a17; background-color: rgba(28, 26, 23, 0.03)'
                                         : 'border-color: rgba(28, 26, 23, 0.15)'
                                 "
+                                @click="selectRate(rate)"
                             >
                                 <input
-                                    v-model="form.shipping_method_id"
                                     type="radio"
-                                    :value="method.id"
+                                    :checked="
+                                        selectedRate?.service_code === rate.service_code &&
+                                        selectedRate?.carrier === rate.carrier &&
+                                        selectedRate?.shipping_method_id === rate.shipping_method_id
+                                    "
                                     class="mt-0.5 shrink-0 accent-[#1c1a17]"
+                                    readonly
                                 />
                                 <div class="min-w-0 flex-1">
                                     <p
                                         class="text-sm font-medium"
                                         style="color: #1c1a17"
                                     >
-                                        {{ method.name }}
+                                        {{ rate.name }}
                                     </p>
                                     <p
-                                        v-if="method.description"
+                                        v-if="rate.description"
                                         class="mt-0.5 text-xs"
                                         style="color: rgba(28, 26, 23, 0.55)"
                                     >
-                                        {{ method.description }}
+                                        {{ rate.description }}
+                                    </p>
+                                    <p
+                                        v-if="rate.expected_delivery"
+                                        class="mt-0.5 text-xs"
+                                        style="color: rgba(28, 26, 23, 0.55)"
+                                    >
+                                        Estimated delivery: {{ rate.expected_delivery }}
                                     </p>
                                 </div>
                                 <span
                                     class="shrink-0 text-sm font-semibold"
                                     style="color: #1c1a17"
                                 >
-                                    <template v-if="method.is_free"
+                                    <template v-if="rate.amount_cents === 0"
                                         >Free</template
                                     >
                                     <template v-else>{{
-                                        price(method.price)
+                                        price(rate.amount_cents)
                                     }}</template>
                                 </span>
                             </label>
                         </div>
+
                         <p
                             v-if="form.errors.shipping_method_id"
                             class="mt-1.5 text-xs"
@@ -1305,12 +1389,10 @@ function submit(): void {
                             >
                                 <span>Shipping</span>
                                 <span>
-                                    <template
-                                        v-if="selectedShippingMethod?.is_free"
+                                    <template v-if="selectedRate?.amount_cents === 0"
                                         >Free</template
                                     >
-                                    <template
-                                        v-else-if="selectedShippingMethod"
+                                    <template v-else-if="selectedRate"
                                         >{{ price(shippingAmount) }}</template
                                     >
                                     <template v-else>—</template>

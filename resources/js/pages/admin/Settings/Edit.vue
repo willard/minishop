@@ -22,6 +22,7 @@ interface Settings {
     paymongo_secret_key: string | null;
     paymongo_webhook_secret: string | null;
     low_stock_threshold: number;
+    origin_postcode: string | null;
 }
 
 const props = defineProps<{
@@ -57,6 +58,7 @@ const form = useForm({
     paymongo_secret_key: '',
     paymongo_webhook_secret: '',
     low_stock_threshold: props.settings.low_stock_threshold,
+    origin_postcode: props.settings.origin_postcode ?? '',
 });
 
 const showFields = ref<Record<string, boolean>>({});
@@ -337,6 +339,27 @@ function submit() {
                 </section>
 
                 <!-- Submit -->
+                <!-- Shipping -->
+                <section class="flex flex-col gap-4">
+                    <h2 class="border-b pb-2 text-base font-semibold">
+                        Shipping
+                    </h2>
+                    <div class="grid max-w-xs gap-2">
+                        <Label for="origin_postcode">Origin Postal Code</Label>
+                        <Input
+                            id="origin_postcode"
+                            v-model="form.origin_postcode"
+                            placeholder="e.g. K1A 0A6"
+                            maxlength="20"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            Used to calculate live carrier shipping rates (e.g. Canada Post).
+                            Leave blank to show only flat-rate methods.
+                        </p>
+                        <InputError :message="form.errors.origin_postcode" />
+                    </div>
+                </section>
+
                 <div>
                     <Button type="submit" :disabled="form.processing">
                         {{ form.processing ? 'Saving...' : 'Save Settings' }}

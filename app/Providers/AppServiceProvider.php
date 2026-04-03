@@ -12,6 +12,8 @@ use App\Observers\CouponObserver;
 use App\Observers\OrderObserver;
 use App\Observers\OrderReturnObserver;
 use App\Observers\ProductObserver;
+use App\Services\Shipping\CanadaPostCarrier;
+use App\Services\Shipping\ShippingRateService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -40,6 +42,20 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->registerObservers();
         $this->registerGates();
+        $this->registerShippingService();
+    }
+
+    protected function registerShippingService(): void
+    {
+        $this->app->singleton(ShippingRateService::class, function (): ShippingRateService {
+            $service = new ShippingRateService;
+
+            if (config('services.canada_post.username') && config('services.canada_post.customer_number')) {
+                $service->registerDriver(new CanadaPostCarrier);
+            }
+
+            return $service;
+        });
     }
 
     protected function registerObservers(): void

@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\StoreSettingsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
+use App\Http\Controllers\Storefront\CheckoutShippingRatesController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\PaymentController;
 use App\Http\Controllers\Storefront\ProductController as StorefrontProductController;
@@ -52,6 +53,9 @@ Route::prefix('cart')->name('storefront.cart.')->group(function () {
 
 Route::prefix('checkout')->name('storefront.checkout.')->group(function () {
     Route::get('/', [CheckoutController::class, 'create'])->name('create');
+    Route::post('/shipping-rates', CheckoutShippingRatesController::class)
+        ->middleware('throttle:20,1')
+        ->name('shipping-rates');
     Route::post('/', [CheckoutController::class, 'store'])->name('store');
     Route::get('/pay/{order:order_number}', [PaymentController::class, 'show'])->name('payment.show');
     Route::post('/pay/{order:order_number}/stripe', [PaymentController::class, 'stripeIntent'])->name('payment.stripe');
