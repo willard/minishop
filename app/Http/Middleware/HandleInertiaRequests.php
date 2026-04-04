@@ -54,6 +54,8 @@ class HandleInertiaRequests extends Middleware
                 'taxRate' => (float) $settings->tax_rate,
                 'activeGateway' => $settings->active_payment_gateway,
                 'stripePublicKey' => config('services.stripe.key'),
+                'taxMode' => $settings->tax_mode?->value ?? 'flat_rate',
+                'gstNumber' => $settings->gst_number,
             ],
             'shippingMethods' => fn () => ShippingMethod::active()
                 ->orderBy('sort_order')

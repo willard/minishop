@@ -250,6 +250,9 @@
         <div class="header">
             <div>
                 <p class="store-name">{{ config('app.name') }}</p>
+                @if ($settings->gst_number)
+                    <p style="font-size:10px;color:#6b7280;margin-top:4px;">GST/HST No: {{ $settings->gst_number }}</p>
+                @endif
             </div>
             <div class="invoice-label">
                 <h1>Invoice</h1>
@@ -354,10 +357,19 @@
                         </td>
                     </tr>
                     @if ($order->tax_amount > 0)
-                        <tr>
-                            <td class="label">Tax ({{ $settings->tax_rate }}%)</td>
-                            <td class="amount">{{ $settings->currency }} {{ number_format($order->tax_amount / 100, 2) }}</td>
-                        </tr>
+                        @if ($order->tax_breakdown && count($order->tax_breakdown) > 0)
+                            @foreach ($order->tax_breakdown as $line)
+                                <tr>
+                                    <td class="label">{{ $line['name'] }}{{ isset($line['name_fr']) && $line['name_fr'] ? ' / '.$line['name_fr'] : '' }} ({{ $line['rate'] }}%)</td>
+                                    <td class="amount">{{ $settings->currency }} {{ number_format($line['amount_cents'] / 100, 2) }}</td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td class="label">Tax ({{ $settings->tax_rate }}%)</td>
+                                <td class="amount">{{ $settings->currency }} {{ number_format($order->tax_amount / 100, 2) }}</td>
+                            </tr>
+                        @endif
                     @endif
                     <tr class="grand-total">
                         <td class="label">Total</td>

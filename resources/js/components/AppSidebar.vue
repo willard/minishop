@@ -14,6 +14,7 @@ import {
     Truck,
     UserCog,
     Users,
+    Percent,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { index as activityLogIndex } from '@/actions/App/Http/Controllers/Admin/ActivityLogController';
@@ -25,6 +26,7 @@ import { index as productsIndex } from '@/actions/App/Http/Controllers/Admin/Pro
 import { index as returnsIndex } from '@/actions/App/Http/Controllers/Admin/ReturnController';
 import { index as shippingMethodsIndex } from '@/actions/App/Http/Controllers/Admin/ShippingMethodController';
 import { edit as settingsEdit } from '@/actions/App/Http/Controllers/Admin/StoreSettingsController';
+import { index as taxZonesIndex } from '@/actions/App/Http/Controllers/Admin/TaxZoneController';
 import { index as usersIndex } from '@/actions/App/Http/Controllers/Admin/UserController';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -101,6 +103,12 @@ const allNavItems: PermissionNavItem[] = [
         href: shippingMethodsIndex().url,
         icon: Truck,
         permission: 'shipping-methods.view',
+    },
+    {
+        title: 'Tax Zones',
+        href: taxZonesIndex().url,
+        icon: Percent,
+        permission: 'tax-zones.view',
     },
     {
         title: 'Activity Log',

@@ -17,6 +17,8 @@ interface Settings {
     currency: string;
     currency_locale: string;
     tax_rate: number;
+    tax_mode: string;
+    gst_number: string | null;
     active_payment_gateway: string;
     paymongo_public_key: string | null;
     paymongo_secret_key: string | null;
@@ -53,6 +55,8 @@ const form = useForm({
     currency: props.settings.currency,
     currency_locale: props.settings.currency_locale,
     tax_rate: props.settings.tax_rate,
+    tax_mode: props.settings.tax_mode,
+    gst_number: props.settings.gst_number ?? '',
     active_payment_gateway: props.settings.active_payment_gateway,
     paymongo_public_key: props.settings.paymongo_public_key ?? '',
     paymongo_secret_key: '',
@@ -117,7 +121,44 @@ function submit() {
                         <InputError :message="form.errors.currency" />
                     </div>
 
-                    <div class="grid max-w-xs gap-2">
+                    <div class="flex flex-col gap-3">
+                        <Label>Tax Mode</Label>
+                        <label
+                            v-for="mode in [
+                                {
+                                    value: 'flat_rate',
+                                    label: 'Flat Rate',
+                                    description: 'Apply a single tax rate to all orders regardless of destination.',
+                                },
+                                {
+                                    value: 'zone_based',
+                                    label: 'Zone-Based',
+                                    description: 'Apply province-specific rates (HST, GST+PST, QST, etc.) based on the shipping address.',
+                                },
+                            ]"
+                            :key="mode.value"
+                            class="flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors"
+                            :class="
+                                form.tax_mode === mode.value
+                                    ? 'border-primary bg-primary/5'
+                                    : 'border-border'
+                            "
+                        >
+                            <input
+                                v-model="form.tax_mode"
+                                type="radio"
+                                :value="mode.value"
+                                class="mt-0.5"
+                            />
+                            <div>
+                                <p class="text-sm font-medium">{{ mode.label }}</p>
+                                <p class="text-xs text-muted-foreground">{{ mode.description }}</p>
+                            </div>
+                        </label>
+                        <InputError :message="form.errors.tax_mode" />
+                    </div>
+
+                    <div v-if="form.tax_mode === 'flat_rate'" class="grid max-w-xs gap-2">
                         <Label for="tax_rate">Tax Rate (%)</Label>
                         <Input
                             id="tax_rate"
@@ -129,6 +170,20 @@ function submit() {
                             placeholder="e.g. 12"
                         />
                         <InputError :message="form.errors.tax_rate" />
+                    </div>
+
+                    <div class="grid max-w-xs gap-2">
+                        <Label for="gst_number">GST/HST Registration Number <span class="text-muted-foreground">(optional)</span></Label>
+                        <Input
+                            id="gst_number"
+                            v-model="form.gst_number"
+                            placeholder="e.g. 123456789 RT0001"
+                            maxlength="20"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            Displayed on invoices if provided.
+                        </p>
+                        <InputError :message="form.errors.gst_number" />
                     </div>
                 </section>
 

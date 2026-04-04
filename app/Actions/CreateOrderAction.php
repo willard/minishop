@@ -8,7 +8,6 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ShippingMethod;
-use App\Models\StoreSettings;
 use Illuminate\Support\Facades\DB;
 
 class CreateOrderAction
@@ -48,32 +47,43 @@ class CreateOrderAction
      *     notes: string|null,
      * } $data
      */
+    public function __construct(private readonly ResolveTaxAction $resolveTax) {}
+
     public function execute(array $data): Order
     {
-        return DB::transaction(function () use ($data): Order {
-            $subtotal = collect($data['items'])->sum('subtotal');
+        $subtotal = collect($data['items'])->sum('subtotal');
 
-            $coupon = null;
-            $discountAmount = 0;
+        $coupon = null;
+        $discountAmount = 0;
 
-            if (! empty($data['coupon_code'])) {
-                $coupon = Coupon::query()
-                    ->whereRaw('UPPER(code) = ?', [strtoupper($data['coupon_code'])])
-                    ->first();
+        if (! empty($data['coupon_code'])) {
+            $coupon = Coupon::query()
+                ->whereRaw('UPPER(code) = ?', [strtoupper($data['coupon_code'])])
+                ->first();
 
-                if ($coupon?->isValid($subtotal)) {
-                    $discountAmount = $coupon->calculateDiscount($subtotal);
-                }
+            if ($coupon?->isValid($subtotal)) {
+                $discountAmount = $coupon->calculateDiscount($subtotal);
             }
+        }
 
+        $taxableAmount = max(0, $subtotal - $discountAmount);
+
+        // Resolve tax BEFORE opening the DB transaction to minimize the lock window.
+        // tax_breakdown is always sourced from the resolution — never from client data.
+        $resolution = $this->resolveTax->execute(
+            $data['shipping_country'],
+            $data['shipping_state'] ?? null,
+            $taxableAmount
+        );
+        $taxAmount = $resolution->totalTaxCents;
+
+        return DB::transaction(function () use ($data, $subtotal, $coupon, $discountAmount, $taxableAmount, $taxAmount, $resolution): Order {
             $shippingMethod = isset($data['shipping_method_id'])
                 ? ShippingMethod::query()->find($data['shipping_method_id'])
                 : null;
 
             $shippingAmount = $this->resolveShippingAmount($shippingMethod, $data);
 
-            $taxableAmount = max(0, $subtotal - $discountAmount);
-            $taxAmount = (int) round($taxableAmount * (StoreSettings::current()->tax_rate ?? 0) / 100);
             $totalAmount = max(0, $taxableAmount + $shippingAmount + $taxAmount);
 
             $order = Order::query()->create([
@@ -88,6 +98,8 @@ class CreateOrderAction
                 'discount_amount' => $discountAmount,
                 'shipping_amount' => $shippingAmount,
                 'tax_amount' => $taxAmount,
+                'tax_zone_name' => $resolution->zoneName,
+                'tax_breakdown' => ! empty($resolution->breakdown) ? $resolution->breakdown : null,
                 'total_amount' => $totalAmount,
                 'shipping_name' => $data['shipping_name'],
                 'shipping_address_line1' => $data['shipping_address_line1'],

@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\TaxMode;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class StoreSettings extends Model
 {
@@ -10,6 +12,8 @@ class StoreSettings extends Model
         'currency',
         'currency_locale',
         'tax_rate',
+        'tax_mode',
+        'gst_number',
         'active_payment_gateway',
         'paymongo_public_key',
         'paymongo_secret_key',
@@ -25,11 +29,16 @@ class StoreSettings extends Model
             'paymongo_webhook_secret' => 'encrypted',
             'tax_rate' => 'decimal:2',
             'low_stock_threshold' => 'integer',
+            'tax_mode' => TaxMode::class,
         ];
     }
 
+    /**
+     * Returns the current store settings, cached indefinitely.
+     * Cache is invalidated by StoreSettingsObserver on save.
+     */
     public static function current(): self
     {
-        return static::firstOrCreate([]);
+        return Cache::rememberForever('store_settings', fn () => static::firstOrCreate([]));
     }
 }
