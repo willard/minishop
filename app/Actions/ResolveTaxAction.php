@@ -104,7 +104,7 @@ class ResolveTaxAction
         $version = Cache::rememberForever('tax_zones_version', fn () => now()->timestamp);
         $cacheKey = "tax_zone:{$version}:{$country}:{$province}";
 
-        return Cache::remember($cacheKey, 3600, function () use ($country, $province): ?TaxZone {
+        $zone = Cache::remember($cacheKey, 3600, function () use ($country, $province): ?TaxZone {
             // Primary lookup: country + (province or country catch-all), highest priority first
             $zone = TaxZone::query()
                 ->active()
@@ -124,6 +124,16 @@ class ResolveTaxAction
                 ->with('rates')
                 ->first();
         });
+
+        // Guard against stale serialised entries (e.g. cached before a class rename/migration).
+        // Bust the entry and re-fetch fresh from the database.
+        if ($zone !== null && ! $zone instanceof TaxZone) {
+            Cache::forget($cacheKey);
+
+            return $this->resolveZone($country, $province);
+        }
+
+        return $zone;
     }
 
     /**
