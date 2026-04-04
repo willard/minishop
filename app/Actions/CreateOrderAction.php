@@ -105,7 +105,7 @@ class CreateOrderAction
                 'shipping_amount' => $shippingAmount,
                 'tax_amount' => $taxAmount,
                 'tax_zone_name' => $resolution->zoneName,
-                'tax_breakdown' => ! empty($resolution->breakdown) ? $resolution->breakdown : null,
+                'tax_breakdown' => $resolution->breakdown ?: null,
                 'total_amount' => $totalAmount,
                 'shipping_name' => $data['shipping_name'],
                 'shipping_address_line1' => $data['shipping_address_line1'],

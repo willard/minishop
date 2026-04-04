@@ -64,11 +64,11 @@ class HandleInertiaRequests extends Middleware
                 ->orderBy('sort_order')
                 ->orderBy('price')
                 ->get(['id', 'name', 'description', 'price', 'is_free']),
-            'lowStockCount' => Inertia::optional(function () use ($request): ?int {
+            'lowStockCount' => Inertia::optional(function () use ($request, $settings): ?int {
                 if (! $request->user()?->hasAnyRole(['super-admin', 'admin', 'manager'])) {
                     return null;
                 }
-                $threshold = StoreSettings::current()->low_stock_threshold;
+                $threshold = $settings->low_stock_threshold;
                 if ($threshold === null) {
                     return 0;
                 }

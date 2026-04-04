@@ -22,23 +22,13 @@ class CheckLowStock
             ?? StoreSettings::current()->low_stock_threshold;
 
         if ($threshold === null) {
-            // No threshold configured — can't determine low-stock state.
-            // Still reset a stale flag if stock was explicitly changed.
-            if ($model->low_stock_notified) {
-                $model->newQueryWithoutScopes()
-                    ->where($model->getKeyName(), $model->getKey())
-                    ->update(['low_stock_notified' => false]);
-            }
+            $this->setFlag($model, false);
 
             return;
         }
 
         if ($model->stock_quantity <= $threshold && ! $model->low_stock_notified) {
-            // Use a direct query to set the flag — avoids Eloquent's fill/dirty
-            // tracking and bypasses $fillable without re-triggering the observer.
-            $model->newQueryWithoutScopes()
-                ->where($model->getKeyName(), $model->getKey())
-                ->update(['low_stock_notified' => true]);
+            $this->setFlag($model, true);
 
             $subject = $model instanceof ProductVariant
                 ? LowStockSubject::fromVariant($model->loadMissing('product'))
@@ -53,9 +43,22 @@ class CheckLowStock
         }
 
         if ($model->stock_quantity > $threshold && $model->low_stock_notified) {
-            $model->newQueryWithoutScopes()
-                ->where($model->getKeyName(), $model->getKey())
-                ->update(['low_stock_notified' => false]);
+            $this->setFlag($model, false);
         }
+    }
+
+    /**
+     * Persist the low_stock_notified flag via a direct query to bypass
+     * Eloquent's fill/dirty tracking and avoid re-triggering observers.
+     */
+    private function setFlag(Product|ProductVariant $model, bool $notified): void
+    {
+        if ($model->low_stock_notified === $notified) {
+            return;
+        }
+
+        $model->newQueryWithoutScopes()
+            ->where($model->getKeyName(), $model->getKey())
+            ->update(['low_stock_notified' => $notified]);
     }
 }

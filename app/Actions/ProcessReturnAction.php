@@ -58,9 +58,6 @@ class ProcessReturnAction
 
     /**
      * Issue the Stripe refund, update return status, and mark order as Refunded if fully refunded.
-     */
-    /**
-     * Issue the Stripe refund, update return status, and mark order as Refunded if fully refunded.
      *
      * The Stripe call is intentionally made before the DB transaction so that a
      * transactional failure cannot leave money refunded with no audit record.
