@@ -19,6 +19,7 @@ class ProductVariant extends Model
         'sku',
         'price',
         'stock_quantity',
+        'low_stock_threshold',
         'weight_grams',
         'is_active',
     ];
@@ -28,6 +29,8 @@ class ProductVariant extends Model
         return [
             'price' => 'integer',
             'stock_quantity' => 'integer',
+            'low_stock_threshold' => 'integer',
+            'low_stock_notified' => 'boolean',
             'weight_grams' => 'integer',
             'is_active' => 'boolean',
         ];

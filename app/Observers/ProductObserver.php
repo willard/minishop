@@ -2,13 +2,10 @@
 
 namespace App\Observers;
 
+use App\Actions\Inventory\CheckLowStock;
 use App\Models\ActivityLog;
 use App\Models\Product;
-use App\Models\StoreSettings;
-use App\Models\User;
-use App\Notifications\LowStockAlert;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 class ProductObserver
@@ -43,26 +40,7 @@ class ProductObserver
             'properties' => $changed,
         ]);
 
-        $this->checkLowStock($product);
-    }
-
-    private function checkLowStock(Product $product): void
-    {
-        if (! $product->wasChanged('stock_quantity')) {
-            return;
-        }
-
-        $threshold = StoreSettings::current()->low_stock_threshold;
-
-        if ($product->stock_quantity <= $threshold && ! $product->low_stock_notified) {
-            $product->updateQuietly(['low_stock_notified' => true]);
-
-            Notification::send(User::role(['super-admin', 'admin'])->get(), new LowStockAlert($product));
-        }
-
-        if ($product->stock_quantity > $threshold && $product->low_stock_notified) {
-            $product->updateQuietly(['low_stock_notified' => false]);
-        }
+        app(CheckLowStock::class)->execute($product);
     }
 
     public function deleting(Product $product): void

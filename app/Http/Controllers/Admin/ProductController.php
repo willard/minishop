@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreProductRequest;
 use App\Http\Requests\Admin\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\StoreSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -194,6 +195,17 @@ class ProductController extends Controller
                     $query->where('stock_quantity', '>', 0);
                 } elseif ($stock === 'out_of_stock') {
                     $query->where('stock_quantity', 0);
+                } elseif ($stock === 'low_stock') {
+                    $threshold = StoreSettings::current()->low_stock_threshold;
+                    if ($threshold !== null) {
+                        $query->where(function ($q) use ($threshold): void {
+                            $q->whereDoesntHave('variants')
+                                ->where('stock_quantity', '<=', $threshold)
+                                ->where('stock_quantity', '>', 0);
+                        })->orWhere(function ($q) use ($threshold): void {
+                            $q->whereHas('variants', fn ($v) => $v->where('stock_quantity', '<=', $threshold)->where('stock_quantity', '>', 0));
+                        });
+                    }
                 }
             })
             ->orderBy($sortBy, $sortDir);

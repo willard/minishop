@@ -36,12 +36,17 @@ class ProcessReturnAction
                 }
             }
 
+            // Batch lock all rows before incrementing to minimise lock window.
+            // Instance-level increment fires Eloquent observers (query-builder does not).
+            $variants = ProductVariant::whereIn('id', array_keys($variantQtys))->lockForUpdate()->get()->keyBy('id');
+            $productModels = Product::whereIn('id', array_keys($productQtys))->lockForUpdate()->get()->keyBy('id');
+
             foreach ($variantQtys as $variantId => $qty) {
-                ProductVariant::query()->where('id', $variantId)->increment('stock_quantity', $qty);
+                $variants[$variantId]->increment('stock_quantity', $qty);
             }
 
             foreach ($productQtys as $productId => $qty) {
-                Product::query()->where('id', $productId)->increment('stock_quantity', $qty);
+                $productModels[$productId]->increment('stock_quantity', $qty);
             }
 
             $orderReturn->update([

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\StoreSettings;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -29,14 +30,27 @@ class DashboardController extends Controller
 
         $totalCustomers = Customer::query()->count();
 
-        $lowStockQuery = Product::query()
+        $productLowStockQuery = Product::query()
             ->where('is_active', true)
-            ->when($lowStockThreshold !== null, fn ($q) => $q->where('stock_quantity', '<=', $lowStockThreshold));
+            ->whereDoesntHave('variants')
+            ->when($lowStockThreshold !== null, fn ($q) => $q
+                ->where('stock_quantity', '<=', $lowStockThreshold)
+                ->where('stock_quantity', '>', 0)
+            );
 
-        $lowStockCount = $lowStockThreshold !== null ? (clone $lowStockQuery)->count() : 0;
+        $productLowStockCount = $lowStockThreshold !== null ? (clone $productLowStockQuery)->count() : 0;
+
+        $variantLowStockCount = $lowStockThreshold !== null
+            ? ProductVariant::where('stock_quantity', '<=', $lowStockThreshold)
+                ->where('stock_quantity', '>', 0)
+                ->whereHas('product', fn ($q) => $q->where('is_active', true))
+                ->count()
+            : 0;
+
+        $lowStockCount = $productLowStockCount + $variantLowStockCount;
 
         $lowStockProducts = $lowStockThreshold !== null
-            ? (clone $lowStockQuery)->orderBy('stock_quantity')->limit(5)->get()
+            ? (clone $productLowStockQuery)->orderBy('stock_quantity')->limit(5)->get()
             : collect();
 
         $recentOrders = Order::query()

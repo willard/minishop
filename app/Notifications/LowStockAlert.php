@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Models\Product;
+use App\Data\LowStockSubject;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -12,7 +12,7 @@ class LowStockAlert extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public Product $product) {}
+    public function __construct(public LowStockSubject $subject) {}
 
     /**
      * @return array<int, string>
@@ -25,11 +25,11 @@ class LowStockAlert extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("Low Stock Alert: {$this->product->name}")
-            ->line("The product \"{$this->product->name}\" has reached a low stock level.")
-            ->line("Current stock: {$this->product->stock_quantity} units.")
-            ->line('SKU: '.($this->product->sku ?? 'N/A'))
-            ->action('View Product', url(route('admin.products.show', $this->product)))
+            ->subject("Low Stock Alert: {$this->subject->name}")
+            ->line("The product \"{$this->subject->name}\" has reached a low stock level.")
+            ->line("Current stock: {$this->subject->stockQuantity} units.")
+            ->line('SKU: '.($this->subject->sku ?? 'N/A'))
+            ->action('View Product', $this->subject->productUrl)
             ->line('Please restock this product soon.');
     }
 }

@@ -2,9 +2,12 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\ShippingMethod;
 use App\Models\StoreSettings;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -61,6 +64,26 @@ class HandleInertiaRequests extends Middleware
                 ->orderBy('sort_order')
                 ->orderBy('price')
                 ->get(['id', 'name', 'description', 'price', 'is_free']),
+            'lowStockCount' => Inertia::optional(function () use ($request): ?int {
+                if (! $request->user()?->hasAnyRole(['super-admin', 'admin', 'manager'])) {
+                    return null;
+                }
+                $threshold = StoreSettings::current()->low_stock_threshold;
+                if ($threshold === null) {
+                    return 0;
+                }
+                $productCount = Product::where('is_active', true)
+                    ->whereDoesntHave('variants')
+                    ->where('stock_quantity', '<=', $threshold)
+                    ->where('stock_quantity', '>', 0)
+                    ->count();
+                $variantCount = ProductVariant::where('stock_quantity', '<=', $threshold)
+                    ->where('stock_quantity', '>', 0)
+                    ->whereHas('product', fn ($q) => $q->where('is_active', true))
+                    ->count();
+
+                return $productCount + $variantCount;
+            }),
         ];
     }
 }
