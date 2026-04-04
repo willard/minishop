@@ -36,10 +36,7 @@ class TaxZoneController extends Controller
 
     public function store(StoreTaxZoneRequest $request): RedirectResponse
     {
-        $data = $request->validated();
-        $data['is_active'] = $request->boolean('is_active', true);
-
-        TaxZone::query()->create($data);
+        TaxZone::query()->create($request->validated());
 
         return redirect()->route('admin.tax-zones.index')
             ->with('success', 'Tax zone created successfully.');
@@ -58,10 +55,7 @@ class TaxZoneController extends Controller
 
     public function update(UpdateTaxZoneRequest $request, TaxZone $taxZone): RedirectResponse
     {
-        $data = $request->validated();
-        $data['is_active'] = $request->boolean('is_active', true);
-
-        $taxZone->update($data);
+        $taxZone->update($request->validated());
 
         return redirect()->route('admin.tax-zones.index')
             ->with('success', 'Tax zone updated successfully.');

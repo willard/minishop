@@ -15,6 +15,11 @@ class UpdateTaxZoneRequest extends FormRequest
         return $taxZone instanceof TaxZone && $this->user()->can('update', $taxZone);
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge(['is_active' => $this->boolean('is_active', true)]);
+    }
+
     public function rules(): array
     {
         return [

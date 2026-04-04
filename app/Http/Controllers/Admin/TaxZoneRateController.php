@@ -15,11 +15,7 @@ class TaxZoneRateController extends Controller
     {
         $this->authorize('createRate', $taxZone);
 
-        $data = $request->validated();
-        $data['is_compound'] = $request->boolean('is_compound', false);
-        $data['is_shipping_taxable'] = $request->boolean('is_shipping_taxable', false);
-
-        $taxZone->rates()->create($data);
+        $taxZone->rates()->create($request->validated());
 
         return redirect()->route('admin.tax-zones.edit', $taxZone)
             ->with('success', 'Rate added successfully.');
@@ -29,11 +25,7 @@ class TaxZoneRateController extends Controller
     {
         $this->authorize('updateRate', $taxZone);
 
-        $data = $request->validated();
-        $data['is_compound'] = $request->boolean('is_compound', false);
-        $data['is_shipping_taxable'] = $request->boolean('is_shipping_taxable', false);
-
-        $rate->update($data);
+        $rate->update($request->validated());
 
         return redirect()->route('admin.tax-zones.edit', $taxZone)
             ->with('success', 'Rate updated successfully.');

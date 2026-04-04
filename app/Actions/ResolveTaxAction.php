@@ -36,7 +36,7 @@ class ResolveTaxAction
     {
         $settings = StoreSettings::current();
 
-        if ($settings->tax_mode === TaxMode::FlatRate || $settings->tax_mode === null) {
+        if ($settings->tax_mode !== TaxMode::ZoneBased) {
             return $this->resolveFlatRate($settings, $taxableAmountCents);
         }
 
@@ -107,7 +107,7 @@ class ResolveTaxAction
             $zone = TaxZone::query()
                 ->active()
                 ->forAddress($country, $province)
-                ->with(['rates' => fn ($q) => $q->orderBy('sort_order')])
+                ->with('rates')
                 ->first();
 
             if ($zone !== null) {
@@ -119,7 +119,7 @@ class ResolveTaxAction
                 ->active()
                 ->whereNull('country_code')
                 ->whereNull('province_code')
-                ->with(['rates' => fn ($q) => $q->orderBy('sort_order')])
+                ->with('rates')
                 ->first();
         });
     }
