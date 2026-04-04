@@ -48,17 +48,19 @@ class ResolveTaxAction
      */
     private function resolveFlatRate(StoreSettings $settings, int $taxableAmountCents): TaxResolution
     {
-        $rate = (float) ($settings->tax_rate ?? 0);
-        $taxCents = (int) round($taxableAmountCents * $rate / 100);
+        $rateString = (string) ($settings->tax_rate ?? 0);
+        $rateFloat = (float) $rateString;
+        $rawTax = bcdiv(bcmul((string) $taxableAmountCents, $rateString, 6), '100', 6);
+        $taxCents = (int) bcadd($rawTax, '0.5', 0);
 
         return new TaxResolution(
             mode: TaxMode::FlatRate,
             zoneName: null,
-            breakdown: $rate > 0 ? [
+            breakdown: $rateFloat > 0 ? [
                 [
                     'name' => 'Tax',
                     'name_fr' => null,
-                    'rate' => $rate,
+                    'rate' => $rateFloat,
                     'amount_cents' => $taxCents,
                 ],
             ] : [],

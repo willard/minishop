@@ -1,5 +1,6 @@
 import { onUnmounted, ref, watch } from 'vue';
 import type { ComputedRef, Ref } from 'vue';
+import TaxPreviewController from '@/actions/App/Http/Controllers/Storefront/TaxPreviewController';
 import { getCsrfToken } from '@/lib/csrf';
 
 export interface TaxBreakdownLine {
@@ -57,7 +58,7 @@ export function useTaxPreview(
                 body.province_code = rawProvince;
             }
 
-            const response = await fetch('/checkout/tax-preview', {
+            const response = await fetch(TaxPreviewController.url(), {
                 method: 'POST',
                 signal: abortController.signal,
                 headers: {

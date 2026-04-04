@@ -36,6 +36,8 @@ class TaxZoneController extends Controller
 
     public function store(StoreTaxZoneRequest $request): RedirectResponse
     {
+        $this->authorize('create', TaxZone::class);
+
         TaxZone::query()->create($request->validated());
 
         return redirect()->route('admin.tax-zones.index')
@@ -55,6 +57,8 @@ class TaxZoneController extends Controller
 
     public function update(UpdateTaxZoneRequest $request, TaxZone $taxZone): RedirectResponse
     {
+        $this->authorize('update', $taxZone);
+
         $taxZone->update($request->validated());
 
         return redirect()->route('admin.tax-zones.index')

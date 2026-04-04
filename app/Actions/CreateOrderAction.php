@@ -70,9 +70,15 @@ class CreateOrderAction
 
         // Resolve tax BEFORE opening the DB transaction to minimize the lock window.
         // tax_breakdown is always sourced from the resolution — never from client data.
+        // Province code must be exactly 2 alpha chars (e.g. "ON"), matching the format
+        // stored in tax_zones.province_code. Free-text state values (e.g. "Ontario") are
+        // treated as no province, falling through to the country catch-all or global zone.
+        $rawState = strtoupper(trim($data['shipping_state'] ?? ''));
+        $provinceCode = strlen($rawState) === 2 ? $rawState : null;
+
         $resolution = $this->resolveTax->execute(
             $data['shipping_country'],
-            $data['shipping_state'] ?? null,
+            $provinceCode,
             $taxableAmount
         );
         $taxAmount = $resolution->totalTaxCents;
