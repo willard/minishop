@@ -199,11 +199,13 @@ class ProductController extends Controller
                     $threshold = StoreSettings::current()->low_stock_threshold;
                     if ($threshold !== null) {
                         $query->where(function ($q) use ($threshold): void {
-                            $q->whereDoesntHave('variants')
-                                ->where('stock_quantity', '<=', $threshold)
-                                ->where('stock_quantity', '>', 0);
-                        })->orWhere(function ($q) use ($threshold): void {
-                            $q->whereHas('variants', fn ($v) => $v->where('stock_quantity', '<=', $threshold)->where('stock_quantity', '>', 0));
+                            $q->where(function ($q) use ($threshold): void {
+                                $q->whereDoesntHave('variants')
+                                    ->where('stock_quantity', '<=', $threshold)
+                                    ->where('stock_quantity', '>', 0);
+                            })->orWhere(function ($q) use ($threshold): void {
+                                $q->whereHas('variants', fn ($v) => $v->where('stock_quantity', '<=', $threshold)->where('stock_quantity', '>', 0));
+                            });
                         });
                     }
                 }
