@@ -31,14 +31,13 @@ class DashboardController extends Controller
 
         $lowStockQuery = Product::query()
             ->where('is_active', true)
-            ->where('stock_quantity', '<=', $lowStockThreshold);
+            ->when($lowStockThreshold !== null, fn ($q) => $q->where('stock_quantity', '<=', $lowStockThreshold));
 
-        $lowStockCount = (clone $lowStockQuery)->count();
+        $lowStockCount = $lowStockThreshold !== null ? (clone $lowStockQuery)->count() : 0;
 
-        $lowStockProducts = (clone $lowStockQuery)
-            ->orderBy('stock_quantity')
-            ->limit(5)
-            ->get();
+        $lowStockProducts = $lowStockThreshold !== null
+            ? (clone $lowStockQuery)->orderBy('stock_quantity')->limit(5)->get()
+            : collect();
 
         $recentOrders = Order::query()
             ->with('customer.user')
