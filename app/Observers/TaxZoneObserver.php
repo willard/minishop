@@ -13,11 +13,11 @@ class TaxZoneObserver
      */
     public function saved(TaxZone $taxZone): void
     {
-        Cache::tags(['tax-zones'])->flush();
+        Cache::forget('tax_zones_version');
     }
 
     public function deleted(TaxZone $taxZone): void
     {
-        Cache::tags(['tax-zones'])->flush();
+        Cache::forget('tax_zones_version');
     }
 }

@@ -97,9 +97,12 @@ class ResolveTaxAction
      */
     private function resolveZone(string $country, ?string $province): ?TaxZone
     {
-        $cacheKey = "tax_zone:{$country}:{$province}";
+        // Include a version stamp so any zone/rate change busts all zone cache entries
+        // without needing Cache::tags() (unsupported by the database cache driver).
+        $version = Cache::rememberForever('tax_zones_version', fn () => now()->timestamp);
+        $cacheKey = "tax_zone:{$version}:{$country}:{$province}";
 
-        return Cache::tags(['tax-zones'])->remember($cacheKey, 3600, function () use ($country, $province): ?TaxZone {
+        return Cache::remember($cacheKey, 3600, function () use ($country, $province): ?TaxZone {
             // Primary lookup: country + (province or country catch-all), highest priority first
             $zone = TaxZone::query()
                 ->active()
