@@ -8,10 +8,16 @@ use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\OrderReturn;
 use App\Models\Product;
+use App\Models\StoreSettings;
+use App\Models\TaxZone;
+use App\Models\TaxZoneRate;
 use App\Observers\CouponObserver;
 use App\Observers\OrderObserver;
 use App\Observers\OrderReturnObserver;
 use App\Observers\ProductObserver;
+use App\Observers\StoreSettingsObserver;
+use App\Observers\TaxZoneObserver;
+use App\Observers\TaxZoneRateObserver;
 use App\Services\Shipping\CanadaPostCarrier;
 use App\Services\Shipping\ShippingRateService;
 use Carbon\CarbonImmutable;
@@ -64,6 +70,9 @@ class AppServiceProvider extends ServiceProvider
         OrderReturn::observe(OrderReturnObserver::class);
         Product::observe(ProductObserver::class);
         Coupon::observe(CouponObserver::class);
+        TaxZone::observe(TaxZoneObserver::class);
+        TaxZoneRate::observe(TaxZoneRateObserver::class);
+        StoreSettings::observe(StoreSettingsObserver::class);
     }
 
     protected function registerGates(): void

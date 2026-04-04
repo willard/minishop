@@ -3,10 +3,15 @@
 namespace Tests\Feature\Storefront;
 
 use App\Models\Coupon;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\ShippingMethod;
+use App\Models\StoreSettings;
+use App\Models\TaxZone;
+use App\Models\TaxZoneRate;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class CheckoutTest extends TestCase
@@ -265,5 +270,91 @@ class CheckoutTest extends TestCase
         $this->get($confirmationUrl)
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('storefront/OrderConfirmation'));
+    }
+
+    public function test_order_stores_tax_zone_name_and_breakdown_when_zone_based(): void
+    {
+        StoreSettings::query()->updateOrCreate([], ['tax_mode' => 'zone_based', 'tax_rate' => 0]);
+        Cache::flush();
+
+        $zone = TaxZone::factory()->ontario()->create();
+        TaxZoneRate::factory()->hst()->for($zone, 'zone')->create();
+
+        $product = Product::factory()->create(['price' => 10000, 'stock_quantity' => 5]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'state' => 'ON',
+            'country' => 'CA',
+            'items' => [['product_id' => $product->id, 'variant_id' => null, 'quantity' => 1]],
+        ]));
+
+        $this->assertDatabaseHas('orders', [
+            'tax_zone_name' => 'Ontario',
+        ]);
+    }
+
+    public function test_order_tax_zone_name_is_null_when_flat_rate(): void
+    {
+        StoreSettings::query()->updateOrCreate([], ['tax_mode' => 'flat_rate', 'tax_rate' => 13.0]);
+        Cache::flush();
+
+        $product = Product::factory()->create(['price' => 10000, 'stock_quantity' => 5]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [['product_id' => $product->id, 'variant_id' => null, 'quantity' => 1]],
+        ]));
+
+        $this->assertDatabaseHas('orders', [
+            'tax_zone_name' => null,
+        ]);
+    }
+
+    public function test_order_stores_correct_tax_breakdown_json_structure(): void
+    {
+        StoreSettings::query()->updateOrCreate([], ['tax_mode' => 'zone_based', 'tax_rate' => 0]);
+        Cache::flush();
+
+        $zone = TaxZone::factory()->ontario()->create();
+        TaxZoneRate::factory()->hst()->for($zone, 'zone')->create();
+
+        $product = Product::factory()->create(['price' => 10000, 'stock_quantity' => 5]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'state' => 'ON',
+            'country' => 'CA',
+            'items' => [['product_id' => $product->id, 'variant_id' => null, 'quantity' => 1]],
+        ]));
+
+        $order = Order::query()->latest()->first();
+
+        $this->assertNotNull($order->tax_breakdown);
+        $this->assertIsArray($order->tax_breakdown);
+        $this->assertArrayHasKey('name', $order->tax_breakdown[0]);
+        $this->assertArrayHasKey('rate', $order->tax_breakdown[0]);
+        $this->assertArrayHasKey('amount_cents', $order->tax_breakdown[0]);
+        $this->assertEquals('HST', $order->tax_breakdown[0]['name']);
+    }
+
+    public function test_order_persists_tax_amounts_in_cents(): void
+    {
+        StoreSettings::query()->updateOrCreate([], ['tax_mode' => 'zone_based', 'tax_rate' => 0]);
+        Cache::flush();
+
+        $zone = TaxZone::factory()->ontario()->create();
+        TaxZoneRate::factory()->hst()->for($zone, 'zone')->create();
+
+        // 1 × $100 product → subtotal = 10000 cents → HST 13% = 1300 cents
+        $product = Product::factory()->create(['price' => 10000, 'stock_quantity' => 5]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'state' => 'ON',
+            'country' => 'CA',
+            'items' => [['product_id' => $product->id, 'variant_id' => null, 'quantity' => 1]],
+        ]));
+
+        $this->assertDatabaseHas('orders', [
+            'tax_amount' => 1300,
+            'subtotal' => 10000,
+        ]);
     }
 }

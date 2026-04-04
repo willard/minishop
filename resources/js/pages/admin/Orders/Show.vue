@@ -78,6 +78,8 @@ interface Order {
     shipping_postcode: string;
     shipping_country: string;
     notes: string | null;
+    tax_zone_name: string | null;
+    tax_breakdown: Array<{ name: string; name_fr: string | null; rate: number; amount_cents: number }> | null;
     customer: Customer;
     items: OrderItem[];
     returns: OrderReturnSummary[];
@@ -280,8 +282,20 @@ function statusVariant(
                         <span class="text-muted-foreground">Shipping</span>
                         <span>${{ formatPrice(order.shipping_amount) }}</span>
                     </div>
+                    <template v-if="order.tax_breakdown && order.tax_breakdown.length > 0">
+                        <div
+                            v-for="line in order.tax_breakdown"
+                            :key="line.name"
+                            class="flex justify-between text-sm"
+                        >
+                            <span class="text-muted-foreground">
+                                {{ line.name }}{{ line.name_fr ? ` / ${line.name_fr}` : '' }} ({{ line.rate }}%)
+                            </span>
+                            <span>${{ formatPrice(line.amount_cents) }}</span>
+                        </div>
+                    </template>
                     <div
-                        v-if="order.tax_amount > 0"
+                        v-else-if="order.tax_amount > 0"
                         class="flex justify-between text-sm"
                     >
                         <span class="text-muted-foreground">Tax</span>

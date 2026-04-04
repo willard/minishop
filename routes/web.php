@@ -20,6 +20,8 @@ use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\ReturnController;
 use App\Http\Controllers\Admin\ShippingMethodController;
 use App\Http\Controllers\Admin\StoreSettingsController;
+use App\Http\Controllers\Admin\TaxZoneController;
+use App\Http\Controllers\Admin\TaxZoneRateController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
@@ -28,6 +30,7 @@ use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\PaymentController;
 use App\Http\Controllers\Storefront\ProductController as StorefrontProductController;
 use App\Http\Controllers\Storefront\SupportChatController;
+use App\Http\Controllers\Storefront\TaxPreviewController;
 use App\Http\Controllers\Webhooks\PayMongoWebhookController;
 use App\Http\Controllers\Webhooks\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
@@ -56,6 +59,9 @@ Route::prefix('checkout')->name('storefront.checkout.')->group(function () {
     Route::post('/shipping-rates', CheckoutShippingRatesController::class)
         ->middleware('throttle:20,1')
         ->name('shipping-rates');
+    Route::post('/tax-preview', TaxPreviewController::class)
+        ->middleware('throttle:30,1')
+        ->name('tax-preview');
     Route::post('/', [CheckoutController::class, 'store'])->name('store');
     Route::get('/pay/{order:order_number}', [PaymentController::class, 'show'])->name('payment.show');
     Route::post('/pay/{order:order_number}/stripe', [PaymentController::class, 'stripeIntent'])->name('payment.stripe');
@@ -97,6 +103,9 @@ Route::middleware(['auth', 'verified', 'role:super-admin|admin|manager'])->prefi
     Route::resource('users', UserController::class)->except(['show']);
     Route::resource('coupons', CouponController::class)->except(['show']);
     Route::resource('shipping-methods', ShippingMethodController::class)->except(['show']);
+    Route::resource('tax-zones', TaxZoneController::class)->except(['show']);
+    Route::resource('tax-zones.rates', TaxZoneRateController::class)
+        ->scoped()->except(['index', 'show', 'create', 'edit']);
     Route::get('settings', [StoreSettingsController::class, 'edit'])->name('settings.edit');
     Route::put('settings', [StoreSettingsController::class, 'update'])->name('settings.update');
     Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');

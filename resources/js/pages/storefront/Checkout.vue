@@ -20,6 +20,7 @@ import InputError from '@/components/InputError.vue';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';
 import { useShippingRates } from '@/composables/useShippingRates';
+import { useTaxPreview } from '@/composables/useTaxPreview';
 import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 import { store as loginStore } from '@/routes/login';
 import { store as registerStore } from '@/routes/register';
@@ -39,6 +40,8 @@ const page = usePage<{
         currency: string;
         currencyLocale: string;
         taxRate: number;
+        taxMode: 'flat_rate' | 'zone_based';
+        gstNumber: string | null;
     };
     shippingMethods: ShippingMethod[];
 }>();
@@ -143,8 +146,24 @@ watch(apiRates, (newRates) => {
 
 const shippingAmount = computed(() => selectedRate.value?.amount_cents ?? 0);
 
-const taxRate = computed(() => (storeSettings.value?.taxRate ?? 12) / 100);
-const taxAmount = computed(() => Math.round(subtotal.value * taxRate.value));
+const cartSubtotalCents = computed(() => subtotal.value);
+const provinceRef = computed(() => form.state);
+
+const {
+    result: taxPreviewResult,
+    isLoading: taxPreviewLoading,
+} = useTaxPreview(countryRef, provinceRef, cartSubtotalCents);
+
+const taxMode = computed(() => storeSettings.value?.taxMode ?? 'flat_rate');
+
+const taxAmount = computed(() => {
+    if (taxMode.value === 'zone_based') {
+        return taxPreviewResult.value?.total_tax_cents ?? 0;
+    }
+    const rate = (storeSettings.value?.taxRate ?? 12) / 100;
+    return Math.round(subtotal.value * rate);
+});
+
 const total = computed(
     () => subtotal.value + shippingAmount.value + taxAmount.value,
 );
@@ -1398,15 +1417,49 @@ function submit(): void {
                                     <template v-else>—</template>
                                 </span>
                             </div>
+                            <!-- Tax: zone-based breakdown or flat-rate single line -->
+                            <template v-if="taxMode === 'zone_based'">
+                                <!-- Skeleton pulse while fetching -->
+                                <div
+                                    v-if="taxPreviewLoading"
+                                    class="flex justify-between text-sm"
+                                    style="color: rgba(28, 26, 23, 0.7)"
+                                >
+                                    <span>Tax</span>
+                                    <span
+                                        class="animate-pulse rounded"
+                                        style="background-color: rgba(28, 26, 23, 0.15); width: 60px; height: 1em; display: inline-block;"
+                                    />
+                                </div>
+                                <!-- Breakdown lines per rate -->
+                                <template v-else-if="taxPreviewResult && taxPreviewResult.breakdown.length > 0">
+                                    <div
+                                        v-for="line in taxPreviewResult.breakdown"
+                                        :key="line.name"
+                                        class="flex justify-between text-sm"
+                                        style="color: rgba(28, 26, 23, 0.7)"
+                                    >
+                                        <span>{{ line.name }} ({{ line.rate }}%)</span>
+                                        <span>{{ price(line.amount_cents) }}</span>
+                                    </div>
+                                </template>
+                                <!-- No zone matched -->
+                                <div
+                                    v-else
+                                    class="flex justify-between text-sm"
+                                    style="color: rgba(28, 26, 23, 0.7)"
+                                >
+                                    <span>Tax</span>
+                                    <span>{{ price(0) }}</span>
+                                </div>
+                            </template>
+                            <!-- Flat-rate single line -->
                             <div
+                                v-else
                                 class="flex justify-between text-sm"
                                 style="color: rgba(28, 26, 23, 0.7)"
                             >
-                                <span
-                                    >Tax ({{
-                                        storeSettings?.taxRate ?? 12
-                                    }}%)</span
-                                >
+                                <span>Tax ({{ storeSettings?.taxRate ?? 12 }}%)</span>
                                 <span>{{ price(taxAmount) }}</span>
                             </div>
                             <div
@@ -1426,7 +1479,7 @@ function submit(): void {
                         <button
                             class="mt-6 w-full rounded-full py-4 text-sm font-semibold tracking-widest text-white uppercase transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
                             style="background-color: #1c1a17"
-                            :disabled="form.processing"
+                            :disabled="form.processing || (taxMode === 'zone_based' && taxPreviewLoading)"
                             @click="submit"
                         >
                             {{

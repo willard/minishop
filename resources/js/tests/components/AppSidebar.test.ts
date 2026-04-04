@@ -58,6 +58,9 @@ vi.mock('@/actions/App/Http/Controllers/Admin/ActivityLogController', () => ({
 vi.mock('@/actions/App/Http/Controllers/Admin/UserController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/users' })),
 }));
+vi.mock('@/actions/App/Http/Controllers/Admin/TaxZoneController', () => ({
+    index: vi.fn(() => ({ url: '/dashboard/tax-zones' })),
+}));
 
 vi.mock('@/components/ui/sidebar', () => ({
     Sidebar: {
@@ -111,6 +114,7 @@ const ALL_NAV_TITLES = [
     'Users',
     'Coupons',
     'Shipping Methods',
+    'Tax Zones',
     'Activity Log',
     'Settings',
 ];

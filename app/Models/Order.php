@@ -35,6 +35,8 @@ class Order extends Model
         'shipping_postcode',
         'shipping_country',
         'notes',
+        'tax_zone_name',
+        'tax_breakdown',
     ];
 
     protected function casts(): array
@@ -47,6 +49,7 @@ class Order extends Model
             'tax_amount' => 'integer',
             'total_amount' => 'integer',
             'paid_at' => 'datetime',
+            'tax_breakdown' => 'array',
         ];
     }
 

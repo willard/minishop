@@ -49,6 +49,12 @@ class ShippingRateService
                 fn () => $driver->getRates($shipment)
             );
 
+            // Guard against stale serialised entries (e.g. after a class rename).
+            if (! $carrierRates instanceof Collection) {
+                Cache::forget($cacheKey);
+                $carrierRates = $driver->getRates($shipment);
+            }
+
             // Annotate each rate with the matching ShippingMethod id
             foreach ($carrierRates as $rate) {
                 $matchingMethod = $methods->first(
