@@ -14,6 +14,13 @@ interface OrderItem {
     subtotal: number;
 }
 
+interface TaxBreakdownLine {
+    name: string;
+    name_fr: string | null;
+    rate: number;
+    amount_cents: number;
+}
+
 interface Order {
     id: number;
     order_number: string;
@@ -22,6 +29,8 @@ interface Order {
     discount_amount: number;
     shipping_amount: number;
     tax_amount: number;
+    tax_zone_name: string | null;
+    tax_breakdown: TaxBreakdownLine[] | null;
     total_amount: number;
     shipping_name: string;
     shipping_address_line1: string;
@@ -179,11 +188,23 @@ const { formatPrice } = usePrice();
                                 formatPrice(order.shipping_amount)
                             }}</span>
                         </div>
+                        <template v-if="order.tax_breakdown && order.tax_breakdown.length > 0">
+                            <div
+                                v-for="line in order.tax_breakdown"
+                                :key="line.name"
+                                class="flex justify-between text-sm"
+                                style="color: rgba(28, 26, 23, 0.65)"
+                            >
+                                <span>{{ line.name }} ({{ line.rate }}%)</span>
+                                <span>{{ formatPrice(line.amount_cents) }}</span>
+                            </div>
+                        </template>
                         <div
+                            v-else
                             class="flex justify-between text-sm"
                             style="color: rgba(28, 26, 23, 0.65)"
                         >
-                            <span>Tax (12%)</span>
+                            <span>Tax</span>
                             <span>{{ formatPrice(order.tax_amount) }}</span>
                         </div>
                         <div
