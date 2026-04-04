@@ -22,13 +22,23 @@ class CheckLowStock
             ?? StoreSettings::current()->low_stock_threshold;
 
         if ($threshold === null) {
+            // No threshold configured — can't determine low-stock state.
+            // Still reset a stale flag if stock was explicitly changed.
+            if ($model->low_stock_notified) {
+                $model->newQueryWithoutScopes()
+                    ->where($model->getKeyName(), $model->getKey())
+                    ->update(['low_stock_notified' => false]);
+            }
+
             return;
         }
 
         if ($model->stock_quantity <= $threshold && ! $model->low_stock_notified) {
-            // forceFill bypasses $fillable so low_stock_notified can be toggled
-            // internally without exposing it to mass assignment from user input.
-            $model->forceFill(['low_stock_notified' => true])->saveQuietly();
+            // Use a direct query to set the flag — avoids Eloquent's fill/dirty
+            // tracking and bypasses $fillable without re-triggering the observer.
+            $model->newQueryWithoutScopes()
+                ->where($model->getKeyName(), $model->getKey())
+                ->update(['low_stock_notified' => true]);
 
             $subject = $model instanceof ProductVariant
                 ? LowStockSubject::fromVariant($model->loadMissing('product'))
@@ -43,7 +53,9 @@ class CheckLowStock
         }
 
         if ($model->stock_quantity > $threshold && $model->low_stock_notified) {
-            $model->forceFill(['low_stock_notified' => false])->saveQuietly();
+            $model->newQueryWithoutScopes()
+                ->where($model->getKeyName(), $model->getKey())
+                ->update(['low_stock_notified' => false]);
         }
     }
 }
