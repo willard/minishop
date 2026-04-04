@@ -39,6 +39,15 @@ class StoreSettings extends Model
      */
     public static function current(): self
     {
-        return Cache::rememberForever('store_settings', fn () => static::firstOrCreate([]));
+        $settings = Cache::rememberForever('store_settings', fn () => static::firstOrCreate([]));
+
+        // Guard against stale cached values (e.g. __PHP_Incomplete_Class after a deployment
+        // that adds new casts or enums to this model).
+        if (! $settings instanceof self) {
+            Cache::forget('store_settings');
+            $settings = Cache::rememberForever('store_settings', fn () => static::firstOrCreate([]));
+        }
+
+        return $settings;
     }
 }
