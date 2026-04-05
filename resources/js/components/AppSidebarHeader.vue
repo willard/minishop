@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { index } from '@/actions/App/Http/Controllers/Admin/ProductController';
 import type { BreadcrumbItem } from '@/types';
+import { Link, usePage } from '@inertiajs/vue3';
+import { Bell } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 withDefaults(
     defineProps<{
@@ -11,6 +15,9 @@ withDefaults(
         breadcrumbs: () => [],
     },
 );
+
+const page = usePage();
+const lowStockCount = computed(() => (page.props.lowStockCount as number | null | undefined) ?? null);
 </script>
 
 <template>
@@ -22,6 +29,30 @@ withDefaults(
             <template v-if="breadcrumbs && breadcrumbs.length > 0">
                 <Breadcrumbs :breadcrumbs="breadcrumbs" />
             </template>
+        </div>
+
+        <div class="ml-auto flex items-center pr-2">
+            <Link
+                v-if="lowStockCount !== null"
+                :href="index.url({ query: { stock: 'low_stock' } })"
+                class="relative inline-flex items-center rounded-md p-2 hover:bg-accent"
+            >
+                <Bell class="size-4" />
+                <span
+                    v-if="lowStockCount > 0"
+                    class="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white"
+                    aria-hidden="true"
+                >
+                    {{ lowStockCount > 99 ? '99+' : lowStockCount }}
+                </span>
+                <span class="sr-only">
+                    {{
+                        lowStockCount > 0
+                            ? `${lowStockCount} low stock alert${lowStockCount === 1 ? '' : 's'}`
+                            : 'Low stock alerts'
+                    }}
+                </span>
+            </Link>
         </div>
     </header>
 </template>

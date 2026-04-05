@@ -302,6 +302,13 @@ function submitUpdatePrice(): void {
                 </Button>
                 <Button
                     size="sm"
+                    :variant="filters.stock === 'low_stock' ? 'default' : 'outline'"
+                    @click="applyStock('low_stock')"
+                >
+                    Low Stock
+                </Button>
+                <Button
+                    size="sm"
                     :variant="filters.stock === 'out_of_stock' ? 'default' : 'outline'"
                     @click="applyStock('out_of_stock')"
                 >

@@ -115,7 +115,22 @@
       "Bash(ls /Users/willardmacay/Devs/ai/minishop/.env*)",
       "Bash(php -r \":*)",
       "Bash(gh:*)",
-      "Bash(php /tmp/test_session.php)"
+      "Bash(php /tmp/test_session.php)",
+      "Bash(mkdir:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '{hookSpecificOutput: {hookEventName: \"PostToolUse\", additionalContext: (\"AUTOMATIC REVIEW REQUIRED: A plan was just finalized. You MUST now run /review-plan on the plan file to review it with the multi-agent review system. Plan tool response: \" + (.tool_response | tostring))}}' 2>/dev/null || echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"AUTOMATIC REVIEW REQUIRED: A plan was just finalized. Run /review-plan on the plan file to review it.\"}}'",
+            "statusMessage": "Queuing automatic plan review..."
+          }
+        ]
+      }
     ]
   },
   "enableAllProjectMcpServers": true,

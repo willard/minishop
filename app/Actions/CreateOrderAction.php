@@ -105,7 +105,7 @@ class CreateOrderAction
                 'shipping_amount' => $shippingAmount,
                 'tax_amount' => $taxAmount,
                 'tax_zone_name' => $resolution->zoneName,
-                'tax_breakdown' => ! empty($resolution->breakdown) ? $resolution->breakdown : null,
+                'tax_breakdown' => $resolution->breakdown ?: null,
                 'total_amount' => $totalAmount,
                 'shipping_name' => $data['shipping_name'],
                 'shipping_address_line1' => $data['shipping_address_line1'],
@@ -127,15 +127,21 @@ class CreateOrderAction
                     'quantity' => $item['quantity'],
                     'subtotal' => $item['subtotal'],
                 ]);
+            }
 
+            // Batch lock all rows before decrementing to minimise lock window.
+            // Instance-level decrement fires Eloquent observers (query-builder does not).
+            $variantIds = collect($data['items'])->pluck('variant_id')->filter()->unique()->values()->all();
+            $productIds = collect($data['items'])->filter(fn ($i) => empty($i['variant_id']))->pluck('product_id')->unique()->values()->all();
+
+            $variants = ProductVariant::whereIn('id', $variantIds)->lockForUpdate()->get()->keyBy('id');
+            $products = Product::whereIn('id', $productIds)->lockForUpdate()->get()->keyBy('id');
+
+            foreach ($data['items'] as $item) {
                 if (! empty($item['variant_id'])) {
-                    ProductVariant::query()
-                        ->where('id', $item['variant_id'])
-                        ->decrement('stock_quantity', $item['quantity']);
+                    $variants[$item['variant_id']]->decrement('stock_quantity', $item['quantity']);
                 } else {
-                    Product::query()
-                        ->where('id', $item['product_id'])
-                        ->decrement('stock_quantity', $item['quantity']);
+                    $products[$item['product_id']]->decrement('stock_quantity', $item['quantity']);
                 }
             }
 
