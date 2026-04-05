@@ -50,6 +50,14 @@ vi.mock('@/actions/App/Http/Controllers/Admin/ProductController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/products' })),
 }));
 
+vi.mock('@/components/RevenueChart.vue', () => ({
+    default: {
+        name: 'RevenueChart',
+        template: '<div />',
+        props: ['data'],
+    },
+}));
+
 const baseProps = {
     totalRevenue: 152300,
     totalOrders: 8,
@@ -83,6 +91,10 @@ const baseProps = {
     lowStockProducts: [
         { id: 1, name: 'Blue T-Shirt', sku: 'TSH-001', stock_quantity: 3 },
         { id: 2, name: 'Red Cap', sku: null, stock_quantity: 8 },
+    ],
+    revenueChart: [
+        { label: 'Jan 2026', revenue: 50000 },
+        { label: 'Feb 2026', revenue: 75000 },
     ],
 };
 

@@ -49,9 +49,46 @@ class DashboardController extends Controller
 
         $lowStockCount = $productLowStockCount + $variantLowStockCount;
 
-        $lowStockProducts = $lowStockThreshold !== null
-            ? (clone $productLowStockQuery)->orderBy('stock_quantity')->limit(5)->get()
-            : collect();
+        $lowStockProducts = collect();
+
+        if ($lowStockThreshold !== null) {
+            $standaloneProducts = (clone $productLowStockQuery)
+                ->orderBy('stock_quantity')
+                ->limit(5)
+                ->get()
+                ->map(fn (Product $p) => [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'sku' => $p->sku,
+                    'stock_quantity' => $p->stock_quantity,
+                ]);
+
+            $variantItems = ProductVariant::with(['product', 'optionValues.option'])
+                ->where('stock_quantity', '<=', $lowStockThreshold)
+                ->where('stock_quantity', '>', 0)
+                ->whereHas('product', fn ($q) => $q->where('is_active', true))
+                ->orderBy('stock_quantity')
+                ->limit(5)
+                ->get()
+                ->map(function (ProductVariant $v) {
+                    $optionLabel = $v->optionValues
+                        ->map(fn ($ov) => $ov->value)
+                        ->join(' / ');
+
+                    return [
+                        'id' => $v->product_id,
+                        'name' => $v->product->name.($optionLabel ? " ({$optionLabel})" : ''),
+                        'sku' => $v->sku,
+                        'stock_quantity' => $v->stock_quantity,
+                    ];
+                });
+
+            $lowStockProducts = $standaloneProducts
+                ->merge($variantItems)
+                ->sortBy('stock_quantity')
+                ->take(5)
+                ->values();
+        }
 
         $recentOrders = Order::query()
             ->with('customer.user')
