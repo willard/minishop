@@ -23,7 +23,7 @@ class ProductBulkActionController extends Controller
             'activate' => $products->each(fn (Product $product) => $product->update(['is_active' => true])),
             'deactivate' => $products->each(fn (Product $product) => $product->update(['is_active' => false])),
             'assign_category' => $products->each(fn (Product $product) => $product->categories()->syncWithoutDetaching([$data['category_id']])),
-            'update_stock' => $products->each(fn (Product $product) => $product->update(['stock_quantity' => $data['stock_quantity']])),
+            'update_stock' => $products->reject(fn (Product $product) => $product->isBundled())->each(fn (Product $product) => $product->update(['stock_quantity' => $data['stock_quantity']])),
             'update_price' => $products->each(fn (Product $product) => $product->update(['price' => $data['price']])),
         };
 

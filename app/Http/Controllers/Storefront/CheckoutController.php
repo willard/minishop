@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Storefront;
 
+use App\Actions\BuildLineItemsAction;
 use App\Actions\CreateOrderAction;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
@@ -9,8 +10,6 @@ use App\Http\Requests\Storefront\StoreCheckoutRequest;
 use App\Mail\OrderConfirmationMail;
 use App\Models\Customer;
 use App\Models\Order;
-use App\Models\Product;
-use App\Models\ProductVariant;
 use App\Models\StoreSettings;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -26,11 +25,11 @@ class CheckoutController extends Controller
         return Inertia::render('storefront/Checkout');
     }
 
-    public function store(StoreCheckoutRequest $request, CreateOrderAction $createOrder): RedirectResponse
+    public function store(StoreCheckoutRequest $request, BuildLineItemsAction $buildLineItems, CreateOrderAction $createOrder): RedirectResponse
     {
         $validated = $request->validated();
 
-        $lineItems = $this->buildLineItems($validated['items']);
+        $lineItems = $buildLineItems->execute($validated['items']);
 
         $user = User::query()->firstOrCreate(
             ['email' => $validated['email']],
@@ -83,49 +82,5 @@ class CheckoutController extends Controller
         return Inertia::render('storefront/OrderConfirmation', [
             'order' => $order,
         ]);
-    }
-
-    /**
-     * @param  array<int, array{product_id: int, variant_id: int|null, quantity: int}>  $items
-     * @return array<int, array{product_id: int, variant_id: int|null, product_name: string, product_sku: string|null, unit_price: int, quantity: int, subtotal: int}>
-     */
-    private function buildLineItems(array $items): array
-    {
-        $lineItems = [];
-
-        foreach ($items as $item) {
-            $product = Product::query()->findOrFail($item['product_id']);
-            abort_unless($product->is_active, 422, 'One or more products are no longer available.');
-
-            $unitPrice = $product->price;
-            $sku = $product->sku;
-
-            if (! empty($item['variant_id'])) {
-                $variant = ProductVariant::query()
-                    ->where('id', $item['variant_id'])
-                    ->where('product_id', $product->id)
-                    ->where('is_active', true)
-                    ->firstOrFail();
-
-                $unitPrice = $variant->price ?? $product->price;
-                $sku = $variant->sku ?? $product->sku;
-
-                abort_if($variant->stock_quantity < $item['quantity'], 422, "Insufficient stock for {$product->name}.");
-            } else {
-                abort_if($product->stock_quantity < $item['quantity'], 422, "Insufficient stock for {$product->name}.");
-            }
-
-            $lineItems[] = [
-                'product_id' => $product->id,
-                'variant_id' => $item['variant_id'] ?? null,
-                'product_name' => $product->name,
-                'product_sku' => $sku,
-                'unit_price' => $unitPrice,
-                'quantity' => $item['quantity'],
-                'subtotal' => $unitPrice * $item['quantity'],
-            ];
-        }
-
-        return $lineItems;
     }
 }

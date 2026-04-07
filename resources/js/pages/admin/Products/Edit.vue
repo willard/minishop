@@ -7,6 +7,7 @@ import {
     update,
 } from '@/actions/App/Http/Controllers/Admin/ProductController';
 import InputError from '@/components/InputError.vue';
+import ProductTypeBadge from '@/components/ProductTypeBadge.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,7 @@ interface Category {
 
 interface Product {
     id: number;
+    type: string;
     name: string;
     slug: string;
     description: string | null;
@@ -62,7 +64,10 @@ const selectedCategoryIds = props.product.categories.map((c) => c.id);
                     </Button>
                 </Link>
                 <div>
-                    <h1 class="text-2xl font-semibold">Edit Product</h1>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-2xl font-semibold">Edit Product</h1>
+                        <ProductTypeBadge :type="product.type" />
+                    </div>
                     <p class="text-sm text-muted-foreground">
                         {{ product.name }}
                     </p>
@@ -180,7 +185,7 @@ const selectedCategoryIds = props.product.categories.map((c) => c.id);
                         />
                         <InputError :message="errors.sku" />
                     </div>
-                    <div class="grid gap-2">
+                    <div v-if="product.type !== 'bundled'" class="grid gap-2">
                         <Label for="stock_quantity">Stock Quantity</Label>
                         <Input
                             id="stock_quantity"

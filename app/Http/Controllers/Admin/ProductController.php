@@ -25,7 +25,7 @@ class ProductController extends Controller
     {
         $this->authorize('viewAny', Product::class);
 
-        $filters = $request->only(['search', 'category_id', 'stock', 'sort_by', 'sort_dir']);
+        $filters = $request->only(['search', 'category_id', 'stock', 'type', 'sort_by', 'sort_dir']);
 
         $products = $this->buildProductQuery($filters)
             ->paginate(20)
@@ -47,7 +47,7 @@ class ProductController extends Controller
     {
         $this->authorize('viewAny', Product::class);
 
-        $filters = $request->only(['search', 'category_id', 'stock', 'sort_by', 'sort_dir']);
+        $filters = $request->only(['search', 'category_id', 'stock', 'type', 'sort_by', 'sort_dir']);
         $format = $request->input('format', 'csv');
 
         $products = $this->buildProductQuery($filters)->get();
@@ -118,15 +118,21 @@ class ProductController extends Controller
 
         $product->load(['categories', 'images', 'options.values', 'variants.optionValues.option', 'variants.images', 'relatedProducts.images']);
 
+        if ($product->isBundled()) {
+            $product->load(['bundleItems.componentProduct.images', 'bundleItems.componentVariant.optionValues.option']);
+        }
+
         $availableProducts = Product::query()
             ->where('id', '!=', $product->id)
             ->where('is_active', true)
+            ->where('type', '!=', 'bundled')
             ->orderBy('name')
-            ->get(['id', 'name', 'slug']);
+            ->get(['id', 'name', 'slug', 'type']);
 
         return Inertia::render('admin/Products/Show', [
             'product' => $product,
             'availableProducts' => $availableProducts,
+            'effective_stock' => $product->getEffectiveStock(),
         ]);
     }
 
@@ -190,7 +196,13 @@ class ProductController extends Controller
             ->when($filters['category_id'] ?? null, function ($query, $categoryId): void {
                 $query->whereHas('categories', fn ($q) => $q->where('categories.id', $categoryId));
             })
+            ->when($filters['type'] ?? null, function ($query, $type): void {
+                $query->where('type', $type);
+            })
             ->when($filters['stock'] ?? null, function ($query, $stock): void {
+                // Exclude bundled products from stock filters — their stock is calculated
+                $query->where('type', '!=', 'bundled');
+
                 if ($stock === 'in_stock') {
                     $query->where('stock_quantity', '>', 0);
                 } elseif ($stock === 'out_of_stock') {

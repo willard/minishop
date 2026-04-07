@@ -192,6 +192,7 @@ class ProductRelatedTest extends TestCase
     {
         $this->actingAs($this->admin())
             ->post(route('admin.products.store'), [
+                'type' => 'simple',
                 'name' => 'SEO Product',
                 'price' => 1999,
                 'meta_title' => 'Custom Page Title',

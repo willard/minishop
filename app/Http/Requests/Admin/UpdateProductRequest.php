@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\ProductType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -14,7 +15,13 @@ class UpdateProductRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if ($this->has('stock_quantity')) {
+        // Strip type — it cannot be changed after creation
+        $this->request->remove('type');
+
+        if ($this->route('product')?->type === ProductType::Bundled) {
+            // Bundled products derive stock from components
+            $this->request->remove('stock_quantity');
+        } elseif ($this->has('stock_quantity')) {
             $this->merge(['stock_quantity' => $this->input('stock_quantity') ?? 0]);
         }
     }

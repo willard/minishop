@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
+import { ref, watch } from 'vue';
 import {
     index,
     create,
@@ -28,6 +29,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Products', href: index().url },
     { title: 'Add Product', href: create().url },
 ];
+
+const selectedType = ref('simple');
+
 </script>
 
 <template>
@@ -56,6 +60,31 @@ const breadcrumbs: BreadcrumbItem[] = [
                 class="flex flex-col gap-6"
                 v-slot="{ errors, processing }"
             >
+                <!-- Product Type -->
+                <div class="grid gap-2">
+                    <Label>Product Type <span class="text-destructive">*</span></Label>
+                    <div class="flex gap-4">
+                        <label v-for="t in ['simple', 'variable', 'bundled']" :key="t" class="flex cursor-pointer items-center gap-2">
+                            <input
+                                type="radio"
+                                name="type"
+                                :value="t"
+                                :checked="selectedType === t"
+                                class="size-4 accent-primary"
+                                @change="selectedType = t"
+                            />
+                            <span class="text-sm capitalize">{{ t }}</span>
+                        </label>
+                    </div>
+                    <p v-if="selectedType === 'variable'" class="text-xs text-muted-foreground">
+                        Add option types and variants after creating the product.
+                    </p>
+                    <p v-if="selectedType === 'bundled'" class="text-xs text-muted-foreground">
+                        Stock is calculated from bundle components. Add components after creating the product.
+                    </p>
+                    <InputError :message="errors.type" />
+                </div>
+
                 <!-- Name -->
                 <div class="grid gap-2">
                     <Label for="name"
@@ -156,7 +185,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                         />
                         <InputError :message="errors.sku" />
                     </div>
-                    <div class="grid gap-2">
+                    <div v-if="selectedType !== 'bundled'" class="grid gap-2">
                         <Label for="stock_quantity">Stock Quantity</Label>
                         <Input
                             id="stock_quantity"

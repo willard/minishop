@@ -101,7 +101,7 @@ class RolePermissionTest extends TestCase
     public function test_manager_can_view_orders_but_not_delete(): void
     {
         $user = User::factory()->manager()->create();
-        $order = \App\Models\Order::factory()->create();
+        $order = Order::factory()->create();
 
         $this->actingAs($user)
             ->get(route('admin.orders.index'))
@@ -154,6 +154,7 @@ class RolePermissionTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('admin.products.store'), [
+                'type' => 'simple',
                 'name' => 'Manager Product',
                 'price' => 1000,
                 'stock_quantity' => 10,

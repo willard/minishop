@@ -5,6 +5,7 @@ use App\Http\Controllers\Account\DashboardController as AccountDashboardControll
 use App\Http\Controllers\Account\OrdersController as AccountOrdersController;
 use App\Http\Controllers\Account\PaymentController as AccountPaymentController;
 use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\BundleItemController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -83,6 +84,7 @@ Route::middleware(['auth', 'verified', 'role:super-admin|admin|manager'])->prefi
     Route::get('products/export', [ProductController::class, 'export'])->name('products.export');
     Route::post('products/bulk', ProductBulkActionController::class)->name('products.bulk');
     Route::resource('products', ProductController::class);
+    Route::resource('products.bundle-items', BundleItemController::class)->only(['store', 'update', 'destroy'])->scoped();
     Route::resource('products.variants', ProductVariantController::class)->except(['index', 'show'])->scoped();
     Route::resource('products.options', ProductOptionController::class)->only(['create', 'store', 'destroy'])->scoped();
     Route::post('products/{product}/related', [ProductRelatedController::class, 'store'])->name('products.related.store');

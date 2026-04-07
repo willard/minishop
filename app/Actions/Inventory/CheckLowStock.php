@@ -14,6 +14,10 @@ class CheckLowStock
 {
     public function execute(Product|ProductVariant $model): void
     {
+        if ($model instanceof Product && $model->isBundled()) {
+            return;
+        }
+
         if (! $model->wasChanged('stock_quantity')) {
             return;
         }

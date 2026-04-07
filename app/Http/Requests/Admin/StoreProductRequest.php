@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\ProductType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreProductRequest extends FormRequest
 {
@@ -14,7 +16,9 @@ class StoreProductRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'stock_quantity' => $this->input('stock_quantity') ?? 0,
+            'stock_quantity' => $this->input('type') === ProductType::Bundled->value
+                ? 0
+                : ($this->input('stock_quantity') ?? 0),
             'is_active' => $this->input('is_active') ?? true,
         ]);
     }
@@ -22,6 +26,7 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'type' => ['required', Rule::enum(ProductType::class)],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'meta_title' => ['nullable', 'string', 'max:255'],

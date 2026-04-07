@@ -3,12 +3,26 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreProductOptionRequest extends FormRequest
 {
     public function authorize(): bool
     {
         return true;
+    }
+
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                $product = $this->route('product');
+
+                if ($product && $product->isBundled()) {
+                    $validator->errors()->add('product', 'Options cannot be added to bundled products.');
+                }
+            },
+        ];
     }
 
     public function rules(): array

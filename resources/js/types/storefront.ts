@@ -52,8 +52,24 @@ export interface StorefrontRelatedProduct {
     images: StorefrontProductImage[];
 }
 
+export interface StorefrontBundleItem {
+    id: number;
+    quantity: number;
+    component_product: {
+        id: number;
+        name: string;
+        slug: string;
+        images: StorefrontProductImage[];
+    };
+    component_variant: {
+        id: number;
+        option_values: StorefrontVariantOptionValue[];
+    } | null;
+}
+
 export interface StorefrontProduct {
     id: number;
+    type: string;
     name: string;
     slug: string;
     description: string | null;
@@ -69,6 +85,7 @@ export interface StorefrontProduct {
     options?: StorefrontOption[];
     variants?: StorefrontVariant[];
     related_products?: StorefrontRelatedProduct[];
+    bundle_items?: StorefrontBundleItem[];
 }
 
 export interface CartItem {

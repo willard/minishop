@@ -11,6 +11,7 @@ import {
     destroy,
     exportMethod,
 } from '@/actions/App/Http/Controllers/Admin/ProductController';
+import ProductTypeBadge from '@/components/ProductTypeBadge.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,7 @@ interface Category {
 
 interface Product {
     id: number;
+    type: string;
     name: string;
     slug: string;
     price: number;
@@ -46,6 +48,7 @@ interface Filters {
     search?: string;
     category_id?: string;
     stock?: string;
+    type?: string;
     sort_by?: string;
     sort_dir?: string;
 }
@@ -138,8 +141,22 @@ function buildExportUrl(format: 'csv' | 'pdf'): string {
     });
 }
 
+const selectedType = ref(props.filters.type ?? '');
+
+watch(selectedType, (value) => {
+    router.get(
+        index().url,
+        {
+            ...props.filters,
+            search: search.value || undefined,
+            type: value || undefined,
+        },
+        { preserveState: true, replace: true },
+    );
+});
+
 const isFiltered =
-    props.filters.search || props.filters.category_id || props.filters.stock;
+    props.filters.search || props.filters.category_id || props.filters.stock || props.filters.type;
 
 // ── Bulk selection ────────────────────────────────────────────────────────────
 
@@ -330,6 +347,17 @@ function submitUpdatePrice(): void {
                         {{ cat.name }}
                     </option>
                 </select>
+
+                <!-- Type filter -->
+                <select
+                    v-model="selectedType"
+                    class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                    <option value="">All Types</option>
+                    <option value="simple">Simple</option>
+                    <option value="variable">Variable</option>
+                    <option value="bundled">Bundled</option>
+                </select>
             </div>
 
             <!-- Bulk action toolbar -->
@@ -511,7 +539,10 @@ function submitUpdatePrice(): void {
                                 />
                             </td>
                             <td class="px-4 py-3 font-medium">
-                                {{ product.name }}
+                                <div class="flex items-center gap-2">
+                                    {{ product.name }}
+                                    <ProductTypeBadge :type="product.type" />
+                                </div>
                             </td>
                             <td
                                 class="px-4 py-3 font-mono text-xs text-muted-foreground"
@@ -523,6 +554,13 @@ function submitUpdatePrice(): void {
                             </td>
                             <td class="px-4 py-3">
                                 <span
+                                    v-if="product.type === 'bundled'"
+                                    class="text-xs text-muted-foreground italic"
+                                >
+                                    Calculated
+                                </span>
+                                <span
+                                    v-else
                                     :class="
                                         product.stock_quantity === 0
                                             ? 'font-medium text-destructive'

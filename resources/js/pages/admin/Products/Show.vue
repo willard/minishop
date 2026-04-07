@@ -27,6 +27,10 @@ import {
     destroy as destroyOption,
 } from '@/actions/App/Http/Controllers/Admin/ProductOptionController';
 import {
+    store as storeBundleItem,
+    destroy as destroyBundleItem,
+} from '@/actions/App/Http/Controllers/Admin/BundleItemController';
+import {
     store as storeRelated,
     destroy as destroyRelated,
 } from '@/actions/App/Http/Controllers/Admin/ProductRelatedController';
@@ -35,6 +39,7 @@ import {
     edit as editVariant,
     destroy as destroyVariant,
 } from '@/actions/App/Http/Controllers/Admin/ProductVariantController';
+import ProductTypeBadge from '@/components/ProductTypeBadge.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -89,14 +94,34 @@ interface RelatedProduct {
     images: ProductImage[];
 }
 
+interface BundleItem {
+    id: number;
+    quantity: number;
+    sort_order: number;
+    component_product: {
+        id: number;
+        name: string;
+        slug: string;
+        stock_quantity: number;
+        images: ProductImage[];
+    };
+    component_variant: {
+        id: number;
+        stock_quantity: number;
+        option_values: OptionValue[];
+    } | null;
+}
+
 interface AvailableProduct {
     id: number;
     name: string;
     slug: string;
+    type: string;
 }
 
 interface Product {
     id: number;
+    type: string;
     name: string;
     slug: string;
     description: string | null;
@@ -112,11 +137,13 @@ interface Product {
     options: ProductOption[];
     variants: ProductVariant[];
     related_products: RelatedProduct[];
+    bundle_items?: BundleItem[];
 }
 
 const props = defineProps<{
     product: Product;
     availableProducts: AvailableProduct[];
+    effective_stock: number;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -284,6 +311,54 @@ function moveImage(fromIndex: number, toIndex: number): void {
         },
     );
 }
+
+// ── Bundle Components ────────────────────────────────────────────────────────
+
+const bundleComponentId = ref<number | ''>('');
+const bundleComponentQty = ref(1);
+const bundleProcessing = ref(false);
+
+const availableForBundle = computed(() =>
+    props.availableProducts.filter(
+        (p) =>
+            p.type !== 'bundled' &&
+            !(props.product.bundle_items ?? []).some(
+                (bi) => bi.component_product.id === p.id,
+            ),
+    ),
+);
+
+function addBundleComponent(): void {
+    if (!bundleComponentId.value) return;
+    bundleProcessing.value = true;
+
+    router.post(
+        storeBundleItem(props.product).url,
+        {
+            component_product_id: bundleComponentId.value,
+            quantity: bundleComponentQty.value,
+        },
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                bundleProcessing.value = false;
+            },
+            onSuccess: () => {
+                bundleComponentId.value = '';
+                bundleComponentQty.value = 1;
+            },
+        },
+    );
+}
+
+function confirmRemoveBundleItem(item: BundleItem): void {
+    if (confirm(`Remove "${item.component_product.name}" from this bundle?`)) {
+        router.delete(
+            destroyBundleItem({ product: props.product, bundle_item: item.id }).url,
+            { preserveScroll: true },
+        );
+    }
+}
 </script>
 
 <template>
@@ -300,9 +375,12 @@ function moveImage(fromIndex: number, toIndex: number): void {
                         </Button>
                     </Link>
                     <div>
-                        <h1 class="text-2xl font-semibold">
-                            {{ product.name }}
-                        </h1>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-2xl font-semibold">
+                                {{ product.name }}
+                            </h1>
+                            <ProductTypeBadge :type="product.type" />
+                        </div>
                         <p class="font-mono text-sm text-muted-foreground">
                             {{ product.slug }}
                         </p>
@@ -414,15 +492,29 @@ function moveImage(fromIndex: number, toIndex: number): void {
                         >
                             Stock
                         </p>
-                        <p
-                            :class="
-                                product.stock_quantity === 0
-                                    ? 'font-medium text-destructive'
-                                    : ''
-                            "
-                        >
-                            {{ product.stock_quantity }} units
-                        </p>
+                        <template v-if="product.type === 'bundled'">
+                            <p
+                                :class="
+                                    effective_stock === 0
+                                        ? 'font-medium text-destructive'
+                                        : ''
+                                "
+                            >
+                                {{ effective_stock }} units
+                                <span class="text-xs text-muted-foreground">(calculated)</span>
+                            </p>
+                        </template>
+                        <template v-else>
+                            <p
+                                :class="
+                                    product.stock_quantity === 0
+                                        ? 'font-medium text-destructive'
+                                        : ''
+                                "
+                            >
+                                {{ product.stock_quantity }} units
+                            </p>
+                        </template>
                     </div>
                 </div>
 
@@ -576,8 +668,109 @@ function moveImage(fromIndex: number, toIndex: number): void {
                 </div>
             </div>
 
-            <!-- Options -->
+            <!-- Bundle Components (bundled only) -->
             <div
+                v-if="product.type === 'bundled'"
+                class="overflow-hidden rounded-lg border border-sidebar-border"
+            >
+                <div
+                    class="flex items-center justify-between border-b border-sidebar-border bg-muted/50 px-4 py-3"
+                >
+                    <h2 class="text-sm font-semibold">Bundle Components</h2>
+                </div>
+
+                <div
+                    v-if="!product.bundle_items || product.bundle_items.length === 0"
+                    class="px-4 py-6 text-center text-sm text-muted-foreground"
+                >
+                    No components yet. Add products to this bundle below.
+                </div>
+
+                <div v-else class="divide-y divide-sidebar-border">
+                    <div
+                        v-for="item in product.bundle_items"
+                        :key="item.id"
+                        class="flex items-center justify-between px-4 py-3"
+                    >
+                        <div class="flex items-center gap-3">
+                            <img
+                                v-if="item.component_product.images.length > 0"
+                                :src="`/storage/${item.component_product.images[0].path}`"
+                                :alt="item.component_product.name"
+                                class="size-10 rounded-md border border-sidebar-border object-cover"
+                            />
+                            <div
+                                v-else
+                                class="flex size-10 items-center justify-center rounded-md border border-sidebar-border bg-muted text-xs text-muted-foreground"
+                            >
+                                —
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium">{{ item.component_product.name }}</p>
+                                <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <span>Qty: {{ item.quantity }}</span>
+                                    <template v-if="item.component_variant">
+                                        <Badge
+                                            v-for="ov in item.component_variant.option_values"
+                                            :key="ov.id"
+                                            variant="secondary"
+                                            class="text-[10px]"
+                                        >
+                                            {{ ov.option.name }}: {{ ov.value }}
+                                        </Badge>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            class="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                            @click="confirmRemoveBundleItem(item)"
+                        >
+                            <X class="size-3" />
+                        </Button>
+                    </div>
+                </div>
+
+                <div class="border-t border-sidebar-border px-4 py-3">
+                    <div class="flex items-center gap-2">
+                        <select
+                            v-model="bundleComponentId"
+                            class="flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        >
+                            <option value="">Select a product…</option>
+                            <option
+                                v-for="p in availableForBundle"
+                                :key="p.id"
+                                :value="p.id"
+                            >
+                                {{ p.name }}
+                            </option>
+                        </select>
+                        <Input
+                            v-model.number="bundleComponentQty"
+                            type="number"
+                            min="1"
+                            max="999"
+                            class="w-20"
+                            placeholder="Qty"
+                        />
+                        <Button
+                            size="sm"
+                            :disabled="!bundleComponentId || bundleProcessing"
+                            @click="addBundleComponent"
+                        >
+                            <Plus class="mr-1 size-3" />
+                            Add
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Options (not for bundled) -->
+            <div
+                v-if="product.type !== 'bundled'"
                 class="overflow-hidden rounded-lg border border-sidebar-border"
             >
                 <div
@@ -638,8 +831,9 @@ function moveImage(fromIndex: number, toIndex: number): void {
                 </div>
             </div>
 
-            <!-- Variants -->
+            <!-- Variants (not for bundled) -->
             <div
+                v-if="product.type !== 'bundled'"
                 class="overflow-hidden rounded-lg border border-sidebar-border"
             >
                 <div

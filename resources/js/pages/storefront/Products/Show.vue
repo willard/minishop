@@ -16,6 +16,7 @@ import type { StorefrontProduct, StorefrontVariant } from '@/types/storefront';
 
 const props = defineProps<{
     product: StorefrontProduct;
+    in_stock?: boolean;
 }>();
 
 const metaTitle = computed(() => props.product.meta_title || props.product.name);
@@ -78,7 +79,14 @@ const effectiveStock = computed<number>(() => {
     );
 });
 
-const inStock = computed<boolean>(() => effectiveStock.value > 0);
+const isBundled = computed(() => props.product.type === 'bundled');
+
+const inStock = computed<boolean>(() => {
+    if (isBundled.value) {
+        return props.in_stock ?? false;
+    }
+    return effectiveStock.value > 0;
+});
 
 const variantLabel = computed<string | null>(() => {
     if (!props.product.options || props.product.options.length === 0) {
@@ -329,8 +337,49 @@ function handleAddToCart(): void {
                         style="background-color: rgba(28, 26, 23, 0.1)"
                     />
 
+                    <!-- What's Included (bundled only) -->
+                    <div v-if="isBundled && product.bundle_items && product.bundle_items.length > 0" class="mb-6">
+                        <h2
+                            class="mb-3 text-sm font-semibold tracking-wider uppercase"
+                            style="color: #1c1a17"
+                        >
+                            What's Included
+                        </h2>
+                        <div class="space-y-3">
+                            <div
+                                v-for="item in product.bundle_items"
+                                :key="item.id"
+                                class="flex items-center gap-3"
+                            >
+                                <div
+                                    class="size-10 flex-shrink-0 overflow-hidden rounded-lg"
+                                    style="background: linear-gradient(135deg, #e8dfd4 0%, #d4c8b8 100%)"
+                                >
+                                    <img
+                                        v-if="item.component_product.images.length > 0"
+                                        :src="item.component_product.images[0].url"
+                                        :alt="item.component_product.name"
+                                        class="h-full w-full object-cover"
+                                    />
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium" style="color: #1c1a17">
+                                        {{ item.component_product.name }}
+                                    </p>
+                                    <p
+                                        v-if="item.quantity > 1"
+                                        class="text-xs"
+                                        style="color: rgba(28, 26, 23, 0.5)"
+                                    >
+                                        Qty: {{ item.quantity }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Variant options -->
-                    <div v-if="hasVariants" class="mb-6 space-y-5">
+                    <div v-if="hasVariants && !isBundled" class="mb-6 space-y-5">
                         <div v-for="option in product.options" :key="option.id">
                             <p
                                 class="mb-3 text-sm font-semibold tracking-wider uppercase"
@@ -383,7 +432,7 @@ function handleAddToCart(): void {
                                 class="text-sm"
                                 style="color: rgba(28, 26, 23, 0.6)"
                             >
-                                <template v-if="effectiveStock <= 5">
+                                <template v-if="!isBundled && effectiveStock <= 5">
                                     Only {{ effectiveStock }} left in stock
                                 </template>
                                 <template v-else>In stock</template>

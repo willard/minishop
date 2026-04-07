@@ -54,8 +54,13 @@ class ProductController extends Controller
             },
         ]);
 
+        if ($product->isBundled()) {
+            $product->load(['bundleItems.componentProduct.images', 'bundleItems.componentVariant.optionValues.option']);
+        }
+
         return Inertia::render('storefront/Products/Show', [
             'product' => $product,
+            'in_stock' => $product->getEffectiveStock() > 0,
         ]);
     }
 }

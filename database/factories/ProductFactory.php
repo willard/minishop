@@ -2,11 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Enums\ProductType;
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Product>
+ * @extends Factory<Product>
  */
 class ProductFactory extends Factory
 {
@@ -15,6 +17,7 @@ class ProductFactory extends Factory
         $name = fake()->unique()->words(3, true);
 
         return [
+            'type' => ProductType::Simple,
             'name' => $name,
             'slug' => Str::slug($name),
             'description' => fake()->optional()->paragraph(),
@@ -34,5 +37,28 @@ class ProductFactory extends Factory
     public function inactive(): static
     {
         return $this->state(fn (array $attributes) => ['is_active' => false]);
+    }
+
+    public function simple(): static
+    {
+        return $this->state(fn (array $attributes) => ['type' => ProductType::Simple]);
+    }
+
+    public function variable(): static
+    {
+        return $this->state(fn (array $attributes) => ['type' => ProductType::Variable]);
+    }
+
+    public function bundled(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => ProductType::Bundled,
+            'stock_quantity' => 0,
+        ]);
+    }
+
+    public function bundledEmpty(): static
+    {
+        return $this->bundled();
     }
 }
