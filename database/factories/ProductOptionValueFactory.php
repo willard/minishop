@@ -7,7 +7,7 @@ use App\Models\ProductOptionValue;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProductOptionValue>
+ * @extends Factory<ProductOptionValue>
  */
 class ProductOptionValueFactory extends Factory
 {

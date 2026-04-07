@@ -6,6 +6,7 @@ use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Tests\TestCase;
 
 class UserTest extends TestCase
@@ -453,7 +454,7 @@ class UserTest extends TestCase
     public function test_show_route_name_does_not_exist(): void
     {
         $this->assertFalse(route('admin.users.index') === null);
-        $this->expectException(\Symfony\Component\Routing\Exception\RouteNotFoundException::class);
+        $this->expectException(RouteNotFoundException::class);
         route('admin.users.show', 1);
     }
 }

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import {
     edit,
     index,
@@ -16,8 +18,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { router } from '@inertiajs/vue3';
-import { ref } from 'vue';
 
 interface TaxZoneRate {
     id: number;

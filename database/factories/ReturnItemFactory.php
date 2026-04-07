@@ -4,10 +4,11 @@ namespace Database\Factories;
 
 use App\Models\OrderItem;
 use App\Models\OrderReturn;
+use App\Models\ReturnItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ReturnItem>
+ * @extends Factory<ReturnItem>
  */
 class ReturnItemFactory extends Factory
 {

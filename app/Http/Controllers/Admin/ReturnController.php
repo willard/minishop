@@ -15,6 +15,7 @@ use App\Models\OrderReturn;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -134,7 +135,7 @@ class ReturnController extends Controller
             }
 
             if (empty($itemsToCreate)) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
+                throw ValidationException::withMessages([
                     'items' => 'None of the submitted items belong to this order.',
                 ]);
             }

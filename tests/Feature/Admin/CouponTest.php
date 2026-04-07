@@ -7,6 +7,7 @@ use App\Models\Coupon;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class CouponTest extends TestCase
@@ -236,7 +237,7 @@ class CouponTest extends TestCase
     public function test_show_route_name_does_not_exist(): void
     {
         $this->assertFalse(
-            collect(\Illuminate\Support\Facades\Route::getRoutes()->getRoutesByName())
+            collect(Route::getRoutes()->getRoutesByName())
                 ->has('admin.coupons.show')
         );
     }

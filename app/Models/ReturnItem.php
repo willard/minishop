@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\ReturnItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ReturnItem extends Model
 {
-    /** @use HasFactory<\Database\Factories\ReturnItemFactory> */
+    /** @use HasFactory<ReturnItemFactory> */
     use HasFactory;
 
     protected $fillable = [

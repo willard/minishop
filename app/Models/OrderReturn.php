@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ReturnReason;
 use App\Enums\ReturnStatus;
+use Database\Factories\OrderReturnFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OrderReturn extends Model
 {
-    /** @use HasFactory<\Database\Factories\OrderReturnFactory> */
+    /** @use HasFactory<OrderReturnFactory> */
     use HasFactory;
 
     protected $table = 'order_returns';

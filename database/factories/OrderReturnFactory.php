@@ -5,10 +5,11 @@ namespace Database\Factories;
 use App\Enums\ReturnReason;
 use App\Enums\ReturnStatus;
 use App\Models\Order;
+use App\Models\OrderReturn;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\OrderReturn>
+ * @extends Factory<OrderReturn>
  */
 class OrderReturnFactory extends Factory
 {
