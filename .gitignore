@@ -26,4 +26,9 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# AI assistants
 .claude/settings.local.json
+.claude/mcp.json
+.cursor/
+.gemini/

@@ -242,6 +242,8 @@ Minishop is a **headless ecommerce platform for small businesses**. The backend 
 
 ### Core Ecommerce
 - **Products** — full CRUD, images (product-level + variant-specific), variants (size/color option matrix), stock tracking, SKU, categories, sorting, export (CSV/PDF), bulk actions (activate, deactivate, assign category, update stock, update price, delete)
+- **Product types** — `simple` (no variants), `variable` (option/variant matrix), `bundled` (component products with calculated stock). Type is immutable after creation. `ProductType` enum with `isSimple()` / `isVariable()` / `isBundled()` helpers on the model. Bundle stock is derived via `Product::getEffectiveStock()` from the least-available component. `BuildLineItemsAction` and `DecrementStockAction` handle all three types at checkout.
+- **Related products** — many-to-many `product_related` pivot; displayed on storefront product detail pages
 - **Categories** — hierarchical categories with slugs
 - **Orders** — full lifecycle (`pending → processing → shipped → delivered → cancelled/refunded`), manual order creation, invoice PDF generation, bulk actions (update status, delete), email notifications on status changes
 - **Customers** — profiles linked to `users`, order history
@@ -250,9 +252,10 @@ Minishop is a **headless ecommerce platform for small businesses**. The backend 
 - **Returns & Refunds** — return requests, approval/rejection workflow, refund processing
 
 ### Inventory & Catalog
-- **Stock management** — low-stock alerts, out-of-stock handling, `low_stock_notified` flag
-- **Product variants** — structured option types (e.g. size + colour), nested CRUD under products
+- **Stock management** — automated low-stock threshold alerts per product and per variant; `low_stock_notified` flag prevents duplicate notifications; bundled products are excluded (their stock is calculated)
+- **Product variants** — structured option types (e.g. size + colour), nested CRUD under products; blocked for bundled products
 - **Product images** — multiple images per product or variant; `variant_id IS NULL` = product-level image
+- **SEO** — per-product `meta_title` and `meta_description` fields; slug auto-generated from name on create
 
 ### Payments & Finance
 - **Stripe** — payment intent flow; keys read from `.env` via `config/services.php`
@@ -267,17 +270,17 @@ Minishop is a **headless ecommerce platform for small businesses**. The backend 
 ### Admin Dashboard Panels
 - **Dashboard overview** — KPI cards (revenue, orders, customers, products), revenue chart (dark-mode reactive)
 - **Order management** — list with search/filter/sort, status update, bulk status update, invoice download
-- **Product management** — list with search/filter/sort/export, full CRUD, bulk actions
+- **Product management** — list with search/filter/sort/export, full CRUD, bulk actions, type filter and `ProductTypeBadge` component
 - **Customer management** — list, order history view
 - **Coupon management** — full CRUD
 - **Returns management** — list, approve/reject/receive/refund workflow
 - **User management** — admin user CRUD with roles
-- **Settings** — store name, currency (CAD default), tax rate, shipping methods (flat-rate)
+- **Settings** — store name, currency (CAD default), tax rate, shipping methods
 - **Activity log** — admin action history via Spatie Activity Log
 
 ### Supporting Features
-- **Shipping** — shipping method CRUD; applied at checkout
-- **Tax** — configurable rate (%) stored in `StoreSettings`, applied at checkout
+- **Shipping** — shipping method CRUD; Canada Post carrier integration for calculated rates at checkout (in addition to flat-rate methods)
+- **Tax** — province-aware tax compliance engine; rates resolved per Canadian province at checkout; configurable via `StoreSettings`
 - **Email notifications** — queued mailables for order confirmation and status changes (shipped/delivered/cancelled)
 - **Roles & Permissions** — Spatie Laravel Permission; roles: `super-admin`, `admin`, `manager`, `customer`
 - **Canadian localization** — CAD currency, CA country defaults

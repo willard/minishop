@@ -6,18 +6,24 @@ A headless ecommerce platform for small businesses. Built with Laravel 13, Inert
 
 **Admin Dashboard**
 - Product management — CRUD, variants, images, categories, stock tracking, bulk actions, CSV/PDF export
+- Product types — simple (no variants), variable (option/variant matrix), bundled (component products with calculated stock)
+- SEO fields — per-product meta title, meta description, and auto-generated slugs
+- Related products — curated product relationships shown on storefront detail pages
 - Order management — full lifecycle, manual order creation, invoice PDF, bulk status updates, email notifications
 - Customer management — profiles, purchase history
 - Coupon management — percentage and fixed discounts, expiry, usage limits
 - Returns & refunds — approval/rejection workflow, refund processing
-- Shipping methods — flat-rate configuration
-- Store settings — name, currency, tax rate
+- Shipping — flat-rate methods and Canada Post calculated rates
+- Tax — province-aware compliance engine with per-province rates at checkout
+- Inventory alerts — automated low-stock threshold notifications per product and per variant
+- Store settings — name, currency, tax configuration
 - Revenue chart and KPI dashboard
 - Activity log
 - Role-based access — `super-admin`, `admin`, `manager`, `customer`
 
 **Storefront**
 - Public product catalogue, detail pages, cart, and checkout
+- "What's Included" section for bundled products
 - Stripe and PayMongo payment integration
 - AI-powered support chat (Laravel AI SDK)
 
