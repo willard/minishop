@@ -47,6 +47,7 @@ class ActivityLogTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('admin.products.store'), [
+                'type' => 'simple',
                 'name' => 'Logged Product',
                 'price' => 1000,
             ]);

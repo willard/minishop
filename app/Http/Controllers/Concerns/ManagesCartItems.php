@@ -23,6 +23,10 @@ trait ManagesCartItems
         $product = Product::query()->findOrFail($validated['product_id']);
         abort_unless($product->is_active, 422, 'This product is no longer available.');
 
+        if ($product->isBundled() && ! empty($validated['variant_id'])) {
+            abort(422, 'Bundled products do not support variants.');
+        }
+
         $unitPrice = $product->price;
 
         if (! empty($validated['variant_id'])) {

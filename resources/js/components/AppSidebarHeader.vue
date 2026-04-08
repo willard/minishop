@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import Breadcrumbs from '@/components/Breadcrumbs.vue';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import { index } from '@/actions/App/Http/Controllers/Admin/ProductController';
-import type { BreadcrumbItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { Bell } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { index } from '@/actions/App/Http/Controllers/Admin/ProductController';
+import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import { SidebarTrigger } from '@/components/ui/sidebar';
+import type { BreadcrumbItem } from '@/types';
 
 withDefaults(
     defineProps<{

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -37,7 +38,7 @@ class UpdateUserRequest extends FormRequest
         ];
     }
 
-    public function withValidator(\Illuminate\Contracts\Validation\Validator $validator): void
+    public function withValidator(Validator $validator): void
     {
         $validator->after(function ($validator) {
             if ($this->role === 'super-admin' && ! $this->user()->hasRole('super-admin')) {

@@ -116,9 +116,19 @@
       "Bash(php -r \":*)",
       "Bash(gh:*)",
       "Bash(php /tmp/test_session.php)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Read(//opt/homebrew/bin/**)",
+      "Read(//usr/local/bin/**)",
+      "Bash(/opt/homebrew/bin/php artisan:*)",
+      "Bash(/opt/homebrew/bin/php vendor/bin/pint --dirty --format agent)",
+      "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")",
+      "Bash(npx eslint:*)"
     ]
   },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "laravel-boost"
+  ],
   "hooks": {
     "PostToolUse": [
       {
@@ -132,9 +142,5 @@
         ]
       }
     ]
-  },
-  "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "laravel-boost"
-  ]
+  }
 }

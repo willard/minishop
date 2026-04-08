@@ -50,6 +50,7 @@ class ProductTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('admin.products.store'), [
+                'type' => 'simple',
                 'name' => 'Test Product',
                 'price' => 1999,
                 'stock_quantity' => 10,
@@ -57,7 +58,7 @@ class ProductTest extends TestCase
             ])
             ->assertRedirect();
 
-        $this->assertDatabaseHas('products', ['name' => 'Test Product', 'price' => 1999]);
+        $this->assertDatabaseHas('products', ['name' => 'Test Product', 'price' => 1999, 'type' => 'simple']);
     }
 
     public function test_store_product_requires_name(): void
@@ -98,6 +99,7 @@ class ProductTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('admin.products.store'), [
+                'type' => 'simple',
                 'name' => 'Test Product',
                 'price' => 1999,
             ])
@@ -142,6 +144,7 @@ class ProductTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('admin.products.store'), [
+                'type' => 'simple',
                 'name' => 'Test Product',
                 'price' => 1999,
             ])
@@ -247,6 +250,7 @@ class ProductTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('admin.products.store'), [
+                'type' => 'simple',
                 'name' => 'Test Product',
                 'price' => 1000,
                 'category_ids' => $categories->pluck('id')->toArray(),
@@ -445,5 +449,186 @@ class ProductTest extends TestCase
     public function test_export_requires_authentication(): void
     {
         $this->get(route('admin.products.export'))->assertRedirect(route('login'));
+    }
+
+    // ── Product Types ───────────────────────────────────────────────────────
+
+    public function test_create_simple_product(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.products.store'), [
+                'type' => 'simple',
+                'name' => 'Simple Widget',
+                'price' => 1000,
+                'stock_quantity' => 15,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', [
+            'name' => 'Simple Widget',
+            'type' => 'simple',
+            'stock_quantity' => 15,
+        ]);
+    }
+
+    public function test_create_variable_product(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.products.store'), [
+                'type' => 'variable',
+                'name' => 'Variable Widget',
+                'price' => 2000,
+                'stock_quantity' => 0,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', [
+            'name' => 'Variable Widget',
+            'type' => 'variable',
+        ]);
+    }
+
+    public function test_create_bundled_product_forces_zero_stock(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.products.store'), [
+                'type' => 'bundled',
+                'name' => 'Starter Kit',
+                'price' => 5000,
+                'stock_quantity' => 999,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', [
+            'name' => 'Starter Kit',
+            'type' => 'bundled',
+            'stock_quantity' => 0,
+        ]);
+    }
+
+    public function test_store_product_requires_type(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.products.store'), [
+                'name' => 'No Type Product',
+                'price' => 1000,
+            ])
+            ->assertSessionHasErrors('type');
+    }
+
+    public function test_store_product_rejects_invalid_type(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.products.store'), [
+                'type' => 'nonexistent',
+                'name' => 'Bad Type',
+                'price' => 1000,
+            ])
+            ->assertSessionHasErrors('type');
+    }
+
+    public function test_product_type_cannot_be_changed_via_update_endpoint(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $product = Product::factory()->simple()->create(['name' => 'My Simple']);
+
+        $this->actingAs($user)
+            ->put(route('admin.products.update', $product), [
+                'type' => 'bundled',
+                'name' => 'My Simple',
+                'price' => $product->price,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->id,
+            'type' => 'simple',
+        ]);
+    }
+
+    public function test_update_bundled_product_cannot_set_stock_quantity(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $bundle = Product::factory()->bundledEmpty()->create(['name' => 'My Bundle']);
+
+        $this->actingAs($user)
+            ->put(route('admin.products.update', $bundle), [
+                'name' => 'My Bundle',
+                'price' => $bundle->price,
+                'stock_quantity' => 100,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', [
+            'id' => $bundle->id,
+            'stock_quantity' => 0,
+        ]);
+    }
+
+    public function test_store_variant_rejected_for_bundled_product(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $bundle = Product::factory()->bundledEmpty()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.products.variants.store', $bundle), [
+                'sku' => 'V-001',
+                'stock_quantity' => 10,
+                'option_value_ids' => [1],
+            ])
+            ->assertSessionHasErrors('product');
+    }
+
+    public function test_store_option_rejected_for_bundled_product(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $bundle = Product::factory()->bundledEmpty()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.products.options.store', $bundle), [
+                'name' => 'Size',
+                'values' => ['S', 'M', 'L'],
+            ])
+            ->assertSessionHasErrors('product');
+    }
+
+    public function test_index_filters_by_product_type(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        Product::factory()->simple()->create(['name' => 'Simple Widget']);
+        Product::factory()->bundledEmpty()->create(['name' => 'Bundle Kit']);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index', ['type' => 'bundled']))
+            ->assertInertia(fn ($page) => $page
+                ->has('products.data', 1)
+                ->where('products.data.0.name', 'Bundle Kit')
+            );
+    }
+
+    public function test_show_loads_bundle_items_for_bundled_product(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $bundle = Product::factory()->bundledEmpty()->create();
+        $component = Product::factory()->create(['name' => 'Component A']);
+        $bundle->bundleItems()->create(['component_product_id' => $component->id, 'quantity' => 2]);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.show', $bundle))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('product.bundle_items', 1)
+                ->has('effective_stock')
+            );
     }
 }

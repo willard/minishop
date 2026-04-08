@@ -5,6 +5,7 @@ namespace Tests\Feature\Storefront;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\ShippingMethod;
 use App\Models\StoreSettings;
 use App\Models\TaxZone;
@@ -355,6 +356,128 @@ class CheckoutTest extends TestCase
         $this->assertDatabaseHas('orders', [
             'tax_amount' => 1300,
             'subtotal' => 10000,
+        ]);
+    }
+
+    // ── Bundle checkout ─────────────────────────────────────────────────────
+
+    public function test_checkout_fails_when_bundle_component_is_out_of_stock(): void
+    {
+        $bundle = Product::factory()->bundledEmpty()->create(['price' => 5000]);
+        $componentA = Product::factory()->create(['stock_quantity' => 10]);
+        $componentB = Product::factory()->create(['stock_quantity' => 0]);
+
+        $bundle->bundleItems()->create(['component_product_id' => $componentA->id, 'quantity' => 1]);
+        $bundle->bundleItems()->create(['component_product_id' => $componentB->id, 'quantity' => 1]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [['product_id' => $bundle->id, 'variant_id' => null, 'quantity' => 1]],
+        ]))->assertStatus(422);
+    }
+
+    public function test_checkout_fails_when_bundle_component_variant_is_out_of_stock(): void
+    {
+        $bundle = Product::factory()->bundledEmpty()->create(['price' => 5000]);
+        $component = Product::factory()->variable()->create(['stock_quantity' => 100]);
+        $variant = ProductVariant::factory()->for($component)->create(['stock_quantity' => 0]);
+
+        $bundle->bundleItems()->create([
+            'component_product_id' => $component->id,
+            'component_variant_id' => $variant->id,
+            'quantity' => 1,
+        ]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [['product_id' => $bundle->id, 'variant_id' => null, 'quantity' => 1]],
+        ]))->assertStatus(422);
+    }
+
+    public function test_checkout_with_bundled_product_quantity_greater_than_component_allows(): void
+    {
+        $bundle = Product::factory()->bundledEmpty()->create(['price' => 3000]);
+        $component = Product::factory()->create(['stock_quantity' => 5]);
+
+        $bundle->bundleItems()->create(['component_product_id' => $component->id, 'quantity' => 2]);
+        // effective stock = floor(5/2) = 2, ordering 3 should fail
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [['product_id' => $bundle->id, 'variant_id' => null, 'quantity' => 3]],
+        ]))->assertStatus(422);
+    }
+
+    public function test_bundle_stock_decrement_multiplies_component_qty_by_order_qty(): void
+    {
+        $bundle = Product::factory()->bundledEmpty()->create(['price' => 5000]);
+        $componentA = Product::factory()->create(['stock_quantity' => 20]);
+        $componentB = Product::factory()->create(['stock_quantity' => 30]);
+
+        $bundle->bundleItems()->create(['component_product_id' => $componentA->id, 'quantity' => 2]);
+        $bundle->bundleItems()->create(['component_product_id' => $componentB->id, 'quantity' => 3]);
+
+        // Order 2 bundles: componentA decrements 2*2=4, componentB decrements 3*2=6
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [['product_id' => $bundle->id, 'variant_id' => null, 'quantity' => 2]],
+        ]))->assertRedirect();
+
+        $this->assertDatabaseHas('products', ['id' => $componentA->id, 'stock_quantity' => 16]);
+        $this->assertDatabaseHas('products', ['id' => $componentB->id, 'stock_quantity' => 24]);
+    }
+
+    public function test_bundle_stock_decrement_handles_shared_component(): void
+    {
+        $sharedComponent = Product::factory()->create(['stock_quantity' => 50]);
+
+        $bundleA = Product::factory()->bundledEmpty()->create(['price' => 3000]);
+        $bundleA->bundleItems()->create(['component_product_id' => $sharedComponent->id, 'quantity' => 2]);
+
+        $bundleB = Product::factory()->bundledEmpty()->create(['price' => 4000]);
+        $bundleB->bundleItems()->create(['component_product_id' => $sharedComponent->id, 'quantity' => 3]);
+
+        // Order 1 of each: shared decrements 2*1 + 3*1 = 5
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [
+                ['product_id' => $bundleA->id, 'variant_id' => null, 'quantity' => 1],
+                ['product_id' => $bundleB->id, 'variant_id' => null, 'quantity' => 1],
+            ],
+        ]))->assertRedirect();
+
+        $this->assertDatabaseHas('products', ['id' => $sharedComponent->id, 'stock_quantity' => 45]);
+    }
+
+    public function test_mixed_order_with_simple_and_bundled_products(): void
+    {
+        $simple = Product::factory()->simple()->create(['price' => 1000, 'stock_quantity' => 10]);
+
+        $bundle = Product::factory()->bundledEmpty()->create(['price' => 5000]);
+        $component = Product::factory()->create(['stock_quantity' => 20]);
+        $bundle->bundleItems()->create(['component_product_id' => $component->id, 'quantity' => 2]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [
+                ['product_id' => $simple->id, 'variant_id' => null, 'quantity' => 3],
+                ['product_id' => $bundle->id, 'variant_id' => null, 'quantity' => 2],
+            ],
+        ]))->assertRedirect();
+
+        $this->assertDatabaseHas('products', ['id' => $simple->id, 'stock_quantity' => 7]);
+        $this->assertDatabaseHas('products', ['id' => $component->id, 'stock_quantity' => 16]);
+        $this->assertDatabaseCount('order_items', 2);
+    }
+
+    public function test_bundled_product_order_uses_bundle_price_not_component_prices(): void
+    {
+        $bundle = Product::factory()->bundledEmpty()->create(['price' => 8000]);
+        $component = Product::factory()->create(['price' => 5000, 'stock_quantity' => 10]);
+        $bundle->bundleItems()->create(['component_product_id' => $component->id, 'quantity' => 1]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [['product_id' => $bundle->id, 'variant_id' => null, 'quantity' => 1]],
+        ]))->assertRedirect();
+
+        $this->assertDatabaseHas('order_items', [
+            'product_id' => $bundle->id,
+            'unit_price' => 8000,
+            'subtotal' => 8000,
         ]);
     }
 }

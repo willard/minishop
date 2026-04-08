@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useDark } from '@vueuse/core';
 import {
     BarElement,
     CategoryScale,
@@ -7,7 +8,6 @@ import {
     Tooltip,
     type TooltipItem,
 } from 'chart.js';
-import { useDark } from '@vueuse/core';
 import { computed } from 'vue';
 import { Bar } from 'vue-chartjs';
 

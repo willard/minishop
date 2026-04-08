@@ -2,11 +2,10 @@
 
 namespace App\Actions;
 
+use App\Actions\Inventory\DecrementStockAction;
 use App\Enums\ShippingMethodType;
 use App\Models\Coupon;
 use App\Models\Order;
-use App\Models\Product;
-use App\Models\ProductVariant;
 use App\Models\ShippingMethod;
 use Illuminate\Support\Facades\DB;
 
@@ -47,7 +46,10 @@ class CreateOrderAction
      *     notes: string|null,
      * } $data
      */
-    public function __construct(private readonly ResolveTaxAction $resolveTax) {}
+    public function __construct(
+        private readonly ResolveTaxAction $resolveTax,
+        private readonly DecrementStockAction $decrementStock,
+    ) {}
 
     public function execute(array $data): Order
     {
@@ -129,21 +131,7 @@ class CreateOrderAction
                 ]);
             }
 
-            // Batch lock all rows before decrementing to minimise lock window.
-            // Instance-level decrement fires Eloquent observers (query-builder does not).
-            $variantIds = collect($data['items'])->pluck('variant_id')->filter()->unique()->values()->all();
-            $productIds = collect($data['items'])->filter(fn ($i) => empty($i['variant_id']))->pluck('product_id')->unique()->values()->all();
-
-            $variants = ProductVariant::whereIn('id', $variantIds)->lockForUpdate()->get()->keyBy('id');
-            $products = Product::whereIn('id', $productIds)->lockForUpdate()->get()->keyBy('id');
-
-            foreach ($data['items'] as $item) {
-                if (! empty($item['variant_id'])) {
-                    $variants[$item['variant_id']]->decrement('stock_quantity', $item['quantity']);
-                } else {
-                    $products[$item['product_id']]->decrement('stock_quantity', $item['quantity']);
-                }
-            }
+            $this->decrementStock->execute($data['items']);
 
             $coupon?->increment('used_count');
 
