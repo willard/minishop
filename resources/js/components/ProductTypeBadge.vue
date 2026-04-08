@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
 import { computed } from 'vue';
+import { Badge } from '@/components/ui/badge';
 
 const props = defineProps<{
     type: string;

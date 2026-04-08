@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import {
     index,
     create,

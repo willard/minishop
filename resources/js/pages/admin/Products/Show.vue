@@ -13,6 +13,10 @@ import {
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import {
+    store as storeBundleItem,
+    destroy as destroyBundleItem,
+} from '@/actions/App/Http/Controllers/Admin/BundleItemController';
+import {
     index,
     edit,
     destroy,
@@ -26,10 +30,6 @@ import {
     create as createOption,
     destroy as destroyOption,
 } from '@/actions/App/Http/Controllers/Admin/ProductOptionController';
-import {
-    store as storeBundleItem,
-    destroy as destroyBundleItem,
-} from '@/actions/App/Http/Controllers/Admin/BundleItemController';
 import {
     store as storeRelated,
     destroy as destroyRelated,
