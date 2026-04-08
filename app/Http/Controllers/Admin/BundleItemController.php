@@ -15,12 +15,7 @@ class BundleItemController extends Controller
     {
         $this->authorize('update', $product);
 
-        $product->bundleItems()->create($request->safe()->only([
-            'component_product_id',
-            'component_variant_id',
-            'quantity',
-            'sort_order',
-        ]));
+        $product->bundleItems()->create($request->validated());
 
         return back()->with('success', 'Component added to bundle.');
     }

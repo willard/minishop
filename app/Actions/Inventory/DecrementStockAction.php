@@ -57,34 +57,32 @@ class DecrementStockAction
 
             if ($product->isBundled()) {
                 foreach ($product->bundleItems as $bundleItem) {
-                    $key = $bundleItem->component_product_id.'-'.($bundleItem->component_variant_id ?? 'null');
-                    $decrementQty = $bundleItem->quantity * $item['quantity'];
-
-                    if (isset($tuples[$key])) {
-                        $tuples[$key]['quantity'] += $decrementQty;
-                    } else {
-                        $tuples[$key] = [
-                            'product_id' => $bundleItem->component_product_id,
-                            'variant_id' => $bundleItem->component_variant_id,
-                            'quantity' => $decrementQty,
-                        ];
-                    }
+                    $this->addTuple(
+                        $tuples,
+                        $bundleItem->component_product_id,
+                        $bundleItem->component_variant_id,
+                        $bundleItem->quantity * $item['quantity'],
+                    );
                 }
             } else {
-                $key = $item['product_id'].'-'.($item['variant_id'] ?? 'null');
-
-                if (isset($tuples[$key])) {
-                    $tuples[$key]['quantity'] += $item['quantity'];
-                } else {
-                    $tuples[$key] = [
-                        'product_id' => $item['product_id'],
-                        'variant_id' => $item['variant_id'] ?? null,
-                        'quantity' => $item['quantity'],
-                    ];
-                }
+                $this->addTuple($tuples, $item['product_id'], $item['variant_id'] ?? null, $item['quantity']);
             }
         }
 
         return array_values($tuples);
+    }
+
+    /**
+     * @param  array<string, array{product_id: int, variant_id: int|null, quantity: int}>  $tuples
+     */
+    private function addTuple(array &$tuples, int $productId, ?int $variantId, int $quantity): void
+    {
+        $key = $productId.'-'.($variantId ?? 'null');
+
+        if (isset($tuples[$key])) {
+            $tuples[$key]['quantity'] += $quantity;
+        } else {
+            $tuples[$key] = ['product_id' => $productId, 'variant_id' => $variantId, 'quantity' => $quantity];
+        }
     }
 }

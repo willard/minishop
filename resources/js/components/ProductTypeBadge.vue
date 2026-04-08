@@ -6,29 +6,19 @@ const props = defineProps<{
     type: string;
 }>();
 
-const label = computed(() => {
-    switch (props.type) {
-        case 'simple':
-            return 'Simple';
-        case 'variable':
-            return 'Variable';
-        case 'bundled':
-            return 'Bundled';
-        default:
-            return props.type;
-    }
-});
+const TYPE_LABELS: Record<string, string> = {
+    simple: 'Simple',
+    variable: 'Variable',
+    bundled: 'Bundled',
+};
 
-const variant = computed(() => {
-    switch (props.type) {
-        case 'bundled':
-            return 'default';
-        case 'variable':
-            return 'secondary';
-        default:
-            return 'outline';
-    }
-});
+const TYPE_VARIANTS: Record<string, string> = {
+    bundled: 'default',
+    variable: 'secondary',
+};
+
+const label = computed(() => TYPE_LABELS[props.type] ?? props.type);
+const variant = computed(() => TYPE_VARIANTS[props.type] ?? 'outline');
 </script>
 
 <template>
