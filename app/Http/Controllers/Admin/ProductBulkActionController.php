@@ -15,15 +15,18 @@ class ProductBulkActionController extends Controller
         $data = $request->validated();
 
         $products = Product::query()->whereIn('id', $data['product_ids'])->get();
+        $nonBundledProducts = $products->reject(fn (Product $product) => $product->isBundled());
         $count = $products->count();
         $noun = Str::plural('product', $count);
+        $nonBundledCount = $nonBundledProducts->count();
+        $nonBundledNoun = Str::plural('product', $nonBundledCount);
 
         match ($data['action']) {
             'delete' => $products->each->delete(),
             'activate' => $products->each(fn (Product $product) => $product->update(['is_active' => true])),
             'deactivate' => $products->each(fn (Product $product) => $product->update(['is_active' => false])),
             'assign_category' => $products->each(fn (Product $product) => $product->categories()->syncWithoutDetaching([$data['category_id']])),
-            'update_stock' => $products->reject(fn (Product $product) => $product->isBundled())->each(fn (Product $product) => $product->update(['stock_quantity' => $data['stock_quantity']])),
+            'update_stock' => $nonBundledProducts->each(fn (Product $product) => $product->update(['stock_quantity' => $data['stock_quantity']])),
             'update_price' => $products->each(fn (Product $product) => $product->update(['price' => $data['price']])),
         };
 
@@ -32,7 +35,7 @@ class ProductBulkActionController extends Controller
             'activate' => "{$count} {$noun} activated.",
             'deactivate' => "{$count} {$noun} deactivated.",
             'assign_category' => "Category assigned to {$count} {$noun}.",
-            'update_stock' => "Stock updated for {$count} {$noun}.",
+            'update_stock' => "Stock updated for {$nonBundledCount} {$nonBundledNoun}.",
             'update_price' => "Price updated for {$count} {$noun}.",
         };
 

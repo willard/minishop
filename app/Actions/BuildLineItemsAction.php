@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\Product;
 use App\Models\ProductVariant;
+use Illuminate\Support\Collection;
 
 class BuildLineItemsAction
 {
@@ -15,10 +16,19 @@ class BuildLineItemsAction
      */
     public function execute(array $items): array
     {
+        $productIds = collect($items)->pluck('product_id')->unique()->values()->all();
+
+        /** @var Collection<int, Product> $products */
+        $products = Product::query()
+            ->whereIn('id', $productIds)
+            ->with('bundleItems.componentProduct', 'bundleItems.componentVariant')
+            ->get()
+            ->keyBy('id');
+
         $lineItems = [];
 
         foreach ($items as $item) {
-            $product = Product::query()->findOrFail($item['product_id']);
+            $product = $products[$item['product_id']];
             abort_unless($product->is_active, 422, 'One or more products are no longer available.');
 
             if ($product->isBundled()) {
