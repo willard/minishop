@@ -17,14 +17,33 @@ class ProductController extends Controller
         $products = Product::query()
             ->where('is_active', true)
             ->with(['categories', 'tags', 'images', 'options.values', 'variants.optionValues', 'variants.images'])
-            ->when($request->filled('category'), function ($query) use ($request) {
+            ->when($request->filled('category'), function ($query) use ($request): void {
                 $query->whereHas('categories', fn ($q) => $q->where('slug', $request->string('category')));
             })
-            ->when($request->filled('tag'), function ($query) use ($request) {
+            ->when($request->filled('tag'), function ($query) use ($request): void {
                 $query->whereHas('tags', fn ($q) => $q->where('slug', $request->string('tag')));
             })
-            ->when($request->filled('search'), function ($query) use ($request) {
-                $query->where('name', 'like', '%'.$request->string('search').'%');
+            ->when($request->filled('search'), function ($query) use ($request): void {
+                $search = $request->string('search');
+                $query->where(function ($q) use ($search): void {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('price_min'), function ($query) use ($request): void {
+                $query->where('price', '>=', (int) round((float) $request->string('price_min') * 100));
+            })
+            ->when($request->filled('price_max'), function ($query) use ($request): void {
+                $query->where('price', '<=', (int) round((float) $request->string('price_max') * 100));
+            })
+            ->when($request->filled('stock'), function ($query) use ($request): void {
+                // Exclude bundled products — their stock is computed, not stored
+                $query->where('type', '!=', 'bundled');
+                match ($request->string('stock')->toString()) {
+                    'in_stock' => $query->where('stock_quantity', '>', 0),
+                    'out_of_stock' => $query->where('stock_quantity', 0),
+                    default => null,
+                };
             })
             ->paginate(24)
             ->withQueryString();
@@ -45,7 +64,7 @@ class ProductController extends Controller
             'products' => $products,
             'categories' => $categories,
             'tags' => $tags,
-            'filters' => $request->only(['category', 'tag', 'search']),
+            'filters' => $request->only(['category', 'tag', 'search', 'price_min', 'price_max', 'stock']),
         ]);
     }
 

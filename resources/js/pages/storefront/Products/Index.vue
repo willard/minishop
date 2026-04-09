@@ -22,12 +22,14 @@ const props = defineProps<{
     products: PaginatedProducts;
     categories: StorefrontCategory[];
     tags: StorefrontTag[];
-    filters: { category?: string; tag?: string; search?: string };
+    filters: { category?: string; tag?: string; search?: string; price_min?: string; price_max?: string; stock?: string };
 }>();
 
 const { addItem, lastAddedItem } = useCart();
 const { formatPrice } = usePrice();
 const search = ref(props.filters.search ?? '');
+const priceMin = ref(props.filters.price_min ?? '');
+const priceMax = ref(props.filters.price_max ?? '');
 const showFilters = ref(false);
 
 const isQuickViewOpen = ref(false);
@@ -54,6 +56,24 @@ const debouncedSearch = useDebounceFn(() => {
 }, 300);
 
 watch(search, debouncedSearch);
+
+const debouncedPrice = useDebounceFn(() => {
+    router.get(
+        productsIndex().url,
+        {
+            ...props.filters,
+            price_min: priceMin.value || undefined,
+            price_max: priceMax.value || undefined,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
+}, 500);
+
+watch([priceMin, priceMax], debouncedPrice);
 
 function getProductImage(product: StorefrontProduct): string | null {
     return product.images?.[0]?.url ?? null;
@@ -220,6 +240,88 @@ function handleAddToCart(product: StorefrontProduct): void {
                         </Link>
                     </div>
                 </template>
+
+                <!-- Price range -->
+                <p
+                    class="mb-4 mt-6 text-xs font-semibold tracking-widest uppercase opacity-40"
+                >
+                    Price Range
+                </p>
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="relative">
+                        <span
+                            class="absolute top-1/2 left-3 -translate-y-1/2 text-sm"
+                            style="color: rgba(28, 26, 23, 0.4)"
+                        >$</span>
+                        <input
+                            v-model="priceMin"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="Min"
+                            class="w-28 rounded-full border bg-transparent py-1.5 pr-3 pl-7 text-sm focus:ring-1 focus:outline-none"
+                            style="border-color: rgba(28, 26, 23, 0.2)"
+                        />
+                    </div>
+                    <span style="color: rgba(28, 26, 23, 0.4)">—</span>
+                    <div class="relative">
+                        <span
+                            class="absolute top-1/2 left-3 -translate-y-1/2 text-sm"
+                            style="color: rgba(28, 26, 23, 0.4)"
+                        >$</span>
+                        <input
+                            v-model="priceMax"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="Max"
+                            class="w-28 rounded-full border bg-transparent py-1.5 pr-3 pl-7 text-sm focus:ring-1 focus:outline-none"
+                            style="border-color: rgba(28, 26, 23, 0.2)"
+                        />
+                    </div>
+                </div>
+
+                <!-- Availability -->
+                <p
+                    class="mb-4 mt-6 text-xs font-semibold tracking-widest uppercase opacity-40"
+                >
+                    Availability
+                </p>
+                <div class="flex flex-wrap gap-2">
+                    <Link
+                        :href="productsIndex({ query: { ...filters, stock: undefined } }).url"
+                        class="rounded-full border px-4 py-1.5 text-xs font-medium transition-all"
+                        :style="
+                            !filters.stock
+                                ? 'background-color: #1c1a17; color: #f9f6f0; border-color: #1c1a17'
+                                : 'border-color: rgba(28, 26, 23, 0.2)'
+                        "
+                    >
+                        All
+                    </Link>
+                    <Link
+                        :href="productsIndex({ query: { ...filters, stock: 'in_stock' } }).url"
+                        class="rounded-full border px-4 py-1.5 text-xs font-medium transition-all"
+                        :style="
+                            filters.stock === 'in_stock'
+                                ? 'background-color: #1c1a17; color: #f9f6f0; border-color: #1c1a17'
+                                : 'border-color: rgba(28, 26, 23, 0.2)'
+                        "
+                    >
+                        In Stock
+                    </Link>
+                    <Link
+                        :href="productsIndex({ query: { ...filters, stock: 'out_of_stock' } }).url"
+                        class="rounded-full border px-4 py-1.5 text-xs font-medium transition-all"
+                        :style="
+                            filters.stock === 'out_of_stock'
+                                ? 'background-color: #1c1a17; color: #f9f6f0; border-color: #1c1a17'
+                                : 'border-color: rgba(28, 26, 23, 0.2)'
+                        "
+                    >
+                        Out of Stock
+                    </Link>
+                </div>
             </div>
 
             <!-- Product grid -->

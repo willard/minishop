@@ -60,6 +60,8 @@ interface Filters {
     type?: string;
     sort_by?: string;
     sort_dir?: string;
+    price_min?: string;
+    price_max?: string;
 }
 
 const props = defineProps<{
@@ -76,7 +78,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const search = ref(props.filters.search ?? '');
 const selectedCategory = ref(props.filters.category_id ?? '');
+const priceMin = ref(props.filters.price_min ?? '');
+const priceMax = ref(props.filters.price_max ?? '');
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+let priceTimeout: ReturnType<typeof setTimeout> | null = null;
 
 watch(search, (value) => {
     if (searchTimeout) {
@@ -101,6 +106,23 @@ watch(selectedCategory, (value) => {
         },
         { preserveState: true, replace: true },
     );
+});
+
+watch([priceMin, priceMax], () => {
+    if (priceTimeout) {
+        clearTimeout(priceTimeout);
+    }
+    priceTimeout = setTimeout(() => {
+        router.get(
+            index().url,
+            {
+                ...props.filters,
+                price_min: priceMin.value || undefined,
+                price_max: priceMax.value || undefined,
+            },
+            { preserveState: true, replace: true },
+        );
+    }, 500);
 });
 
 function applyStock(stock: string | undefined): void {
@@ -147,6 +169,8 @@ function buildExportUrl(format: 'csv' | 'pdf'): string {
             stock: props.filters.stock || undefined,
             sort_by: props.filters.sort_by || undefined,
             sort_dir: props.filters.sort_dir || undefined,
+            price_min: props.filters.price_min || undefined,
+            price_max: props.filters.price_max || undefined,
         },
     });
 }
@@ -180,7 +204,13 @@ watch(selectedType, (value) => {
 });
 
 const isFiltered =
-    props.filters.search || props.filters.category_id || props.filters.tag_id || props.filters.stock || props.filters.type;
+    props.filters.search ||
+    props.filters.category_id ||
+    props.filters.tag_id ||
+    props.filters.stock ||
+    props.filters.type ||
+    props.filters.price_min ||
+    props.filters.price_max;
 
 // ── Bulk selection ────────────────────────────────────────────────────────────
 
@@ -327,9 +357,37 @@ function submitUpdatePrice(): void {
             <div class="flex flex-wrap items-center gap-3">
                 <Input
                     v-model="search"
-                    placeholder="Search by name or SKU..."
+                    placeholder="Search by name, SKU or description..."
                     class="max-w-xs"
                 />
+
+                <!-- Price range -->
+                <div class="flex items-center gap-1.5">
+                    <span class="text-xs text-muted-foreground">Price</span>
+                    <div class="relative">
+                        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>
+                        <Input
+                            v-model="priceMin"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="Min"
+                            class="w-24 pl-6"
+                        />
+                    </div>
+                    <span class="text-xs text-muted-foreground">—</span>
+                    <div class="relative">
+                        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>
+                        <Input
+                            v-model="priceMax"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="Max"
+                            class="w-24 pl-6"
+                        />
+                    </div>
+                </div>
 
                 <!-- Stock filters -->
                 <Button
