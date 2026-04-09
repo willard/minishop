@@ -153,6 +153,20 @@ class TagTest extends TestCase
             ->assertRedirect(route('admin.tags.index'));
     }
 
+    public function test_update_tag_can_deactivate_tag(): void
+    {
+        $tag = Tag::factory()->create(['is_active' => true]);
+
+        $this->actingAs($this->superAdmin())
+            ->put(route('admin.tags.update', $tag), [
+                'name' => $tag->name,
+                // is_active not submitted — simulates unchecked checkbox
+            ])
+            ->assertRedirect(route('admin.tags.index'));
+
+        $this->assertDatabaseHas('tags', ['id' => $tag->id, 'is_active' => false]);
+    }
+
     public function test_update_tag_prevents_duplicate_name(): void
     {
         Tag::factory()->create(['name' => 'Taken']);

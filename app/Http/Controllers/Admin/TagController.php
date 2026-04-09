@@ -59,7 +59,7 @@ class TagController extends Controller
         $this->authorize('update', $tag);
 
         $data = $request->validated();
-        $data['is_active'] = $request->boolean('is_active', true);
+        $data['is_active'] = $request->boolean('is_active');
 
         $tag->update($data);
 
