@@ -39,8 +39,9 @@ vi.mock('@/components/ui/badge', () => ({
 vi.mock('@/components/ui/input', () => ({
     Input: {
         name: 'Input',
-        template: '<input />',
-        props: ['modelValue', 'placeholder', 'class'],
+        template: '<input v-bind="$attrs" />',
+        props: ['modelValue'],
+        inheritAttrs: false,
     },
 }));
 
@@ -132,12 +133,16 @@ const baseFilters: {
     stock?: string;
     sort_by?: string;
     sort_dir?: string;
+    price_min?: string;
+    price_max?: string;
 } = {
     search: '',
     category_id: undefined,
     stock: undefined,
     sort_by: undefined,
     sort_dir: undefined,
+    price_min: undefined,
+    price_max: undefined,
 };
 
 const baseCategories = [
@@ -284,5 +289,42 @@ describe('admin/Products/Index', () => {
 
     it('shows out-of-stock styling for zero stock', () => {
         expect(wrapper.html()).toContain('text-destructive');
+    });
+
+    it('renders price min and max inputs in the filter row', () => {
+        const inputs = wrapper.findAll('input');
+        const types = inputs.map((i) => i.attributes('type'));
+        const placeholders = inputs.map((i) => i.attributes('placeholder') ?? '');
+        expect(types.filter((t) => t === 'number').length).toBeGreaterThanOrEqual(2);
+        expect(placeholders).toContain('Min');
+        expect(placeholders).toContain('Max');
+    });
+
+    it('shows "No products found." when empty and price_min filter is active', () => {
+        const filteredWrapper = mount(IndexPage, {
+            props: {
+                products: { ...baseProducts, data: [], total: 0 },
+                filters: { price_min: '10' },
+                categories: baseCategories,
+                tags: [],
+            },
+        });
+        expect(filteredWrapper.text()).toContain('No products found.');
+    });
+
+    it('export links include price_min and price_max when set', () => {
+        const filteredWrapper = mount(IndexPage, {
+            props: {
+                products: baseProducts,
+                filters: { price_min: '10', price_max: '50', format: undefined },
+                categories: baseCategories,
+                tags: [],
+            },
+        });
+        const links = filteredWrapper.findAll('a');
+        const hrefs = links.map((l) => l.attributes('href') ?? '');
+        const csvHref = hrefs.find((h) => h.includes('format=csv')) ?? '';
+        expect(csvHref).toContain('price_min=10');
+        expect(csvHref).toContain('price_max=50');
     });
 });

@@ -60,6 +60,92 @@ class ProductTest extends TestCase
             });
     }
 
+    public function test_products_index_can_be_filtered_by_price_min(): void
+    {
+        Product::factory()->create(['name' => 'Cheap', 'price' => 500]);
+        Product::factory()->create(['name' => 'Mid', 'price' => 2000]);
+        Product::factory()->create(['name' => 'Expensive', 'price' => 5000]);
+
+        $this->get(route('storefront.products.index', ['price_min' => '15']))
+            ->assertInertia(fn ($page) => $page->has('products.data', 2));
+    }
+
+    public function test_products_index_can_be_filtered_by_price_max(): void
+    {
+        Product::factory()->create(['name' => 'Cheap', 'price' => 500]);
+        Product::factory()->create(['name' => 'Mid', 'price' => 2000]);
+        Product::factory()->create(['name' => 'Expensive', 'price' => 5000]);
+
+        $this->get(route('storefront.products.index', ['price_max' => '20']))
+            ->assertInertia(fn ($page) => $page->has('products.data', 2));
+    }
+
+    public function test_products_index_can_be_filtered_by_price_range(): void
+    {
+        Product::factory()->create(['name' => 'Cheap', 'price' => 500]);
+        Product::factory()->create(['name' => 'Mid', 'price' => 2000]);
+        Product::factory()->create(['name' => 'Expensive', 'price' => 5000]);
+
+        $this->get(route('storefront.products.index', ['price_min' => '15', 'price_max' => '25']))
+            ->assertInertia(fn ($page) => $page->has('products.data', 1));
+    }
+
+    public function test_products_index_can_be_filtered_by_stock_in_stock(): void
+    {
+        Product::factory()->simple()->create(['name' => 'Available', 'stock_quantity' => 5]);
+        Product::factory()->simple()->create(['name' => 'Sold Out', 'stock_quantity' => 0]);
+
+        $this->get(route('storefront.products.index', ['stock' => 'in_stock']))
+            ->assertInertia(fn ($page) => $page
+                ->has('products.data', 1)
+                ->where('products.data.0.name', 'Available')
+            );
+    }
+
+    public function test_products_index_can_be_filtered_by_stock_out_of_stock(): void
+    {
+        Product::factory()->simple()->create(['name' => 'Available', 'stock_quantity' => 5]);
+        Product::factory()->simple()->create(['name' => 'Sold Out', 'stock_quantity' => 0]);
+
+        $this->get(route('storefront.products.index', ['stock' => 'out_of_stock']))
+            ->assertInertia(fn ($page) => $page
+                ->has('products.data', 1)
+                ->where('products.data.0.name', 'Sold Out')
+            );
+    }
+
+    public function test_products_index_stock_filter_excludes_bundled_products(): void
+    {
+        Product::factory()->simple()->create(['name' => 'Simple Out', 'stock_quantity' => 0]);
+        Product::factory()->bundledEmpty()->create(['name' => 'Bundle', 'stock_quantity' => 0]);
+
+        $this->get(route('storefront.products.index', ['stock' => 'out_of_stock']))
+            ->assertInertia(fn ($page) => $page
+                ->has('products.data', 1)
+                ->where('products.data.0.name', 'Simple Out')
+            );
+    }
+
+    public function test_products_index_search_includes_description(): void
+    {
+        Product::factory()->create(['name' => 'Widget', 'description' => 'A handcrafted ceramic bowl']);
+        Product::factory()->create(['name' => 'Gadget', 'description' => 'A leather wallet']);
+
+        $this->get(route('storefront.products.index', ['search' => 'ceramic bowl']))
+            ->assertInertia(fn ($page) => $page->has('products.data', 1));
+    }
+
+    public function test_products_index_passes_new_filter_params_to_view(): void
+    {
+        $this->get(route('storefront.products.index', ['price_min' => '10', 'price_max' => '50', 'stock' => 'in_stock']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('filters.price_min', '10')
+                ->where('filters.price_max', '50')
+                ->where('filters.stock', 'in_stock')
+            );
+    }
+
     public function test_product_show_renders_for_active_product(): void
     {
         $product = Product::factory()->create();

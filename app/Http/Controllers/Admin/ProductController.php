@@ -26,7 +26,7 @@ class ProductController extends Controller
     {
         $this->authorize('viewAny', Product::class);
 
-        $filters = $request->only(['search', 'category_id', 'tag_id', 'stock', 'type', 'sort_by', 'sort_dir']);
+        $filters = $request->only(['search', 'category_id', 'tag_id', 'stock', 'type', 'sort_by', 'sort_dir', 'price_min', 'price_max']);
 
         $products = $this->buildProductQuery($filters)
             ->paginate(20)
@@ -54,7 +54,7 @@ class ProductController extends Controller
     {
         $this->authorize('viewAny', Product::class);
 
-        $filters = $request->only(['search', 'category_id', 'tag_id', 'stock', 'type', 'sort_by', 'sort_dir']);
+        $filters = $request->only(['search', 'category_id', 'tag_id', 'stock', 'type', 'sort_by', 'sort_dir', 'price_min', 'price_max']);
         $format = $request->input('format', 'csv');
 
         $products = $this->buildProductQuery($filters)->get();
@@ -212,7 +212,8 @@ class ProductController extends Controller
             ->when($filters['search'] ?? null, function ($query, $search): void {
                 $query->where(function ($q) use ($search): void {
                     $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('sku', 'like', "%{$search}%");
+                        ->orWhere('sku', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
                 });
             })
             ->when($filters['category_id'] ?? null, function ($query, $categoryId): void {
@@ -223,6 +224,12 @@ class ProductController extends Controller
             })
             ->when($filters['type'] ?? null, function ($query, $type): void {
                 $query->where('type', $type);
+            })
+            ->when($filters['price_min'] ?? null, function ($query, $min): void {
+                $query->where('price', '>=', (int) round((float) $min * 100));
+            })
+            ->when($filters['price_max'] ?? null, function ($query, $max): void {
+                $query->where('price', '<=', (int) round((float) $max * 100));
             })
             ->when($filters['stock'] ?? null, function ($query, $stock): void {
                 // Exclude bundled products from stock filters — their stock is calculated

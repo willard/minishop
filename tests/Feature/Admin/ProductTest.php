@@ -616,6 +616,100 @@ class ProductTest extends TestCase
             );
     }
 
+    public function test_products_index_can_be_filtered_by_price_min(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        Product::factory()->create(['name' => 'Cheap', 'price' => 500]);
+        Product::factory()->create(['name' => 'Mid', 'price' => 2000]);
+        Product::factory()->create(['name' => 'Expensive', 'price' => 5000]);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index', ['price_min' => '15', 'sort_by' => 'price', 'sort_dir' => 'desc']))
+            ->assertInertia(fn ($page) => $page
+                ->has('products.data', 2)
+                ->where('products.data.0.name', 'Expensive')
+                ->where('products.data.1.name', 'Mid')
+            );
+    }
+
+    public function test_products_index_can_be_filtered_by_price_max(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        Product::factory()->create(['name' => 'Cheap', 'price' => 500]);
+        Product::factory()->create(['name' => 'Mid', 'price' => 2000]);
+        Product::factory()->create(['name' => 'Expensive', 'price' => 5000]);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index', ['price_max' => '20']))
+            ->assertInertia(fn ($page) => $page
+                ->has('products.data', 2)
+            );
+    }
+
+    public function test_products_index_can_be_filtered_by_price_range(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        Product::factory()->create(['name' => 'Cheap', 'price' => 500]);
+        Product::factory()->create(['name' => 'Mid', 'price' => 2000]);
+        Product::factory()->create(['name' => 'Expensive', 'price' => 5000]);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index', ['price_min' => '15', 'price_max' => '25']))
+            ->assertInertia(fn ($page) => $page
+                ->has('products.data', 1)
+                ->where('products.data.0.name', 'Mid')
+            );
+    }
+
+    public function test_products_index_search_includes_description(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        Product::factory()->create(['name' => 'Widget A', 'sku' => 'SKU-001', 'description' => 'A lightweight travel pillow']);
+        Product::factory()->create(['name' => 'Widget B', 'sku' => 'SKU-002', 'description' => 'A durable backpack']);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index', ['search' => 'travel pillow']))
+            ->assertInertia(fn ($page) => $page
+                ->has('products.data', 1)
+                ->where('products.data.0.name', 'Widget A')
+            );
+    }
+
+    public function test_products_index_price_range_combines_with_category_filter(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $apparel = Category::factory()->create(['name' => 'Apparel']);
+
+        $shirt = Product::factory()->create(['name' => 'Shirt', 'price' => 2500]);
+        $shirt->categories()->attach($apparel);
+
+        $expensiveShirt = Product::factory()->create(['name' => 'Luxury Shirt', 'price' => 10000]);
+        $expensiveShirt->categories()->attach($apparel);
+
+        Product::factory()->create(['name' => 'Gadget', 'price' => 2500]);
+
+        $this->actingAs($user)
+            ->get(route('admin.products.index', ['category_id' => $apparel->id, 'price_max' => '50']))
+            ->assertInertia(fn ($page) => $page
+                ->has('products.data', 1)
+                ->where('products.data.0.name', 'Shirt')
+            );
+    }
+
+    public function test_export_csv_respects_price_range_filter(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        Product::factory()->create(['name' => 'Cheap Item', 'price' => 500]);
+        Product::factory()->create(['name' => 'Pricey Item', 'price' => 9999]);
+
+        $response = $this->actingAs($user)
+            ->get(route('admin.products.export', ['format' => 'csv', 'price_min' => '50']));
+
+        $response->assertOk();
+        $this->assertStringContainsString('Pricey Item', $response->streamedContent());
+        $this->assertStringNotContainsString('Cheap Item', $response->streamedContent());
+    }
+
     public function test_show_loads_bundle_items_for_bundled_product(): void
     {
         $user = User::factory()->superAdmin()->create();
