@@ -91,10 +91,14 @@ function onColorChange(event: Event): void {
                             class="size-10 cursor-pointer rounded border border-input"
                             @input="onColorChange"
                         />
-                        <Input
-                            id="color"
+                        <input
+                            type="hidden"
                             name="color"
                             :value="color"
+                        />
+                        <Input
+                            id="color"
+                            :model-value="color"
                             placeholder="#FF5733"
                             class="max-w-[8rem] font-mono"
                             @input="onColorChange"

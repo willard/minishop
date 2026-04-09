@@ -53,8 +53,8 @@ vi.mock('@/components/ui/input', () => ({
     Input: {
         name: 'Input',
         template:
-            '<input :id="id" :name="name" :value="defaultValue || value" :placeholder="placeholder" />',
-        props: ['id', 'name', 'defaultValue', 'value', 'placeholder'],
+            '<input :id="id" :name="name" :value="defaultValue || modelValue || \'\'" :placeholder="placeholder" />',
+        props: ['id', 'name', 'defaultValue', 'modelValue', 'placeholder'],
     },
 }));
 
