@@ -3,16 +3,14 @@ import { Head, Link } from '@inertiajs/vue3';
 import { useWindowScroll } from '@vueuse/core';
 import { ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
-
-// ... (existing imports)
-
-const { y: scrollY } = useWindowScroll();
-const showStickyBar = computed(() => scrollY.value > 600);
 import { index as productsIndex, show as showProduct } from '@/actions/App/Http/Controllers/Storefront/ProductController';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';
 import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 import type { StorefrontProduct, StorefrontVariant } from '@/types/storefront';
+
+const { y: scrollY } = useWindowScroll();
+const showStickyBar = computed(() => scrollY.value > 600);
 
 const props = defineProps<{
     product: StorefrontProduct;
@@ -271,8 +269,8 @@ function handleAddToCart(): void {
 
                 <!-- Product info -->
                 <div class="flex flex-col">
-                    <!-- Categories -->
-                    <div class="mb-3 flex flex-wrap gap-2">
+                    <!-- Categories & Tags -->
+                    <div class="mb-3 flex flex-wrap items-center gap-2">
                         <span
                             v-for="category in product.categories"
                             :key="category.id"
@@ -280,6 +278,17 @@ function handleAddToCart(): void {
                             style="color: #c05c3a"
                         >
                             {{ category.name }}
+                        </span>
+                        <span
+                            v-for="tag in (product.tags ?? [])"
+                            :key="`t-${tag.id}`"
+                            class="rounded-full px-2 py-0.5 text-[10px] font-medium"
+                            :style="tag.color
+                                ? { backgroundColor: tag.color, color: '#fff' }
+                                : { backgroundColor: 'rgba(28, 26, 23, 0.08)', color: 'rgba(28, 26, 23, 0.6)' }
+                            "
+                        >
+                            {{ tag.name }}
                         </span>
                     </div>
 

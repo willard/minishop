@@ -83,6 +83,22 @@ vi.mock('@/actions/App/Http/Controllers/Admin/ProductImageController', () => ({
     })),
 }));
 
+vi.mock('@/components/ProductTypeBadge.vue', () => ({
+    default: {
+        name: 'ProductTypeBadge',
+        template: '<span />',
+        props: ['type'],
+    },
+}));
+
+vi.mock('@/components/TagBadge.vue', () => ({
+    default: {
+        name: 'TagBadge',
+        template: '<span />',
+        props: ['name', 'color'],
+    },
+}));
+
 vi.mock('@/actions/App/Http/Controllers/Admin/ProductRelatedController', () => ({
     store: vi.fn(() => ({ url: '/dashboard/products/test-product/related' })),
     destroy: vi.fn(() => ({
@@ -103,6 +119,7 @@ const baseProduct = {
     is_active: true,
     sku: 'ABC-1234',
     categories: [{ id: 1, name: 'Electronics' }],
+    tags: [] as Array<{ id: number; name: string; color: string | null }>,
     images: [] as Array<{
         id: number;
         path: string;
@@ -130,7 +147,7 @@ describe('admin/Products/Show — Images section', () => {
 
     beforeEach(() => {
         wrapper = mount(ShowPage, {
-            props: { product: baseProduct, availableProducts: baseAvailableProducts },
+            props: { product: baseProduct, availableProducts: baseAvailableProducts, effective_stock: 50 },
         });
     });
 
@@ -212,7 +229,7 @@ describe('admin/Products/Show — Images section', () => {
 describe('admin/Products/Show — SEO section', () => {
     it('does not render SEO section when meta fields are null', () => {
         const wrapper = mount(ShowPage, {
-            props: { product: baseProduct, availableProducts: baseAvailableProducts },
+            props: { product: baseProduct, availableProducts: baseAvailableProducts, effective_stock: 50 },
         });
         expect(wrapper.text()).not.toContain('Meta Title');
     });
@@ -239,14 +256,14 @@ describe('admin/Products/Show — SEO section', () => {
 describe('admin/Products/Show — Related Products section', () => {
     it('renders the Related Products heading', () => {
         const wrapper = mount(ShowPage, {
-            props: { product: baseProduct, availableProducts: baseAvailableProducts },
+            props: { product: baseProduct, availableProducts: baseAvailableProducts, effective_stock: 50 },
         });
         expect(wrapper.text()).toContain('Related Products');
     });
 
     it('shows empty state when no related products', () => {
         const wrapper = mount(ShowPage, {
-            props: { product: baseProduct, availableProducts: baseAvailableProducts },
+            props: { product: baseProduct, availableProducts: baseAvailableProducts, effective_stock: 50 },
         });
         expect(wrapper.text()).toContain('No related products yet');
     });
@@ -266,7 +283,7 @@ describe('admin/Products/Show — Related Products section', () => {
 
     it('renders the product selector dropdown', () => {
         const wrapper = mount(ShowPage, {
-            props: { product: baseProduct, availableProducts: baseAvailableProducts },
+            props: { product: baseProduct, availableProducts: baseAvailableProducts, effective_stock: 50 },
         });
         const select = wrapper.findAll('select').find((s) => s.text().includes('Select a product'));
         expect(select).toBeDefined();
@@ -274,7 +291,7 @@ describe('admin/Products/Show — Related Products section', () => {
 
     it('available products appear as options in the selector', () => {
         const wrapper = mount(ShowPage, {
-            props: { product: baseProduct, availableProducts: baseAvailableProducts },
+            props: { product: baseProduct, availableProducts: baseAvailableProducts, effective_stock: 50 },
         });
         const options = wrapper.findAll('option');
         const texts = options.map((o) => o.text());
@@ -284,7 +301,7 @@ describe('admin/Products/Show — Related Products section', () => {
 
     it('Add button is disabled when no product is selected', () => {
         const wrapper = mount(ShowPage, {
-            props: { product: baseProduct, availableProducts: baseAvailableProducts },
+            props: { product: baseProduct, availableProducts: baseAvailableProducts, effective_stock: 50 },
         });
         const addButton = wrapper.findAll('button').find((b) => b.text().trim() === 'Add');
         expect(addButton?.attributes('disabled')).toBeDefined();

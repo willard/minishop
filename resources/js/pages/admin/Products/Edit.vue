@@ -20,6 +20,12 @@ interface Category {
     name: string;
 }
 
+interface Tag {
+    id: number;
+    name: string;
+    color: string | null;
+}
+
 interface Product {
     id: number;
     type: string;
@@ -34,11 +40,13 @@ interface Product {
     is_active: boolean;
     sku: string | null;
     categories: Category[];
+    tags: Tag[];
 }
 
 const props = defineProps<{
     product: Product;
     categories: Category[];
+    tags: Tag[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -49,6 +57,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const selectedCategoryIds = props.product.categories.map((c) => c.id);
+const selectedTagIds = props.product.tags.map((t) => t.id);
 </script>
 
 <template>
@@ -218,6 +227,33 @@ const selectedCategoryIds = props.product.categories.map((c) => c.id);
                         </label>
                     </div>
                     <InputError :message="errors.category_ids" />
+                </div>
+
+                <!-- Tags -->
+                <div class="grid gap-2" v-if="tags.length > 0">
+                    <Label>Tags</Label>
+                    <div class="flex flex-wrap gap-3">
+                        <label
+                            v-for="tag in tags"
+                            :key="tag.id"
+                            class="flex cursor-pointer items-center gap-2"
+                        >
+                            <Checkbox
+                                :name="`tag_ids[]`"
+                                :value="tag.id"
+                                :default-value="
+                                    selectedTagIds.includes(tag.id)
+                                "
+                            />
+                            <span
+                                v-if="tag.color"
+                                class="inline-block size-3 rounded-full"
+                                :style="{ backgroundColor: tag.color }"
+                            />
+                            <span class="text-sm">{{ tag.name }}</span>
+                        </label>
+                    </div>
+                    <InputError :message="errors.tag_ids" />
                 </div>
 
                 <!-- Active Status -->

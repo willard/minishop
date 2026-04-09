@@ -32,3 +32,4 @@ yarn-error.log
 .claude/mcp.json
 .cursor/
 .gemini/
+.claude/settings.local.json

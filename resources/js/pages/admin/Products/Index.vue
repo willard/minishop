@@ -12,6 +12,7 @@ import {
     exportMethod,
 } from '@/actions/App/Http/Controllers/Admin/ProductController';
 import ProductTypeBadge from '@/components/ProductTypeBadge.vue';
+import TagBadge from '@/components/TagBadge.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,12 @@ import { type BreadcrumbItem } from '@/types';
 interface Category {
     id: number;
     name: string;
+}
+
+interface Tag {
+    id: number;
+    name: string;
+    color: string | null;
 }
 
 interface Product {
@@ -33,6 +40,7 @@ interface Product {
     is_active: boolean;
     sku: string | null;
     categories: Category[];
+    tags: Tag[];
 }
 
 interface Pagination {
@@ -47,6 +55,7 @@ interface Pagination {
 interface Filters {
     search?: string;
     category_id?: string;
+    tag_id?: string;
     stock?: string;
     type?: string;
     sort_by?: string;
@@ -57,6 +66,7 @@ const props = defineProps<{
     products: Pagination;
     filters: Filters;
     categories: Category[];
+    tags: Tag[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -141,6 +151,20 @@ function buildExportUrl(format: 'csv' | 'pdf'): string {
     });
 }
 
+const selectedTag = ref(props.filters.tag_id ?? '');
+
+watch(selectedTag, (value) => {
+    router.get(
+        index().url,
+        {
+            ...props.filters,
+            search: search.value || undefined,
+            tag_id: value || undefined,
+        },
+        { preserveState: true, replace: true },
+    );
+});
+
 const selectedType = ref(props.filters.type ?? '');
 
 watch(selectedType, (value) => {
@@ -156,7 +180,7 @@ watch(selectedType, (value) => {
 });
 
 const isFiltered =
-    props.filters.search || props.filters.category_id || props.filters.stock || props.filters.type;
+    props.filters.search || props.filters.category_id || props.filters.tag_id || props.filters.stock || props.filters.type;
 
 // ── Bulk selection ────────────────────────────────────────────────────────────
 
@@ -200,10 +224,11 @@ function toggleSelectAll(): void {
 
 // ── Bulk actions ──────────────────────────────────────────────────────────────
 
-type ModalType = 'assign_category' | 'update_stock' | 'update_price' | null;
+type ModalType = 'assign_category' | 'assign_tag' | 'update_stock' | 'update_price' | null;
 
 const showModal = ref<ModalType>(null);
 const bulkCategoryId = ref<string>('');
+const bulkTagId = ref<string>('');
 const bulkStockQuantity = ref<string>('0');
 const bulkPriceInput = ref<string>('');
 const processing = ref(false);
@@ -218,8 +243,8 @@ function handleBulkAction(action: string): void {
         submitBulkAction('delete');
     } else if (action === 'activate' || action === 'deactivate') {
         submitBulkAction(action);
-    } else {
-        showModal.value = action as ModalType;
+    } else if (action === 'assign_category' || action === 'assign_tag' || action === 'update_stock' || action === 'update_price') {
+        showModal.value = action;
     }
 }
 
@@ -247,6 +272,10 @@ function submitBulkAction(action: string, extra: Record<string, unknown> = {}): 
 
 function submitAssignCategory(): void {
     submitBulkAction('assign_category', { category_id: bulkCategoryId.value || null });
+}
+
+function submitAssignTag(): void {
+    submitBulkAction('assign_tag', { tag_id: bulkTagId.value || null });
 }
 
 function submitUpdateStock(): void {
@@ -348,6 +377,22 @@ function submitUpdatePrice(): void {
                     </option>
                 </select>
 
+                <!-- Tag dropdown -->
+                <select
+                    v-if="tags.length > 0"
+                    v-model="selectedTag"
+                    class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                    <option value="">All Tags</option>
+                    <option
+                        v-for="tag in tags"
+                        :key="tag.id"
+                        :value="String(tag.id)"
+                    >
+                        {{ tag.name }}
+                    </option>
+                </select>
+
                 <!-- Type filter -->
                 <select
                     v-model="selectedType"
@@ -393,6 +438,14 @@ function submitUpdatePrice(): void {
                         @click="handleBulkAction('assign_category')"
                     >
                         Assign Category
+                    </Button>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        :disabled="processing"
+                        @click="handleBulkAction('assign_tag')"
+                    >
+                        Assign Tag
                     </Button>
                     <Button
                         size="sm"
@@ -490,6 +543,9 @@ function submitUpdatePrice(): void {
                                 Categories
                             </th>
                             <th class="px-4 py-3 text-left font-medium">
+                                Tags
+                            </th>
+                            <th class="px-4 py-3 text-left font-medium">
                                 <button
                                     class="flex items-center gap-1 hover:text-foreground"
                                     @click="applySort('is_active')"
@@ -508,7 +564,7 @@ function submitUpdatePrice(): void {
                     <tbody class="divide-y divide-sidebar-border">
                         <tr v-if="products.data.length === 0">
                             <td
-                                colspan="8"
+                                colspan="9"
                                 class="px-4 py-8 text-center text-muted-foreground"
                             >
                                 <template v-if="isFiltered">
@@ -582,6 +638,21 @@ function submitUpdatePrice(): void {
                                     </Badge>
                                     <span
                                         v-if="product.categories.length === 0"
+                                        class="text-muted-foreground"
+                                        >—</span
+                                    >
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex flex-wrap gap-1">
+                                    <TagBadge
+                                        v-for="tag in product.tags"
+                                        :key="tag.id"
+                                        :name="tag.name"
+                                        :color="tag.color"
+                                    />
+                                    <span
+                                        v-if="product.tags.length === 0"
                                         class="text-muted-foreground"
                                         >—</span
                                     >
@@ -685,6 +756,41 @@ function submitUpdatePrice(): void {
                 <div class="mt-4 flex justify-end gap-2">
                     <Button variant="outline" @click="showModal = null">Cancel</Button>
                     <Button :disabled="processing" @click="submitAssignCategory">Apply</Button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assign Tag Modal -->
+        <div
+            v-if="showModal === 'assign_tag'"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            @click.self="showModal = null"
+        >
+            <div class="w-full max-w-sm rounded-lg border border-sidebar-border bg-background p-6 shadow-lg">
+                <h2 class="mb-1 text-lg font-semibold">Assign Tag</h2>
+                <p class="mb-4 text-sm text-muted-foreground">
+                    Add a tag to {{ selectedIds.length }} selected
+                    {{ selectedIds.length === 1 ? 'product' : 'products' }}.
+                </p>
+                <select
+                    v-model="bulkTagId"
+                    class="mb-1 h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                >
+                    <option value="">Select a tag…</option>
+                    <option
+                        v-for="tag in tags"
+                        :key="tag.id"
+                        :value="String(tag.id)"
+                    >
+                        {{ tag.name }}
+                    </option>
+                </select>
+                <p v-if="bulkErrors.tag_id" class="mb-3 text-xs text-destructive">
+                    {{ bulkErrors.tag_id }}
+                </p>
+                <div class="mt-4 flex justify-end gap-2">
+                    <Button variant="outline" @click="showModal = null">Cancel</Button>
+                    <Button :disabled="processing" @click="submitAssignTag">Apply</Button>
                 </div>
             </div>
         </div>

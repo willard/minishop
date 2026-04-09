@@ -6,6 +6,14 @@ export interface StorefrontCategory {
     children: StorefrontCategory[];
 }
 
+export interface StorefrontTag {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+    color: string | null;
+}
+
 export interface StorefrontProductImage {
     id: number;
     path: string;
@@ -81,6 +89,7 @@ export interface StorefrontProduct {
     stock_quantity: number;
     is_active: boolean;
     categories: StorefrontCategory[];
+    tags?: StorefrontTag[];
     images: StorefrontProductImage[];
     options?: StorefrontOption[];
     variants?: StorefrontVariant[];

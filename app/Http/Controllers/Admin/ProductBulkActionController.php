@@ -26,6 +26,7 @@ class ProductBulkActionController extends Controller
             'activate' => $products->each(fn (Product $product) => $product->update(['is_active' => true])),
             'deactivate' => $products->each(fn (Product $product) => $product->update(['is_active' => false])),
             'assign_category' => $products->each(fn (Product $product) => $product->categories()->syncWithoutDetaching([$data['category_id']])),
+            'assign_tag' => $products->each(fn (Product $product) => $product->tags()->syncWithoutDetaching([$data['tag_id']])),
             'update_stock' => $nonBundledProducts->each(fn (Product $product) => $product->update(['stock_quantity' => $data['stock_quantity']])),
             'update_price' => $products->each(fn (Product $product) => $product->update(['price' => $data['price']])),
         };
@@ -35,6 +36,7 @@ class ProductBulkActionController extends Controller
             'activate' => "{$count} {$noun} activated.",
             'deactivate' => "{$count} {$noun} deactivated.",
             'assign_category' => "Category assigned to {$count} {$noun}.",
+            'assign_tag' => "Tag assigned to {$count} {$noun}.",
             'update_stock' => "Stock updated for {$nonBundledCount} {$nonBundledNoun}.",
             'update_price' => "Price updated for {$count} {$noun}.",
         };

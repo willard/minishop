@@ -40,6 +40,7 @@ import {
     destroy as destroyVariant,
 } from '@/actions/App/Http/Controllers/Admin/ProductVariantController';
 import ProductTypeBadge from '@/components/ProductTypeBadge.vue';
+import TagBadge from '@/components/TagBadge.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -48,6 +49,12 @@ import { type BreadcrumbItem } from '@/types';
 interface Category {
     id: number;
     name: string;
+}
+
+interface Tag {
+    id: number;
+    name: string;
+    color: string | null;
 }
 
 interface ProductImage {
@@ -133,6 +140,7 @@ interface Product {
     is_active: boolean;
     sku: string | null;
     categories: Category[];
+    tags: Tag[];
     images: ProductImage[];
     options: ProductOption[];
     variants: ProductVariant[];
@@ -441,6 +449,26 @@ function confirmRemoveBundleItem(item: BundleItem): void {
                             </Badge>
                             <span
                                 v-if="product.categories.length === 0"
+                                class="text-sm text-muted-foreground"
+                                >—</span
+                            >
+                        </div>
+                    </div>
+                    <div>
+                        <p
+                            class="mb-1 text-xs tracking-wide text-muted-foreground uppercase"
+                        >
+                            Tags
+                        </p>
+                        <div class="flex flex-wrap gap-1">
+                            <TagBadge
+                                v-for="tag in product.tags"
+                                :key="tag.id"
+                                :name="tag.name"
+                                :color="tag.color"
+                            />
+                            <span
+                                v-if="product.tags.length === 0"
                                 class="text-sm text-muted-foreground"
                                 >—</span
                             >

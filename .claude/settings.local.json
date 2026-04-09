@@ -122,7 +122,11 @@
       "Bash(/opt/homebrew/bin/php artisan:*)",
       "Bash(/opt/homebrew/bin/php vendor/bin/pint --dirty --format agent)",
       "Bash(export PATH=\"/opt/homebrew/bin:$PATH\")",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(npx vitest:*)",
+      "Bash(export PATH=/opt/homebrew/bin:$PATH)",
+      "Read(//opt/homebrew/**)",
+      "Bash(/opt/homebrew/bin/gh pr:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

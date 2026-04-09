@@ -10,6 +10,7 @@ import {
     Settings,
     ShoppingCart,
     Tag,
+    Tags,
     Ticket,
     Truck,
     UserCog,
@@ -26,6 +27,7 @@ import { index as productsIndex } from '@/actions/App/Http/Controllers/Admin/Pro
 import { index as returnsIndex } from '@/actions/App/Http/Controllers/Admin/ReturnController';
 import { index as shippingMethodsIndex } from '@/actions/App/Http/Controllers/Admin/ShippingMethodController';
 import { edit as settingsEdit } from '@/actions/App/Http/Controllers/Admin/StoreSettingsController';
+import { index as tagsIndex } from '@/actions/App/Http/Controllers/Admin/TagController';
 import { index as taxZonesIndex } from '@/actions/App/Http/Controllers/Admin/TaxZoneController';
 import { index as usersIndex } from '@/actions/App/Http/Controllers/Admin/UserController';
 import NavFooter from '@/components/NavFooter.vue';
@@ -67,6 +69,12 @@ const allNavItems: PermissionNavItem[] = [
         href: categoriesIndex().url,
         icon: Tag,
         permission: 'categories.view',
+    },
+    {
+        title: 'Tags',
+        href: tagsIndex().url,
+        icon: Tags,
+        permission: 'tags.view',
     },
     {
         title: 'Orders',
