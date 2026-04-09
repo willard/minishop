@@ -78,6 +78,7 @@ const baseProduct = {
     is_active: true,
     sku: 'ABC-1234',
     categories: [{ id: 2, name: 'Electronics' }],
+    tags: [],
 };
 
 const availableCategories = [
@@ -91,7 +92,7 @@ describe('admin/Products/Edit', () => {
 
     beforeEach(() => {
         wrapper = mount(EditPage, {
-            props: { product: baseProduct, categories: availableCategories },
+            props: { product: baseProduct, categories: availableCategories, tags: [] },
         });
     });
 
@@ -141,6 +142,7 @@ describe('admin/Products/Edit', () => {
             props: {
                 product: { ...baseProduct, is_active: false },
                 categories: availableCategories,
+                tags: [],
             },
         });
         const checkbox = inactiveWrapper.find('input[name="is_active"]') as {
@@ -165,7 +167,7 @@ describe('admin/Products/Edit', () => {
 
     it('does not show category checkboxes when no categories available', () => {
         const noCategWrapper = mount(EditPage, {
-            props: { product: baseProduct, categories: [] },
+            props: { product: baseProduct, categories: [], tags: [] },
         });
         expect(
             noCategWrapper.findAll('input[name="category_ids[]"]'),

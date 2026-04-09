@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Storefront;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,9 +16,12 @@ class ProductController extends Controller
     {
         $products = Product::query()
             ->where('is_active', true)
-            ->with(['categories', 'images', 'options.values', 'variants.optionValues', 'variants.images'])
+            ->with(['categories', 'tags', 'images', 'options.values', 'variants.optionValues', 'variants.images'])
             ->when($request->filled('category'), function ($query) use ($request) {
                 $query->whereHas('categories', fn ($q) => $q->where('slug', $request->string('category')));
+            })
+            ->when($request->filled('tag'), function ($query) use ($request) {
+                $query->whereHas('tags', fn ($q) => $q->where('slug', $request->string('tag')));
             })
             ->when($request->filled('search'), function ($query) use ($request) {
                 $query->where('name', 'like', '%'.$request->string('search').'%');
@@ -32,10 +36,16 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
+        $tags = Tag::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug', 'color']);
+
         return Inertia::render('storefront/Products/Index', [
             'products' => $products,
             'categories' => $categories,
-            'filters' => $request->only(['category', 'search']),
+            'tags' => $tags,
+            'filters' => $request->only(['category', 'tag', 'search']),
         ]);
     }
 
@@ -45,6 +55,7 @@ class ProductController extends Controller
 
         $product->load([
             'categories',
+            'tags',
             'images',
             'options.values',
             'variants.optionValues',

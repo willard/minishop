@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\ReturnController;
 use App\Http\Controllers\Admin\ShippingMethodController;
 use App\Http\Controllers\Admin\StoreSettingsController;
+use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\TaxZoneController;
 use App\Http\Controllers\Admin\TaxZoneRateController;
 use App\Http\Controllers\Admin\UserController;
@@ -93,6 +94,7 @@ Route::middleware(['auth', 'verified', 'role:super-admin|admin|manager'])->prefi
     Route::put('products/{product}/images/reorder', [ProductImageController::class, 'reorder'])->name('products.images.reorder');
     Route::delete('products/{product}/images/{image}', [ProductImageController::class, 'destroy'])->name('products.images.destroy');
     Route::resource('categories', CategoryController::class)->except(['show']);
+    Route::resource('tags', TagController::class)->except(['show']);
     Route::post('orders/bulk', OrderBulkActionController::class)->name('orders.bulk');
     Route::resource('orders', OrderController::class)->except(['edit']);
     Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');

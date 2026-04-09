@@ -10,6 +10,7 @@ import {
     Settings,
     ShoppingCart,
     Tag,
+    Tags,
     Ticket,
     Truck,
     UserCog,
@@ -19,6 +20,7 @@ import {
 import { computed } from 'vue';
 import { index as activityLogIndex } from '@/actions/App/Http/Controllers/Admin/ActivityLogController';
 import { index as categoriesIndex } from '@/actions/App/Http/Controllers/Admin/CategoryController';
+import { index as tagsIndex } from '@/actions/App/Http/Controllers/Admin/TagController';
 import { index as couponsIndex } from '@/actions/App/Http/Controllers/Admin/CouponController';
 import { index as customersIndex } from '@/actions/App/Http/Controllers/Admin/CustomerController';
 import { index as ordersIndex } from '@/actions/App/Http/Controllers/Admin/OrderController';
@@ -67,6 +69,12 @@ const allNavItems: PermissionNavItem[] = [
         href: categoriesIndex().url,
         icon: Tag,
         permission: 'categories.view',
+    },
+    {
+        title: 'Tags',
+        href: tagsIndex().url,
+        icon: Tags,
+        permission: 'tags.view',
     },
     {
         title: 'Orders',

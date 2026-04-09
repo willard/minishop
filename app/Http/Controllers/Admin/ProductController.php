@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\StoreSettings;
+use App\Models\Tag;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,7 +26,7 @@ class ProductController extends Controller
     {
         $this->authorize('viewAny', Product::class);
 
-        $filters = $request->only(['search', 'category_id', 'stock', 'type', 'sort_by', 'sort_dir']);
+        $filters = $request->only(['search', 'category_id', 'tag_id', 'stock', 'type', 'sort_by', 'sort_dir']);
 
         $products = $this->buildProductQuery($filters)
             ->paginate(20)
@@ -36,10 +37,16 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
+        $tags = Tag::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
         return Inertia::render('admin/Products/Index', [
             'products' => $products,
             'filters' => $filters,
             'categories' => $categories,
+            'tags' => $tags,
         ]);
     }
 
@@ -47,7 +54,7 @@ class ProductController extends Controller
     {
         $this->authorize('viewAny', Product::class);
 
-        $filters = $request->only(['search', 'category_id', 'stock', 'type', 'sort_by', 'sort_dir']);
+        $filters = $request->only(['search', 'category_id', 'tag_id', 'stock', 'type', 'sort_by', 'sort_dir']);
         $format = $request->input('format', 'csv');
 
         $products = $this->buildProductQuery($filters)->get();
@@ -61,7 +68,7 @@ class ProductController extends Controller
 
         $callback = function () use ($products): void {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Name', 'SKU', 'Price', 'Stock', 'Status', 'Categories']);
+            fputcsv($handle, ['Name', 'SKU', 'Price', 'Stock', 'Status', 'Categories', 'Tags']);
 
             foreach ($products as $product) {
                 fputcsv($handle, [
@@ -71,6 +78,7 @@ class ProductController extends Controller
                     $product->stock_quantity,
                     $product->is_active ? 'Active' : 'Inactive',
                     $product->categories->pluck('name')->join(', '),
+                    $product->tags->pluck('name')->join(', '),
                 ]);
             }
 
@@ -92,8 +100,14 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
+        $tags = Tag::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'color']);
+
         return Inertia::render('admin/Products/Create', [
             'categories' => $categories,
+            'tags' => $tags,
         ]);
     }
 
@@ -107,6 +121,7 @@ class ProductController extends Controller
 
         $product = Product::query()->create($data);
         $product->categories()->sync($request->input('category_ids', []));
+        $product->tags()->sync($request->input('tag_ids', []));
 
         return redirect()->route('admin.products.show', $product)
             ->with('success', 'Product created successfully.');
@@ -116,7 +131,7 @@ class ProductController extends Controller
     {
         $this->authorize('view', $product);
 
-        $product->load(['categories', 'images', 'options.values', 'variants.optionValues.option', 'variants.images', 'relatedProducts.images']);
+        $product->load(['categories', 'tags', 'images', 'options.values', 'variants.optionValues.option', 'variants.images', 'relatedProducts.images']);
 
         if ($product->isBundled()) {
             $product->load(['bundleItems.componentProduct.images', 'bundleItems.componentVariant.optionValues.option']);
@@ -140,16 +155,22 @@ class ProductController extends Controller
     {
         $this->authorize('update', $product);
 
-        $product->load('categories');
+        $product->load('categories', 'tags');
 
         $categories = Category::query()
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
 
+        $tags = Tag::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'color']);
+
         return Inertia::render('admin/Products/Edit', [
             'product' => $product,
             'categories' => $categories,
+            'tags' => $tags,
         ]);
     }
 
@@ -159,10 +180,11 @@ class ProductController extends Controller
 
         $data = $request->validated();
         $data['is_active'] = $request->has('is_active') ? $request->boolean('is_active') : $product->is_active;
-        unset($data['category_ids']);
+        unset($data['category_ids'], $data['tag_ids']);
 
         $product->update($data);
         $product->categories()->sync($request->input('category_ids', []));
+        $product->tags()->sync($request->input('tag_ids', []));
 
         return redirect()->route('admin.products.show', $product)
             ->with('success', 'Product updated successfully.');
@@ -186,7 +208,7 @@ class ProductController extends Controller
         $sortDir = ($filters['sort_dir'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
 
         return Product::query()
-            ->with('categories')
+            ->with('categories', 'tags')
             ->when($filters['search'] ?? null, function ($query, $search): void {
                 $query->where(function ($q) use ($search): void {
                     $q->where('name', 'like', "%{$search}%")
@@ -195,6 +217,9 @@ class ProductController extends Controller
             })
             ->when($filters['category_id'] ?? null, function ($query, $categoryId): void {
                 $query->whereHas('categories', fn ($q) => $q->where('categories.id', $categoryId));
+            })
+            ->when($filters['tag_id'] ?? null, function ($query, $tagId): void {
+                $query->whereHas('tags', fn ($q) => $q->where('tags.id', $tagId));
             })
             ->when($filters['type'] ?? null, function ($query, $type): void {
                 $query->where('type', $type);

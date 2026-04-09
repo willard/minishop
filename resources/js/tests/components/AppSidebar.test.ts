@@ -58,6 +58,9 @@ vi.mock('@/actions/App/Http/Controllers/Admin/ActivityLogController', () => ({
 vi.mock('@/actions/App/Http/Controllers/Admin/UserController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/users' })),
 }));
+vi.mock('@/actions/App/Http/Controllers/Admin/TagController', () => ({
+    index: vi.fn(() => ({ url: '/dashboard/tags' })),
+}));
 vi.mock('@/actions/App/Http/Controllers/Admin/TaxZoneController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/tax-zones' })),
 }));
@@ -108,6 +111,7 @@ const ALL_NAV_TITLES = [
     'Dashboard',
     'Products',
     'Categories',
+    'Tags',
     'Orders',
     'Returns',
     'Customers',
@@ -123,6 +127,7 @@ const MANAGER_PERMISSIONS = [
     'dashboard.view',
     'products.view',
     'categories.view',
+    'tags.view',
     'orders.view',
     'customers.view',
 ];
@@ -173,6 +178,7 @@ describe('AppSidebar', () => {
         expect(titles).toContain('Dashboard');
         expect(titles).toContain('Products');
         expect(titles).toContain('Categories');
+        expect(titles).toContain('Tags');
         expect(titles).toContain('Orders');
         expect(titles).toContain('Customers');
 

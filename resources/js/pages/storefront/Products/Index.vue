@@ -14,13 +14,15 @@ import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 import type {
     StorefrontProduct,
     StorefrontCategory,
+    StorefrontTag,
     PaginatedProducts,
 } from '@/types/storefront';
 
 const props = defineProps<{
     products: PaginatedProducts;
     categories: StorefrontCategory[];
-    filters: { category?: string; search?: string };
+    tags: StorefrontTag[];
+    filters: { category?: string; tag?: string; search?: string };
 }>();
 
 const { addItem, lastAddedItem } = useCart();
@@ -174,6 +176,50 @@ function handleAddToCart(product: StorefrontProduct): void {
                         {{ category.name }}
                     </Link>
                 </div>
+
+                <template v-if="tags.length > 0">
+                    <p
+                        class="mb-4 mt-6 text-xs font-semibold tracking-widest uppercase opacity-40"
+                    >
+                        Tags
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <Link
+                            :href="
+                                productsIndex({
+                                    query: { ...filters, tag: undefined },
+                                }).url
+                            "
+                            class="rounded-full border px-4 py-1.5 text-xs font-medium transition-all"
+                            :style="
+                                !filters.tag
+                                    ? 'background-color: #1c1a17; color: #f9f6f0; border-color: #1c1a17'
+                                    : 'border-color: rgba(28, 26, 23, 0.2)'
+                            "
+                        >
+                            All Tags
+                        </Link>
+                        <Link
+                            v-for="tag in tags"
+                            :key="tag.id"
+                            :href="
+                                productsIndex({
+                                    query: { ...filters, tag: tag.slug },
+                                }).url
+                            "
+                            class="rounded-full border px-4 py-1.5 text-xs font-medium transition-all"
+                            :style="
+                                filters.tag === tag.slug
+                                    ? tag.color
+                                        ? `background-color: ${tag.color}; color: #f9f6f0; border-color: ${tag.color}`
+                                        : 'background-color: #1c1a17; color: #f9f6f0; border-color: #1c1a17'
+                                    : 'border-color: rgba(28, 26, 23, 0.2)'
+                            "
+                        >
+                            {{ tag.name }}
+                        </Link>
+                    </div>
+                </template>
             </div>
 
             <!-- Product grid -->
@@ -279,6 +325,17 @@ function handleAddToCart(product: StorefrontProduct): void {
                                 style="color: rgba(28, 26, 23, 0.45)"
                             >
                                 {{ cat.name }}
+                            </span>
+                            <span
+                                v-for="tag in (product.tags ?? []).slice(0, 2)"
+                                :key="`t-${tag.id}`"
+                                class="rounded-full px-2 py-0.5 text-[10px] font-medium"
+                                :style="tag.color
+                                    ? { backgroundColor: tag.color, color: '#fff' }
+                                    : { backgroundColor: 'rgba(28, 26, 23, 0.08)', color: 'rgba(28, 26, 23, 0.6)' }
+                                "
+                            >
+                                {{ tag.name }}
                             </span>
                         </div>
 

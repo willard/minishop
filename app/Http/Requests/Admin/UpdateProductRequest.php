@@ -43,6 +43,8 @@ class UpdateProductRequest extends FormRequest
             'is_active' => ['sometimes', 'nullable', 'boolean'],
             'category_ids' => ['nullable', 'array'],
             'category_ids.*' => ['integer', 'exists:categories,id'],
+            'tag_ids' => ['nullable', 'array'],
+            'tag_ids.*' => ['integer', 'exists:tags,id'],
         ];
     }
 
@@ -53,6 +55,7 @@ class UpdateProductRequest extends FormRequest
             'compare_price.gt' => 'Compare price must be greater than the sale price.',
             'sku.unique' => 'This SKU is already assigned to another product.',
             'category_ids.*.exists' => 'One or more selected categories do not exist.',
+            'tag_ids.*.exists' => 'One or more selected tags do not exist.',
         ];
     }
 }

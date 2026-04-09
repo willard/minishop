@@ -44,6 +44,29 @@ vi.mock('@/components/ui/input', () => ({
     },
 }));
 
+vi.mock('@/components/ProductTypeBadge.vue', () => ({
+    default: {
+        name: 'ProductTypeBadge',
+        template: '<span />',
+        props: ['type'],
+    },
+}));
+
+vi.mock('@/components/TagBadge.vue', () => ({
+    default: {
+        name: 'TagBadge',
+        template: '<span />',
+        props: ['name', 'color'],
+    },
+}));
+
+vi.mock(
+    '@/actions/App/Http/Controllers/Admin/ProductBulkActionController',
+    () => ({
+        default: vi.fn(() => ({ url: '/dashboard/products/bulk', method: 'post' })),
+    }),
+);
+
 vi.mock('@/actions/App/Http/Controllers/Admin/ProductController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/products' })),
     create: vi.fn(() => ({ url: '/dashboard/products/create' })),
@@ -82,6 +105,7 @@ const baseProducts = {
             is_active: true,
             sku: 'SHIRT-001',
             categories: [{ id: 1, name: 'Apparel' }],
+            tags: [],
         },
         {
             id: 2,
@@ -92,6 +116,7 @@ const baseProducts = {
             is_active: false,
             sku: null,
             categories: [],
+            tags: [],
         },
     ],
     current_page: 1,
@@ -129,6 +154,7 @@ describe('admin/Products/Index', () => {
                 products: baseProducts,
                 filters: baseFilters,
                 categories: baseCategories,
+                tags: [],
             },
         });
     });
@@ -216,6 +242,7 @@ describe('admin/Products/Index', () => {
                 products: baseProducts,
                 filters: { search: 'shirt', stock: 'in_stock', sort_by: 'price', sort_dir: 'asc' },
                 categories: baseCategories,
+                tags: [],
             },
         });
         const links = filteredWrapper.findAll('a');
@@ -233,6 +260,7 @@ describe('admin/Products/Index', () => {
                 products: { ...baseProducts, data: [], total: 0 },
                 filters: baseFilters,
                 categories: baseCategories,
+                tags: [],
             },
         });
         expect(emptyWrapper.text()).toContain('No products yet');
@@ -248,6 +276,7 @@ describe('admin/Products/Index', () => {
                     stock: undefined,
                 },
                 categories: baseCategories,
+                tags: [],
             },
         });
         expect(filteredWrapper.text()).toContain('No products found.');
