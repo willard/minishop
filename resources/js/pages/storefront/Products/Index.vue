@@ -289,7 +289,7 @@ function handleAddToCart(product: StorefrontProduct): void {
                 </p>
                 <div class="flex flex-wrap gap-2">
                     <Link
-                        :href="productsIndex({ query: { ...filters, stock: undefined } }).url"
+                        :href="productsIndex({ query: { ...filters, price_min: priceMin || undefined, price_max: priceMax || undefined, stock: undefined } }).url"
                         class="rounded-full border px-4 py-1.5 text-xs font-medium transition-all"
                         :style="
                             !filters.stock
@@ -300,7 +300,7 @@ function handleAddToCart(product: StorefrontProduct): void {
                         All
                     </Link>
                     <Link
-                        :href="productsIndex({ query: { ...filters, stock: 'in_stock' } }).url"
+                        :href="productsIndex({ query: { ...filters, price_min: priceMin || undefined, price_max: priceMax || undefined, stock: 'in_stock' } }).url"
                         class="rounded-full border px-4 py-1.5 text-xs font-medium transition-all"
                         :style="
                             filters.stock === 'in_stock'
@@ -311,7 +311,7 @@ function handleAddToCart(product: StorefrontProduct): void {
                         In Stock
                     </Link>
                     <Link
-                        :href="productsIndex({ query: { ...filters, stock: 'out_of_stock' } }).url"
+                        :href="productsIndex({ query: { ...filters, price_min: priceMin || undefined, price_max: priceMax || undefined, stock: 'out_of_stock' } }).url"
                         class="rounded-full border px-4 py-1.5 text-xs font-medium transition-all"
                         :style="
                             filters.stock === 'out_of_stock'

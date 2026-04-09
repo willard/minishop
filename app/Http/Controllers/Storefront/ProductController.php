@@ -31,10 +31,10 @@ class ProductController extends Controller
                 });
             })
             ->when($request->filled('price_min'), function ($query) use ($request): void {
-                $query->where('price', '>=', (int) round((float) $request->string('price_min') * 100));
+                $query->where('price', '>=', (int) round((float) $request->input('price_min') * 100));
             })
             ->when($request->filled('price_max'), function ($query) use ($request): void {
-                $query->where('price', '<=', (int) round((float) $request->string('price_max') * 100));
+                $query->where('price', '<=', (int) round((float) $request->input('price_max') * 100));
             })
             ->when($request->filled('stock'), function ($query) use ($request): void {
                 // Exclude bundled products — their stock is computed, not stored

@@ -103,6 +103,8 @@ watch(selectedCategory, (value) => {
             ...props.filters,
             search: search.value || undefined,
             category_id: value || undefined,
+            price_min: priceMin.value || undefined,
+            price_max: priceMax.value || undefined,
         },
         { preserveState: true, replace: true },
     );
@@ -128,7 +130,13 @@ watch([priceMin, priceMax], () => {
 function applyStock(stock: string | undefined): void {
     router.get(
         index().url,
-        { ...props.filters, search: search.value || undefined, stock },
+        {
+            ...props.filters,
+            search: search.value || undefined,
+            price_min: priceMin.value || undefined,
+            price_max: priceMax.value || undefined,
+            stock,
+        },
         { preserveState: true, replace: true },
     );
 }
@@ -140,7 +148,14 @@ function applySort(column: string): void {
             : 'asc';
     router.get(
         index().url,
-        { ...props.filters, search: search.value || undefined, sort_by: column, sort_dir: newDir },
+        {
+            ...props.filters,
+            search: search.value || undefined,
+            price_min: priceMin.value || undefined,
+            price_max: priceMax.value || undefined,
+            sort_by: column,
+            sort_dir: newDir,
+        },
         { preserveState: true, replace: true },
     );
 }
@@ -184,6 +199,8 @@ watch(selectedTag, (value) => {
             ...props.filters,
             search: search.value || undefined,
             tag_id: value || undefined,
+            price_min: priceMin.value || undefined,
+            price_max: priceMax.value || undefined,
         },
         { preserveState: true, replace: true },
     );
@@ -198,6 +215,8 @@ watch(selectedType, (value) => {
             ...props.filters,
             search: search.value || undefined,
             type: value || undefined,
+            price_min: priceMin.value || undefined,
+            price_max: priceMax.value || undefined,
         },
         { preserveState: true, replace: true },
     );
