@@ -20,7 +20,6 @@ import {
 import { computed } from 'vue';
 import { index as activityLogIndex } from '@/actions/App/Http/Controllers/Admin/ActivityLogController';
 import { index as categoriesIndex } from '@/actions/App/Http/Controllers/Admin/CategoryController';
-import { index as tagsIndex } from '@/actions/App/Http/Controllers/Admin/TagController';
 import { index as couponsIndex } from '@/actions/App/Http/Controllers/Admin/CouponController';
 import { index as customersIndex } from '@/actions/App/Http/Controllers/Admin/CustomerController';
 import { index as ordersIndex } from '@/actions/App/Http/Controllers/Admin/OrderController';
@@ -28,6 +27,7 @@ import { index as productsIndex } from '@/actions/App/Http/Controllers/Admin/Pro
 import { index as returnsIndex } from '@/actions/App/Http/Controllers/Admin/ReturnController';
 import { index as shippingMethodsIndex } from '@/actions/App/Http/Controllers/Admin/ShippingMethodController';
 import { edit as settingsEdit } from '@/actions/App/Http/Controllers/Admin/StoreSettingsController';
+import { index as tagsIndex } from '@/actions/App/Http/Controllers/Admin/TagController';
 import { index as taxZonesIndex } from '@/actions/App/Http/Controllers/Admin/TaxZoneController';
 import { index as usersIndex } from '@/actions/App/Http/Controllers/Admin/UserController';
 import NavFooter from '@/components/NavFooter.vue';
