@@ -39,11 +39,12 @@ class ProductController extends Controller
             ->when($request->filled('stock'), function ($query) use ($request): void {
                 // Exclude bundled products — their stock is computed, not stored
                 $query->where('type', '!=', 'bundled');
-                match ($request->string('stock')->toString()) {
-                    'in_stock' => $query->where('stock_quantity', '>', 0),
-                    'out_of_stock' => $query->where('stock_quantity', 0),
-                    default => null,
-                };
+
+                if ($request->input('stock') === 'in_stock') {
+                    $query->where('stock_quantity', '>', 0);
+                } elseif ($request->input('stock') === 'out_of_stock') {
+                    $query->where('stock_quantity', 0);
+                }
             })
             ->paginate(24)
             ->withQueryString();
