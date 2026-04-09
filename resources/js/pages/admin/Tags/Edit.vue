@@ -36,11 +36,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const color = ref(props.tag.color ?? '');
 
-function onColorPickerChange(event: Event): void {
-    color.value = (event.target as HTMLInputElement).value;
-}
-
-function onColorInputChange(event: Event): void {
+function onColorChange(event: Event): void {
     color.value = (event.target as HTMLInputElement).value;
 }
 </script>
@@ -108,7 +104,7 @@ function onColorInputChange(event: Event): void {
                             type="color"
                             :value="color || '#000000'"
                             class="size-10 cursor-pointer rounded border border-input"
-                            @input="onColorPickerChange"
+                            @input="onColorChange"
                         />
                         <Input
                             id="color"
@@ -116,7 +112,7 @@ function onColorInputChange(event: Event): void {
                             :value="color"
                             placeholder="#FF5733"
                             class="max-w-[8rem] font-mono"
-                            @input="onColorInputChange"
+                            @input="onColorChange"
                         />
                     </div>
                     <p class="text-xs text-muted-foreground">

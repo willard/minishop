@@ -7,12 +7,7 @@ const props = defineProps<{
     color?: string | null;
 }>();
 
-const hasColor = computed(() => !!props.color);
-
-/**
- * Determine if the background color is light or dark
- * to choose appropriate text color for contrast.
- */
+/** Returns a text color class for contrast against the badge background color. */
 const textColorClass = computed(() => {
     if (!props.color) return '';
     const hex = props.color.replace('#', '');
@@ -27,7 +22,7 @@ const textColorClass = computed(() => {
 
 <template>
     <Badge
-        v-if="hasColor"
+        v-if="color"
         class="text-xs"
         :class="textColorClass"
         :style="{ backgroundColor: color! }"
