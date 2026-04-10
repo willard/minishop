@@ -80,6 +80,7 @@ class RolePermissionTest extends TestCase
                 'tax_rate' => 10,
                 'active_payment_gateway' => 'cod',
                 'low_stock_threshold' => 10,
+                'sale_discount_percentage' => 0,
             ])
             ->assertForbidden();
     }
