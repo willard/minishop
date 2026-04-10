@@ -41,6 +41,7 @@ class UpdateProductRequest extends FormRequest
             'stock_quantity' => ['sometimes', 'nullable', 'integer'],
             'weight_grams' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:100000'],
             'is_active' => ['sometimes', 'nullable', 'boolean'],
+            'on_sale' => ['sometimes', 'nullable', 'boolean'],
             'category_ids' => ['nullable', 'array'],
             'category_ids.*' => ['integer', 'exists:categories,id'],
             'tag_ids' => ['nullable', 'array'],

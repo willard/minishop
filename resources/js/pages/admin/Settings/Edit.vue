@@ -24,6 +24,7 @@ interface Settings {
     paymongo_secret_key: string | null;
     paymongo_webhook_secret: string | null;
     low_stock_threshold: number;
+    sale_discount_percentage: number;
     origin_postcode: string | null;
 }
 
@@ -62,6 +63,7 @@ const form = useForm({
     paymongo_secret_key: '',
     paymongo_webhook_secret: '',
     low_stock_threshold: props.settings.low_stock_threshold,
+    sale_discount_percentage: props.settings.sale_discount_percentage,
     origin_postcode: props.settings.origin_postcode ?? '',
 });
 
@@ -390,6 +392,29 @@ function submit() {
                         <InputError
                             :message="form.errors.low_stock_threshold"
                         />
+                    </div>
+                </section>
+
+                <!-- Sale -->
+                <section class="flex flex-col gap-4">
+                    <h2 class="border-b pb-2 text-base font-semibold">
+                        Sale
+                    </h2>
+
+                    <div class="grid max-w-xs gap-2">
+                        <Label for="sale_discount_percentage">Sitewide Sale Discount (%)</Label>
+                        <Input
+                            id="sale_discount_percentage"
+                            v-model="form.sale_discount_percentage"
+                            type="number"
+                            min="0"
+                            max="100"
+                            placeholder="e.g. 20"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            Products marked "On Sale" receive this percentage off at checkout. Set to 0 to disable.
+                        </p>
+                        <InputError :message="form.errors.sale_discount_percentage" />
                     </div>
                 </section>
 

@@ -29,6 +29,7 @@ class Product extends Model
         'stock_quantity',
         'weight_grams',
         'is_active',
+        'on_sale',
         'low_stock_notified',
     ];
 
@@ -41,6 +42,7 @@ class Product extends Model
             'stock_quantity' => 'integer',
             'weight_grams' => 'integer',
             'is_active' => 'boolean',
+            'on_sale' => 'boolean',
             'low_stock_notified' => 'boolean',
         ];
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Storefront;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\StoreSettings;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -66,6 +67,7 @@ class ProductController extends Controller
             'categories' => $categories,
             'tags' => $tags,
             'filters' => $request->only(['category', 'tag', 'search', 'price_min', 'price_max', 'stock']),
+            'sale_discount_percentage' => StoreSettings::current()->sale_discount_percentage ?? 0,
         ]);
     }
 
@@ -92,6 +94,7 @@ class ProductController extends Controller
         return Inertia::render('storefront/Products/Show', [
             'product' => $product,
             'in_stock' => $product->getEffectiveStock() > 0,
+            'sale_discount_percentage' => StoreSettings::current()->sale_discount_percentage ?? 0,
         ]);
     }
 }

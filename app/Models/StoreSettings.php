@@ -19,6 +19,7 @@ class StoreSettings extends Model
         'paymongo_secret_key',
         'paymongo_webhook_secret',
         'low_stock_threshold',
+        'sale_discount_percentage',
         'origin_postcode',
     ];
 
@@ -29,6 +30,7 @@ class StoreSettings extends Model
             'paymongo_webhook_secret' => 'encrypted',
             'tax_rate' => 'decimal:2',
             'low_stock_threshold' => 'integer',
+            'sale_discount_percentage' => 'integer',
             'tax_mode' => TaxMode::class,
         ];
     }

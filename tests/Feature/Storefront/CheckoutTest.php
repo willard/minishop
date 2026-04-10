@@ -480,4 +480,80 @@ class CheckoutTest extends TestCase
             'subtotal' => 8000,
         ]);
     }
+
+    public function test_on_sale_product_applies_discount_at_checkout(): void
+    {
+        Cache::forget('store_settings');
+        StoreSettings::current()->update(['sale_discount_percentage' => 20]);
+
+        $product = Product::factory()->simple()->onSale()->create(['price' => 10000, 'stock_quantity' => 5]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [['product_id' => $product->id, 'variant_id' => null, 'quantity' => 2]],
+        ]))->assertRedirect();
+
+        $this->assertDatabaseHas('order_items', [
+            'product_id' => $product->id,
+            'unit_price' => 8000,
+            'subtotal' => 16000,
+        ]);
+    }
+
+    public function test_on_sale_product_with_zero_discount_uses_full_price(): void
+    {
+        Cache::forget('store_settings');
+        StoreSettings::current()->update(['sale_discount_percentage' => 0]);
+
+        $product = Product::factory()->simple()->onSale()->create(['price' => 5000, 'stock_quantity' => 5]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [['product_id' => $product->id, 'variant_id' => null, 'quantity' => 1]],
+        ]))->assertRedirect();
+
+        $this->assertDatabaseHas('order_items', [
+            'product_id' => $product->id,
+            'unit_price' => 5000,
+        ]);
+    }
+
+    public function test_non_on_sale_product_ignores_discount(): void
+    {
+        Cache::forget('store_settings');
+        StoreSettings::current()->update(['sale_discount_percentage' => 25]);
+
+        $product = Product::factory()->simple()->create(['price' => 4000, 'stock_quantity' => 5, 'on_sale' => false]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [['product_id' => $product->id, 'variant_id' => null, 'quantity' => 1]],
+        ]))->assertRedirect();
+
+        $this->assertDatabaseHas('order_items', [
+            'product_id' => $product->id,
+            'unit_price' => 4000,
+        ]);
+    }
+
+    public function test_variant_on_sale_product_discounts_variant_price(): void
+    {
+        Cache::forget('store_settings');
+        StoreSettings::current()->update(['sale_discount_percentage' => 10]);
+
+        $product = Product::factory()->variable()->onSale()->create(['price' => 5000, 'stock_quantity' => 0]);
+        $variant = ProductVariant::factory()->create([
+            'product_id' => $product->id,
+            'price' => 6000,
+            'stock_quantity' => 10,
+            'is_active' => true,
+        ]);
+
+        $this->post(route('storefront.checkout.store'), $this->validPayload([
+            'items' => [['product_id' => $product->id, 'variant_id' => $variant->id, 'quantity' => 1]],
+        ]))->assertRedirect();
+
+        $this->assertDatabaseHas('order_items', [
+            'product_id' => $product->id,
+            'variant_id' => $variant->id,
+            'unit_price' => 5400,
+        ]);
+    }
 }

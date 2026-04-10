@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\StoreSettings;
 use Illuminate\Support\Collection;
 
 class BuildLineItemsAction
@@ -25,6 +26,7 @@ class BuildLineItemsAction
             ->get()
             ->keyBy('id');
 
+        $saleDiscount = (int) (StoreSettings::current()->sale_discount_percentage ?? 0);
         $lineItems = [];
 
         foreach ($items as $item) {
@@ -32,11 +34,11 @@ class BuildLineItemsAction
             abort_unless($product->is_active, 422, 'One or more products are no longer available.');
 
             if ($product->isBundled()) {
-                $lineItems[] = $this->buildBundledLineItem($product, $item['quantity']);
+                $lineItems[] = $this->buildBundledLineItem($product, $item['quantity'], $saleDiscount);
             } elseif (! empty($item['variant_id'])) {
-                $lineItems[] = $this->buildVariantLineItem($product, $item['variant_id'], $item['quantity']);
+                $lineItems[] = $this->buildVariantLineItem($product, $item['variant_id'], $item['quantity'], $saleDiscount);
             } else {
-                $lineItems[] = $this->buildSimpleLineItem($product, $item['quantity']);
+                $lineItems[] = $this->buildSimpleLineItem($product, $item['quantity'], $saleDiscount);
             }
         }
 
@@ -46,25 +48,27 @@ class BuildLineItemsAction
     /**
      * @return array{product_id: int, variant_id: int|null, product_name: string, product_sku: string|null, unit_price: int, quantity: int, subtotal: int}
      */
-    private function buildSimpleLineItem(Product $product, int $quantity): array
+    private function buildSimpleLineItem(Product $product, int $quantity, int $saleDiscount): array
     {
         abort_if($product->stock_quantity < $quantity, 422, "Insufficient stock for {$product->name}.");
+
+        $unitPrice = $this->applyOnSaleDiscount($product->price, $product, $saleDiscount);
 
         return [
             'product_id' => $product->id,
             'variant_id' => null,
             'product_name' => $product->name,
             'product_sku' => $product->sku,
-            'unit_price' => $product->price,
+            'unit_price' => $unitPrice,
             'quantity' => $quantity,
-            'subtotal' => $product->price * $quantity,
+            'subtotal' => $unitPrice * $quantity,
         ];
     }
 
     /**
      * @return array{product_id: int, variant_id: int|null, product_name: string, product_sku: string|null, unit_price: int, quantity: int, subtotal: int}
      */
-    private function buildVariantLineItem(Product $product, int $variantId, int $quantity): array
+    private function buildVariantLineItem(Product $product, int $variantId, int $quantity, int $saleDiscount): array
     {
         $variant = ProductVariant::query()
             ->where('id', $variantId)
@@ -74,7 +78,8 @@ class BuildLineItemsAction
 
         abort_if($variant->stock_quantity < $quantity, 422, "Insufficient stock for {$product->name}.");
 
-        $unitPrice = $variant->price ?? $product->price;
+        $basePrice = $variant->price ?? $product->price;
+        $unitPrice = $this->applyOnSaleDiscount($basePrice, $product, $saleDiscount);
         $sku = $variant->sku ?? $product->sku;
 
         return [
@@ -91,20 +96,31 @@ class BuildLineItemsAction
     /**
      * @return array{product_id: int, variant_id: int|null, product_name: string, product_sku: string|null, unit_price: int, quantity: int, subtotal: int}
      */
-    private function buildBundledLineItem(Product $product, int $quantity): array
+    private function buildBundledLineItem(Product $product, int $quantity, int $saleDiscount): array
     {
         $effectiveStock = $product->getEffectiveStock();
 
         abort_if($effectiveStock < $quantity, 422, "Insufficient stock for {$product->name}.");
+
+        $unitPrice = $this->applyOnSaleDiscount($product->price, $product, $saleDiscount);
 
         return [
             'product_id' => $product->id,
             'variant_id' => null,
             'product_name' => $product->name,
             'product_sku' => $product->sku,
-            'unit_price' => $product->price,
+            'unit_price' => $unitPrice,
             'quantity' => $quantity,
-            'subtotal' => $product->price * $quantity,
+            'subtotal' => $unitPrice * $quantity,
         ];
+    }
+
+    private function applyOnSaleDiscount(int $basePrice, Product $product, int $saleDiscount): int
+    {
+        if (! $product->on_sale || $saleDiscount <= 0) {
+            return $basePrice;
+        }
+
+        return (int) round($basePrice * (1 - $saleDiscount / 100));
     }
 }

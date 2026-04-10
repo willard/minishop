@@ -26,6 +26,7 @@ class UpdateStoreSettingsRequest extends FormRequest
             'paymongo_secret_key' => ['nullable', 'string', 'max:500'],
             'paymongo_webhook_secret' => ['nullable', 'string', 'max:500'],
             'low_stock_threshold' => ['required', 'integer', 'min:0', 'max:10000'],
+            'sale_discount_percentage' => ['required', 'integer', 'min:0', 'max:100'],
             'origin_postcode' => ['nullable', 'string', 'max:20'],
         ];
     }
