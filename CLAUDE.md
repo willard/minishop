@@ -256,6 +256,9 @@ Minishop is a **headless ecommerce platform for small businesses**. The backend 
 - **Product variants** — structured option types (e.g. size + colour), nested CRUD under products; blocked for bundled products
 - **Product images** — multiple images per product or variant; `variant_id IS NULL` = product-level image
 - **SEO** — per-product `meta_title` and `meta_description` fields; slug auto-generated from name on create
+- **Product tags** — colour-coded taggable system; full admin CRUD (`TagController`), many-to-many `product_tag` pivot, `TagBadge` component, storefront display on product cards and detail pages
+- **Advanced product search** — storefront catalogue filters: price range (min/max), description text search, category, and availability; filters preserved across pagination and other filter changes
+- **On-sale pricing** — per-product `on_sale` boolean flag; sitewide `sale_discount_percentage` in `StoreSettings`; storefront shows sale price with strikethrough original; `on_sale` products can be filtered in catalogue
 
 ### Payments & Finance
 - **Stripe** — payment intent flow; keys read from `.env` via `config/services.php`
@@ -287,10 +290,8 @@ Minishop is a **headless ecommerce platform for small businesses**. The backend 
 
 ## Remaining / Planned Features
 
-- **Product tags** — tagging system for products
 - **Headless API** — RESTful `/api/v1/` endpoints for external storefront consumption
 - **Sanctum auth** — API authentication for storefront user sessions
-- **Search** — advanced product search with price range, category, and availability filters
 - **Discount improvements** — bulk coupon generation, referral codes
 
 ## Laravel Best Practices

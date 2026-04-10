@@ -7,6 +7,9 @@ A headless ecommerce platform for small businesses. Built with Laravel 13, Inert
 **Admin Dashboard**
 - Product management — CRUD, variants, images, categories, stock tracking, bulk actions, CSV/PDF export
 - Product types — simple (no variants), variable (option/variant matrix), bundled (component products with calculated stock)
+- Product tags — taggable system with colour-coded badges; full admin CRUD, product integration, storefront display
+- Advanced product search — price range, description text, category, and availability filters on the storefront catalogue
+- On-sale pricing — per-product `on_sale` flag and sitewide `sale_discount_percentage` in store settings; storefront shows discounted prices
 - SEO fields — per-product meta title, meta description, and auto-generated slugs
 - Related products — curated product relationships shown on storefront detail pages
 - Order management — full lifecycle, manual order creation, invoice PDF, bulk status updates, email notifications
