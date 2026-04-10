@@ -10,6 +10,7 @@ import {
 import QuickView from '@/components/storefront/QuickView.vue';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';
+import { effectivePrice } from '@/utils/pricing';
 import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 import type {
     StorefrontProduct,
@@ -23,6 +24,7 @@ const props = defineProps<{
     categories: StorefrontCategory[];
     tags: StorefrontTag[];
     filters: { category?: string; tag?: string; search?: string; price_min?: string; price_max?: string; stock?: string };
+    sale_discount_percentage: number;
 }>();
 
 const { addItem, lastAddedItem } = useCart();
@@ -378,7 +380,14 @@ function handleAddToCart(product: StorefrontProduct): void {
 
                         <!-- Sale badge -->
                         <div
-                            v-if="
+                            v-if="product.on_sale && sale_discount_percentage > 0"
+                            class="absolute top-3 left-3 rounded-full px-2.5 py-1 text-xs font-semibold text-white"
+                            style="background-color: #c05c3a"
+                        >
+                            {{ sale_discount_percentage }}% off
+                        </div>
+                        <div
+                            v-else-if="
                                 product.compare_price &&
                                 product.compare_price > product.price
                             "
@@ -457,10 +466,17 @@ function handleAddToCart(product: StorefrontProduct): void {
                                     class="text-base font-semibold"
                                     style="color: #1c1a17"
                                 >
+                                    {{ formatPrice(effectivePrice(product.price, product.on_sale, sale_discount_percentage)) }}
+                                </span>
+                                <span
+                                    v-if="product.on_sale && sale_discount_percentage > 0"
+                                    class="text-sm line-through"
+                                    style="color: rgba(28, 26, 23, 0.4)"
+                                >
                                     {{ formatPrice(product.price) }}
                                 </span>
                                 <span
-                                    v-if="
+                                    v-else-if="
                                         product.compare_price &&
                                         product.compare_price > product.price
                                     "

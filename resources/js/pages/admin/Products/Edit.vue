@@ -38,6 +38,7 @@ interface Product {
     compare_price: number | null;
     stock_quantity: number;
     is_active: boolean;
+    on_sale: boolean;
     sku: string | null;
     categories: Category[];
     tags: Tag[];
@@ -47,6 +48,7 @@ const props = defineProps<{
     product: Product;
     categories: Category[];
     tags: Tag[];
+    saleDiscountPercentage: number;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -265,6 +267,22 @@ const selectedTagIds = props.product.tags.map((t) => t.id);
                         :default-value="product.is_active"
                     />
                     <Label for="is_active">Active (visible in store)</Label>
+                </div>
+
+                <!-- On Sale -->
+                <div class="flex items-center gap-2">
+                    <Checkbox
+                        id="on_sale"
+                        name="on_sale"
+                        value="1"
+                        :default-value="product.on_sale"
+                    />
+                    <Label for="on_sale">
+                        On Sale
+                        <span class="ml-1 text-xs text-muted-foreground">
+                            Applies the sitewide {{ saleDiscountPercentage }}% discount at checkout
+                        </span>
+                    </Label>
                 </div>
 
                 <!-- Submit -->

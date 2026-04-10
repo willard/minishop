@@ -8,6 +8,7 @@ import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';
 import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 import type { StorefrontProduct, StorefrontVariant } from '@/types/storefront';
+import { effectivePrice as calcSalePrice } from '@/utils/pricing';
 
 const { y: scrollY } = useWindowScroll();
 const showStickyBar = computed(() => scrollY.value > 600);
@@ -15,6 +16,7 @@ const showStickyBar = computed(() => scrollY.value > 600);
 const props = defineProps<{
     product: StorefrontProduct;
     in_stock?: boolean;
+    sale_discount_percentage: number;
 }>();
 
 const metaTitle = computed(() => props.product.meta_title || props.product.name);
@@ -67,8 +69,12 @@ const selectedVariant = computed<StorefrontVariant | null>(() => {
     );
 });
 
-const effectivePrice = computed<number>(() => {
+const basePrice = computed<number>(() => {
     return selectedVariant.value?.price ?? props.product.price;
+});
+
+const displayPrice = computed<number>(() => {
+    return calcSalePrice(basePrice.value, props.product.on_sale, props.sale_discount_percentage);
 });
 
 const effectiveStock = computed<number>(() => {
@@ -132,7 +138,7 @@ function handleAddToCart(): void {
         name: props.product.name,
         slug: props.product.slug,
         sku: selectedVariant.value?.sku ?? props.product.sku,
-        price: effectivePrice.value,
+        price: displayPrice.value,
         image: displayImages.value[0]?.url ?? null,
         variantLabel: variantLabel.value,
     });
@@ -309,10 +315,17 @@ function handleAddToCart(): void {
                             class="text-2xl font-semibold"
                             style="color: #1c1a17"
                         >
-                            {{ formatPrice(effectivePrice) }}
+                            {{ formatPrice(displayPrice) }}
                         </span>
                         <span
-                            v-if="
+                            v-if="product.on_sale && sale_discount_percentage > 0"
+                            class="text-lg line-through"
+                            style="color: rgba(28, 26, 23, 0.4)"
+                        >
+                            {{ formatPrice(basePrice) }}
+                        </span>
+                        <span
+                            v-else-if="
                                 product.compare_price &&
                                 product.compare_price > product.price
                             "
@@ -322,7 +335,14 @@ function handleAddToCart(): void {
                             {{ formatPrice(product.compare_price) }}
                         </span>
                         <span
-                            v-if="
+                            v-if="product.on_sale && sale_discount_percentage > 0"
+                            class="rounded-full px-2.5 py-1 text-xs font-semibold text-white"
+                            style="background-color: #c05c3a"
+                        >
+                            {{ sale_discount_percentage }}% off
+                        </span>
+                        <span
+                            v-else-if="
                                 product.compare_price &&
                                 product.compare_price > product.price
                             "
@@ -560,7 +580,7 @@ function handleAddToCart(): void {
                     </div>
                     <p class="text-sm font-medium" style="color: #1c1a17">{{ related.name }}</p>
                     <p class="mt-0.5 text-sm" style="color: rgba(28, 26, 23, 0.6)">
-                        {{ formatPrice(related.price) }}
+                        {{ formatPrice(calcSalePrice(related.price, related.on_sale, sale_discount_percentage)) }}
                     </p>
                 </Link>
             </div>
@@ -591,7 +611,7 @@ function handleAddToCart(): void {
                         variantLabel || 'Price'
                     }}</span>
                     <span class="font-semibold">{{
-                        formatPrice(effectivePrice)
+                        formatPrice(displayPrice)
                     }}</span>
                 </div>
                 <button

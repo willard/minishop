@@ -30,6 +30,7 @@ class StoreSettingsController extends Controller
                 'paymongo_secret_key' => $settings->paymongo_secret_key ? '••••••••' : null,
                 'paymongo_webhook_secret' => $settings->paymongo_webhook_secret ? '••••••••' : null,
                 'low_stock_threshold' => $settings->low_stock_threshold,
+                'sale_discount_percentage' => $settings->sale_discount_percentage ?? 0,
                 'origin_postcode' => $settings->origin_postcode,
             ],
             'hasPaymongoSecretKey' => ! empty($settings->paymongo_secret_key),
@@ -52,6 +53,7 @@ class StoreSettingsController extends Controller
             'active_payment_gateway',
             'paymongo_public_key',
             'low_stock_threshold',
+            'sale_discount_percentage',
             'origin_postcode',
         ]);
 

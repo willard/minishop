@@ -57,6 +57,7 @@ export interface StorefrontRelatedProduct {
     slug: string;
     price: number;
     compare_price: number | null;
+    on_sale: boolean;
     images: StorefrontProductImage[];
 }
 
@@ -85,6 +86,7 @@ export interface StorefrontProduct {
     meta_description: string | null;
     price: number;
     compare_price: number | null;
+    on_sale: boolean;
     sku: string | null;
     stock_quantity: number;
     is_active: boolean;

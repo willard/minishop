@@ -108,6 +108,7 @@ class ProductController extends Controller
         return Inertia::render('admin/Products/Create', [
             'categories' => $categories,
             'tags' => $tags,
+            'saleDiscountPercentage' => StoreSettings::current()->sale_discount_percentage ?? 0,
         ]);
     }
 
@@ -117,6 +118,7 @@ class ProductController extends Controller
 
         $data = $request->validated();
         $data['is_active'] = $request->boolean('is_active', true);
+        $data['on_sale'] = $request->boolean('on_sale', false);
         $data['slug'] = $this->uniqueSlug($data['name']);
 
         $product = Product::query()->create($data);
@@ -171,6 +173,7 @@ class ProductController extends Controller
             'product' => $product,
             'categories' => $categories,
             'tags' => $tags,
+            'saleDiscountPercentage' => StoreSettings::current()->sale_discount_percentage ?? 0,
         ]);
     }
 
@@ -180,6 +183,7 @@ class ProductController extends Controller
 
         $data = $request->validated();
         $data['is_active'] = $request->has('is_active') ? $request->boolean('is_active') : $product->is_active;
+        $data['on_sale'] = $request->has('on_sale') ? $request->boolean('on_sale') : $product->on_sale;
         unset($data['category_ids'], $data['tag_ids']);
 
         $product->update($data);

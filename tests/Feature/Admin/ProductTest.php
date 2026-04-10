@@ -725,4 +725,50 @@ class ProductTest extends TestCase
                 ->has('effective_stock')
             );
     }
+
+    public function test_product_on_sale_defaults_to_false(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.products.store'), [
+                'type' => 'simple',
+                'name' => 'Test Product',
+                'price' => 1999,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', ['name' => 'Test Product', 'on_sale' => false]);
+    }
+
+    public function test_product_can_be_created_with_on_sale_flag(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+
+        $this->actingAs($user)
+            ->post(route('admin.products.store'), [
+                'type' => 'simple',
+                'name' => 'On Sale Product',
+                'price' => 2999,
+                'on_sale' => true,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', ['name' => 'On Sale Product', 'on_sale' => true]);
+    }
+
+    public function test_update_product_preserves_existing_on_sale_when_omitted(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        $product = Product::factory()->onSale()->create(['price' => 1999]);
+
+        $this->actingAs($user)
+            ->put(route('admin.products.update', $product), [
+                'name' => $product->name,
+                'price' => $product->price,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'on_sale' => true]);
+    }
 }

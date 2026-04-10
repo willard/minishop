@@ -37,6 +37,7 @@ class StoreProductRequest extends FormRequest
             'stock_quantity' => ['nullable', 'integer'],
             'weight_grams' => ['nullable', 'integer', 'min:1', 'max:100000'],
             'is_active' => ['nullable', 'boolean'],
+            'on_sale' => ['nullable', 'boolean'],
             'category_ids' => ['nullable', 'array'],
             'category_ids.*' => ['integer', 'exists:categories,id'],
             'tag_ids' => ['nullable', 'array'],

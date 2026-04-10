@@ -26,6 +26,7 @@ class ProductFactory extends Factory
             'sku' => fake()->boolean(50) ? fake()->unique()->regexify('[A-Z]{3}-[0-9]{4}') : null,
             'stock_quantity' => fake()->numberBetween(0, 200),
             'is_active' => true,
+            'on_sale' => false,
         ];
     }
 
@@ -60,5 +61,10 @@ class ProductFactory extends Factory
     public function bundledEmpty(): static
     {
         return $this->bundled();
+    }
+
+    public function onSale(): static
+    {
+        return $this->state(fn (array $attributes) => ['on_sale' => true]);
     }
 }

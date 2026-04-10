@@ -65,6 +65,7 @@ class StoreSettingsTest extends TestCase
                 'tax_rate' => 8.5,
                 'active_payment_gateway' => 'cod',
                 'low_stock_threshold' => 10,
+                'sale_discount_percentage' => 0,
             ])
             ->assertRedirect(route('admin.settings.edit'))
             ->assertSessionHas('success');
@@ -86,6 +87,7 @@ class StoreSettingsTest extends TestCase
                 'tax_rate' => 10,
                 'active_payment_gateway' => 'paypal',
                 'low_stock_threshold' => 10,
+                'sale_discount_percentage' => 0,
             ])
             ->assertSessionHasErrors('active_payment_gateway');
     }
@@ -101,6 +103,7 @@ class StoreSettingsTest extends TestCase
                 'tax_rate' => 10,
                 'active_payment_gateway' => 'cod',
                 'low_stock_threshold' => 10,
+                'sale_discount_percentage' => 0,
             ])
             ->assertSessionHasErrors('currency');
     }
@@ -116,6 +119,7 @@ class StoreSettingsTest extends TestCase
                 'tax_rate' => 150,
                 'active_payment_gateway' => 'cod',
                 'low_stock_threshold' => 10,
+                'sale_discount_percentage' => 0,
             ])
             ->assertSessionHasErrors('tax_rate');
     }
@@ -131,6 +135,7 @@ class StoreSettingsTest extends TestCase
                 'tax_rate' => 10,
                 'active_payment_gateway' => 'cod',
                 'low_stock_threshold' => 15,
+                'sale_discount_percentage' => 0,
             ])
             ->assertRedirect(route('admin.settings.edit'));
 
@@ -150,6 +155,7 @@ class StoreSettingsTest extends TestCase
                 'tax_rate' => 10,
                 'active_payment_gateway' => 'cod',
                 'low_stock_threshold' => -1,
+                'sale_discount_percentage' => 0,
             ])
             ->assertSessionHasErrors('low_stock_threshold');
     }
@@ -165,6 +171,7 @@ class StoreSettingsTest extends TestCase
                 'tax_rate' => 10,
                 'active_payment_gateway' => 'cod',
                 'low_stock_threshold' => 10001,
+                'sale_discount_percentage' => 0,
             ])
             ->assertSessionHasErrors('low_stock_threshold');
     }
@@ -179,6 +186,63 @@ class StoreSettingsTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->component('admin/Settings/Edit')
                 ->where('settings.low_stock_threshold', 15)
+            );
+    }
+
+    public function test_sale_discount_percentage_can_be_updated(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+
+        $this->actingAs($user)
+            ->put(route('admin.settings.update'), [
+                'currency' => 'CAD',
+                'currency_locale' => 'en-CA',
+                'tax_rate' => 5,
+                'active_payment_gateway' => 'cod',
+                'low_stock_threshold' => 5,
+                'sale_discount_percentage' => 20,
+            ])
+            ->assertRedirect(route('admin.settings.edit'));
+
+        $this->assertSame(20, StoreSettings::current()->fresh()->sale_discount_percentage);
+    }
+
+    public function test_sale_discount_percentage_must_be_between_0_and_100(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+
+        $this->actingAs($user)
+            ->put(route('admin.settings.update'), [
+                'currency' => 'CAD',
+                'currency_locale' => 'en-CA',
+                'tax_rate' => 5,
+                'active_payment_gateway' => 'cod',
+                'low_stock_threshold' => 5,
+                'sale_discount_percentage' => 101,
+            ])
+            ->assertSessionHasErrors('sale_discount_percentage');
+
+        $this->actingAs($user)
+            ->put(route('admin.settings.update'), [
+                'currency' => 'CAD',
+                'currency_locale' => 'en-CA',
+                'tax_rate' => 5,
+                'active_payment_gateway' => 'cod',
+                'low_stock_threshold' => 5,
+                'sale_discount_percentage' => -1,
+            ])
+            ->assertSessionHasErrors('sale_discount_percentage');
+    }
+
+    public function test_settings_page_passes_sale_discount_percentage_prop(): void
+    {
+        $user = User::factory()->superAdmin()->create();
+        StoreSettings::current()->update(['sale_discount_percentage' => 15]);
+
+        $this->actingAs($user)
+            ->get(route('admin.settings.edit'))
+            ->assertInertia(fn ($page) => $page
+                ->where('settings.sale_discount_percentage', 15)
             );
     }
 }
