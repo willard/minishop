@@ -7,11 +7,11 @@ use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class OrderController extends Controller
 {
-    public function index(Request $request): ResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
         $customer = $request->user()->customer;
 

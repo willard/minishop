@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,16 +16,7 @@ class AuthController extends Controller
     {
         $user = $creator->create($request->all());
 
-        $token = $user->createToken('api')->plainTextToken;
-
-        return response()->json([
-            'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-            ],
-        ], 201);
+        return response()->json($this->tokenResponse($user), 201);
     }
 
     public function login(Request $request): JsonResponse
@@ -40,18 +32,7 @@ class AuthController extends Controller
             ]);
         }
 
-        $user = $request->user();
-
-        $token = $user->createToken('api')->plainTextToken;
-
-        return response()->json([
-            'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-            ],
-        ]);
+        return response()->json($this->tokenResponse(Auth::user()));
     }
 
     public function logout(Request $request): JsonResponse
@@ -59,5 +40,20 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out successfully.']);
+    }
+
+    /**
+     * @return array{token: string, user: array{id: int, name: string, email: string}}
+     */
+    private function tokenResponse(User $user): array
+    {
+        return [
+            'token' => $user->createToken('api')->plainTextToken,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
+        ];
     }
 }
