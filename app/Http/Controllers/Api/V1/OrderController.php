@@ -28,11 +28,9 @@ class OrderController extends Controller
         return OrderResource::collection($orders);
     }
 
-    public function show(Request $request, Order $order): JsonResponse
+    public function show(Order $order): JsonResponse
     {
-        $customer = $request->user()->customer;
-
-        abort_unless($customer && $order->customer_id === $customer->id, 403);
+        $this->authorize('viewOwn', $order);
 
         $order->load(['items.product', 'items.variant', 'shippingMethod']);
 
