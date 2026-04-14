@@ -28,6 +28,14 @@ class OrderPolicy
         return $user->can('orders.view');
     }
 
+    /**
+     * Allow a customer to view their own order via the API.
+     */
+    public function viewOwn(User $user, Order $order): bool
+    {
+        return $user->customer?->id === $order->customer_id;
+    }
+
     public function update(User $user, Order $order): bool
     {
         return $user->can('orders.update');
