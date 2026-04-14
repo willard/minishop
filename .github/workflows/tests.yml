@@ -52,5 +52,10 @@ jobs:
       - name: Build Assets
         run: npm run build
 
-      - name: Tests
+      - name: PHP Tests
         run: ./vendor/bin/phpunit
+
+      - name: JS Tests
+        run: npm run test:run
+        env:
+          LARAVEL_BYPASS_ENV_CHECK: 1

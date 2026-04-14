@@ -288,10 +288,19 @@ Minishop is a **headless ecommerce platform for small businesses**. The backend 
 - **Roles & Permissions** — Spatie Laravel Permission; roles: `super-admin`, `admin`, `manager`, `customer`
 - **Canadian localization** — CAD currency, CA country defaults
 
+### Headless API (`/api/v1/`)
+- **Sanctum auth** — `HasApiTokens` on `User`; token-based auth for external storefront clients
+- `POST /api/v1/auth/register` — creates user + customer profile via `CreateNewUser` Fortify action, returns token
+- `POST /api/v1/auth/login` — validates credentials, returns token
+- `POST /api/v1/auth/logout` — revokes current access token
+- `GET /api/v1/user` — authenticated user profile with customer data
+- `GET /api/v1/orders` — paginated order list scoped to authenticated user
+- `GET /api/v1/orders/{order}` — single order detail with ownership enforcement
+- All auth + order routes protected with `auth:sanctum` middleware
+- Register reuses `CreateNewUser` Fortify action for consistency with web flow
+
 ## Remaining / Planned Features
 
-- **Headless API** — RESTful `/api/v1/` endpoints for external storefront consumption
-- **Sanctum auth** — API authentication for storefront user sessions
 - **Discount improvements** — bulk coupon generation, referral codes
 
 ## Laravel Best Practices
@@ -349,7 +358,7 @@ Mail::to($email)->queue(new OrderStatusChangedMail($order));
 - Storefront Inertia pages: `resources/js/pages/storefront/`
 - Wayfinder actions: `resources/js/actions/App/Http/Controllers/`
 - Admin web routes: `routes/web.php` grouped under `/dashboard`, named `admin.*`
-- API routes: `routes/api.php` (currently minimal; `/api/v1/` prefix planned)
+- API routes: `routes/api.php` under `/api/v1/` prefix; auth routes (`register`, `login`, `logout`, `user`) + orders (`index`, `show`) protected by `auth:sanctum`
 - Use `Route::resource()` for all CRUD entities
 - Register standalone routes (export, bulk) **before** the resource route to avoid `{model}` capture
 
