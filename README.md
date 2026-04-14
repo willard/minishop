@@ -30,13 +30,22 @@ A headless ecommerce platform for small businesses. Built with Laravel 13, Inert
 - Stripe and PayMongo payment integration
 - AI-powered support chat (Laravel AI SDK)
 
+**Headless API** (`/api/v1/`)
+- `POST /api/v1/auth/register` — create user + customer profile, returns Sanctum token
+- `POST /api/v1/auth/login` — validate credentials, returns token
+- `POST /api/v1/auth/logout` — revoke current access token
+- `GET /api/v1/user` — authenticated user profile with customer data
+- `GET /api/v1/orders` — paginated order list scoped to authenticated user
+- `GET /api/v1/orders/{order}` — single order detail with ownership enforcement
+- Auth and orders routes protected with `auth:sanctum` middleware
+
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
 | Backend | PHP 8.4, Laravel 13 |
 | Frontend | Vue 3, Inertia.js v3, Tailwind CSS v4 |
-| Auth | Laravel Fortify |
+| Auth | Laravel Fortify (web), Laravel Sanctum (API) |
 | Permissions | Spatie Laravel Permission |
 | Payments | Stripe, PayMongo |
 | AI | Laravel AI SDK (`laravel/ai`) |
@@ -149,7 +158,7 @@ resources/js/
 
 routes/
 ├── web.php            # All web routes (admin + storefront + account)
-└── api.php            # API routes
+└── api.php            # API routes (v1: auth, user, orders)
 ```
 
 ## Roles
