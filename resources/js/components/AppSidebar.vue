@@ -3,8 +3,12 @@ import { Link } from '@inertiajs/vue3';
 import {
     BookOpen,
     ClipboardList,
+    FileText,
     Folder,
+    Image as ImageIcon,
     LayoutGrid,
+    Menu as MenuIcon,
+    Newspaper,
     Package,
     RotateCcw,
     Settings,
@@ -22,7 +26,11 @@ import { index as activityLogIndex } from '@/actions/App/Http/Controllers/Admin/
 import { index as categoriesIndex } from '@/actions/App/Http/Controllers/Admin/CategoryController';
 import { index as couponsIndex } from '@/actions/App/Http/Controllers/Admin/CouponController';
 import { index as customersIndex } from '@/actions/App/Http/Controllers/Admin/CustomerController';
+import { index as mediaIndex } from '@/actions/App/Http/Controllers/Admin/MediaController';
+import { index as menusIndex } from '@/actions/App/Http/Controllers/Admin/MenuController';
 import { index as ordersIndex } from '@/actions/App/Http/Controllers/Admin/OrderController';
+import { index as pagesIndex } from '@/actions/App/Http/Controllers/Admin/PageController';
+import { index as postsIndex } from '@/actions/App/Http/Controllers/Admin/PostController';
 import { index as productsIndex } from '@/actions/App/Http/Controllers/Admin/ProductController';
 import { index as returnsIndex } from '@/actions/App/Http/Controllers/Admin/ReturnController';
 import { index as shippingMethodsIndex } from '@/actions/App/Http/Controllers/Admin/ShippingMethodController';
@@ -105,6 +113,30 @@ const allNavItems: PermissionNavItem[] = [
         href: couponsIndex().url,
         icon: Ticket,
         permission: 'coupons.view',
+    },
+    {
+        title: 'Pages',
+        href: pagesIndex().url,
+        icon: FileText,
+        permission: 'pages.view',
+    },
+    {
+        title: 'Blog Posts',
+        href: postsIndex().url,
+        icon: Newspaper,
+        permission: 'posts.view',
+    },
+    {
+        title: 'Media',
+        href: mediaIndex().url,
+        icon: ImageIcon,
+        permission: 'media.view',
+    },
+    {
+        title: 'Menus',
+        href: menusIndex().url,
+        icon: MenuIcon,
+        permission: 'menu.view',
     },
     {
         title: 'Shipping Methods',

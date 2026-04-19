@@ -59,6 +59,22 @@ class RoleAndPermissionSeeder extends Seeder
             'tags.create',
             'tags.update',
             'tags.delete',
+            'pages.view',
+            'pages.create',
+            'pages.update',
+            'pages.delete',
+            'pages.publish',
+            'posts.view',
+            'posts.create',
+            'posts.update',
+            'posts.delete',
+            'posts.publish',
+            'media.view',
+            'media.upload',
+            'media.update',
+            'media.delete',
+            'menu.view',
+            'menu.update',
         ];
 
         foreach ($permissions as $permission) {
@@ -82,6 +98,10 @@ class RoleAndPermissionSeeder extends Seeder
             'users.view', 'users.create', 'users.update', 'users.delete',
             'tax-zones.view', 'tax-zones.create', 'tax-zones.update', 'tax-zones.delete',
             'tags.view', 'tags.create', 'tags.update', 'tags.delete',
+            'pages.view', 'pages.create', 'pages.update', 'pages.delete', 'pages.publish',
+            'posts.view', 'posts.create', 'posts.update', 'posts.delete', 'posts.publish',
+            'media.view', 'media.upload', 'media.update', 'media.delete',
+            'menu.view', 'menu.update',
         ]);
 
         $managerRole = Role::firstOrCreate(['name' => 'manager']);
@@ -94,6 +114,10 @@ class RoleAndPermissionSeeder extends Seeder
             'returns.view', 'returns.create', 'returns.update',
             'tax-zones.view',
             'tags.view',
+            'pages.view', 'pages.create', 'pages.update',
+            'posts.view', 'posts.create', 'posts.update',
+            'media.view', 'media.upload',
+            'menu.view',
         ]);
 
         // customer role: no admin permissions — access scoped to own data via policies

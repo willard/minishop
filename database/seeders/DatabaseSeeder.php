@@ -28,6 +28,9 @@ class DatabaseSeeder extends Seeder
             CouponSeeder::class,
             ShippingMethodSeeder::class,
             CanadianTaxSeeder::class,
+            CmsPageSeeder::class,
+            CmsPostSeeder::class,
+            MenuSeeder::class,
         ]);
     }
 }

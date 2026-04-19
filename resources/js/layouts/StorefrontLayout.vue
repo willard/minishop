@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { useDebounceFn, onClickOutside } from '@vueuse/core';
 import {
     ShoppingBag,
@@ -9,7 +9,7 @@ import {
     ArrowRight,
     Loader2,
 } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
     index as productsIndex,
     show as productShow,
@@ -23,6 +23,28 @@ import type { StorefrontCategory, StorefrontProduct } from '@/types/storefront';
 defineProps<{
     categories?: StorefrontCategory[];
 }>();
+
+interface MenuLink {
+    id: number;
+    label: string;
+    url: string;
+    target: string;
+}
+
+type MenusShare = Record<string, MenuLink[]>;
+
+const page = usePage<{ menus?: MenusShare }>();
+const menus = computed<MenusShare>(
+    () => (page?.props as { menus?: MenusShare } | undefined)?.menus ?? {},
+);
+const headerLinks = computed<MenuLink[]>(() => menus.value.header_primary ?? []);
+const footerShop = computed<MenuLink[]>(() => menus.value.footer_shop ?? []);
+const footerAbout = computed<MenuLink[]>(() => menus.value.footer_about ?? []);
+const footerLegal = computed<MenuLink[]>(() => menus.value.footer_legal ?? []);
+
+function isExternal(url: string): boolean {
+    return /^(https?:)?\/\//.test(url);
+}
 
 const { itemCount, isDrawerOpen, openDrawer, closeDrawer } = useCart();
 const { formatPrice } = usePrice();
@@ -255,26 +277,50 @@ function handleSearchSubmit(): void {
                         </Transition>
                     </div>
 
-                    <Link
-                        :href="productsIndex().url"
-                        class="text-sm font-medium tracking-wide transition-colors hover:opacity-60"
-                        style="color: #1c1a17"
-                    >
-                        All Products
-                    </Link>
-                    <Link
-                        v-for="category in categories"
-                        :key="category.id"
-                        :href="
-                            productsIndex({
-                                query: { category: category.slug },
-                            }).url
-                        "
-                        class="text-sm font-medium tracking-wide transition-colors hover:opacity-60"
-                        style="color: #1c1a17"
-                    >
-                        {{ category.name }}
-                    </Link>
+                    <template v-if="headerLinks.length > 0">
+                        <template v-for="link in headerLinks" :key="link.id">
+                            <a
+                                v-if="isExternal(link.url) || link.target === '_blank'"
+                                :href="link.url"
+                                :target="link.target"
+                                rel="noopener"
+                                class="text-sm font-medium tracking-wide transition-colors hover:opacity-60"
+                                style="color: #1c1a17"
+                            >
+                                {{ link.label }}
+                            </a>
+                            <Link
+                                v-else
+                                :href="link.url"
+                                class="text-sm font-medium tracking-wide transition-colors hover:opacity-60"
+                                style="color: #1c1a17"
+                            >
+                                {{ link.label }}
+                            </Link>
+                        </template>
+                    </template>
+                    <template v-else>
+                        <Link
+                            :href="productsIndex().url"
+                            class="text-sm font-medium tracking-wide transition-colors hover:opacity-60"
+                            style="color: #1c1a17"
+                        >
+                            All Products
+                        </Link>
+                        <Link
+                            v-for="category in categories"
+                            :key="category.id"
+                            :href="
+                                productsIndex({
+                                    query: { category: category.slug },
+                                }).url
+                            "
+                            class="text-sm font-medium tracking-wide transition-colors hover:opacity-60"
+                            style="color: #1c1a17"
+                        >
+                            {{ category.name }}
+                        </Link>
+                    </template>
                 </div>
 
                 <!-- Right actions -->
@@ -309,28 +355,54 @@ function handleSearchSubmit(): void {
                 style="border-color: rgba(28, 26, 23, 0.12)"
             >
                 <div class="flex flex-col gap-4">
-                    <Link
-                        :href="productsIndex().url"
-                        class="text-sm font-medium"
-                        style="color: #1c1a17"
-                        @click="mobileMenuOpen = false"
-                    >
-                        All Products
-                    </Link>
-                    <Link
-                        v-for="category in categories"
-                        :key="category.id"
-                        :href="
-                            productsIndex({
-                                query: { category: category.slug },
-                            }).url
-                        "
-                        class="text-sm font-medium"
-                        style="color: #1c1a17"
-                        @click="mobileMenuOpen = false"
-                    >
-                        {{ category.name }}
-                    </Link>
+                    <template v-if="headerLinks.length > 0">
+                        <template v-for="link in headerLinks" :key="link.id">
+                            <a
+                                v-if="isExternal(link.url) || link.target === '_blank'"
+                                :href="link.url"
+                                :target="link.target"
+                                rel="noopener"
+                                class="text-sm font-medium"
+                                style="color: #1c1a17"
+                                @click="mobileMenuOpen = false"
+                            >
+                                {{ link.label }}
+                            </a>
+                            <Link
+                                v-else
+                                :href="link.url"
+                                class="text-sm font-medium"
+                                style="color: #1c1a17"
+                                @click="mobileMenuOpen = false"
+                            >
+                                {{ link.label }}
+                            </Link>
+                        </template>
+                    </template>
+                    <template v-else>
+                        <Link
+                            :href="productsIndex().url"
+                            class="text-sm font-medium"
+                            style="color: #1c1a17"
+                            @click="mobileMenuOpen = false"
+                        >
+                            All Products
+                        </Link>
+                        <Link
+                            v-for="category in categories"
+                            :key="category.id"
+                            :href="
+                                productsIndex({
+                                    query: { category: category.slug },
+                                }).url
+                            "
+                            class="text-sm font-medium"
+                            style="color: #1c1a17"
+                            @click="mobileMenuOpen = false"
+                        >
+                            {{ category.name }}
+                        </Link>
+                    </template>
                 </div>
             </div>
         </header>
@@ -352,7 +424,7 @@ function handleSearchSubmit(): void {
             style="border-color: rgba(28, 26, 23, 0.12)"
         >
             <div class="mx-auto max-w-7xl">
-                <div class="mb-10 grid grid-cols-1 gap-8 md:grid-cols-3">
+                <div class="mb-10 grid grid-cols-1 gap-8 md:grid-cols-4">
                     <div>
                         <h3
                             class="mb-4 text-xl font-semibold"
@@ -366,7 +438,34 @@ function handleSearchSubmit(): void {
                             design.
                         </p>
                     </div>
-                    <div>
+                    <div v-if="footerShop.length > 0">
+                        <h4
+                            class="mb-4 text-xs font-bold tracking-widest uppercase opacity-40"
+                        >
+                            Shop
+                        </h4>
+                        <div class="flex flex-col gap-2">
+                            <template v-for="link in footerShop" :key="link.id">
+                                <a
+                                    v-if="isExternal(link.url) || link.target === '_blank'"
+                                    :href="link.url"
+                                    :target="link.target"
+                                    rel="noopener"
+                                    class="text-sm transition-opacity hover:opacity-70"
+                                >
+                                    {{ link.label }}
+                                </a>
+                                <Link
+                                    v-else
+                                    :href="link.url"
+                                    class="text-sm transition-opacity hover:opacity-70"
+                                >
+                                    {{ link.label }}
+                                </Link>
+                            </template>
+                        </div>
+                    </div>
+                    <div v-else>
                         <h4
                             class="mb-4 text-xs font-bold tracking-widest uppercase opacity-40"
                         >
@@ -387,28 +486,58 @@ function handleSearchSubmit(): void {
                             </Link>
                         </div>
                     </div>
-                    <div>
+                    <div v-if="footerAbout.length > 0">
                         <h4
                             class="mb-4 text-xs font-bold tracking-widest uppercase opacity-40"
                         >
-                            Connect
+                            About
                         </h4>
                         <div class="flex flex-col gap-2">
-                            <a
-                                href="#"
-                                class="text-sm transition-opacity hover:opacity-70"
-                                >Instagram</a
-                            >
-                            <a
-                                href="#"
-                                class="text-sm transition-opacity hover:opacity-70"
-                                >Twitter</a
-                            >
-                            <a
-                                href="#"
-                                class="text-sm transition-opacity hover:opacity-70"
-                                >Newsletter</a
-                            >
+                            <template v-for="link in footerAbout" :key="link.id">
+                                <a
+                                    v-if="isExternal(link.url) || link.target === '_blank'"
+                                    :href="link.url"
+                                    :target="link.target"
+                                    rel="noopener"
+                                    class="text-sm transition-opacity hover:opacity-70"
+                                >
+                                    {{ link.label }}
+                                </a>
+                                <Link
+                                    v-else
+                                    :href="link.url"
+                                    class="text-sm transition-opacity hover:opacity-70"
+                                >
+                                    {{ link.label }}
+                                </Link>
+                            </template>
+                        </div>
+                    </div>
+                    <div v-if="footerLegal.length > 0">
+                        <h4
+                            class="mb-4 text-xs font-bold tracking-widest uppercase opacity-40"
+                        >
+                            Legal
+                        </h4>
+                        <div class="flex flex-col gap-2">
+                            <template v-for="link in footerLegal" :key="link.id">
+                                <a
+                                    v-if="isExternal(link.url) || link.target === '_blank'"
+                                    :href="link.url"
+                                    :target="link.target"
+                                    rel="noopener"
+                                    class="text-sm transition-opacity hover:opacity-70"
+                                >
+                                    {{ link.label }}
+                                </a>
+                                <Link
+                                    v-else
+                                    :href="link.url"
+                                    class="text-sm transition-opacity hover:opacity-70"
+                                >
+                                    {{ link.label }}
+                                </Link>
+                            </template>
                         </div>
                     </div>
                 </div>

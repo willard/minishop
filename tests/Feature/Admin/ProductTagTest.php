@@ -108,8 +108,9 @@ class ProductTagTest extends TestCase
             ->assertSessionHas('success');
 
         foreach ($products as $product) {
-            $this->assertDatabaseHas('product_tag', [
-                'product_id' => $product->id,
+            $this->assertDatabaseHas('taggables', [
+                'taggable_id' => $product->id,
+                'taggable_type' => Product::class,
                 'tag_id' => $tag->id,
             ]);
         }
@@ -129,8 +130,8 @@ class ProductTagTest extends TestCase
                 'tag_id' => $new->id,
             ]);
 
-        $this->assertDatabaseHas('product_tag', ['product_id' => $product->id, 'tag_id' => $existing->id]);
-        $this->assertDatabaseHas('product_tag', ['product_id' => $product->id, 'tag_id' => $new->id]);
+        $this->assertDatabaseHas('taggables', ['taggable_id' => $product->id, 'taggable_type' => Product::class, 'tag_id' => $existing->id]);
+        $this->assertDatabaseHas('taggables', ['taggable_id' => $product->id, 'taggable_type' => Product::class, 'tag_id' => $new->id]);
     }
 
     public function test_bulk_assign_tag_requires_tag_id(): void
