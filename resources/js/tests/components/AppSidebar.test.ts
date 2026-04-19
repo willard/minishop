@@ -64,6 +64,18 @@ vi.mock('@/actions/App/Http/Controllers/Admin/TagController', () => ({
 vi.mock('@/actions/App/Http/Controllers/Admin/TaxZoneController', () => ({
     index: vi.fn(() => ({ url: '/dashboard/tax-zones' })),
 }));
+vi.mock('@/actions/App/Http/Controllers/Admin/PageController', () => ({
+    index: vi.fn(() => ({ url: '/dashboard/pages' })),
+}));
+vi.mock('@/actions/App/Http/Controllers/Admin/PostController', () => ({
+    index: vi.fn(() => ({ url: '/dashboard/posts' })),
+}));
+vi.mock('@/actions/App/Http/Controllers/Admin/MediaController', () => ({
+    index: vi.fn(() => ({ url: '/dashboard/media' })),
+}));
+vi.mock('@/actions/App/Http/Controllers/Admin/MenuController', () => ({
+    index: vi.fn(() => ({ url: '/dashboard/menus' })),
+}));
 
 vi.mock('@/components/ui/sidebar', () => ({
     Sidebar: {
@@ -117,6 +129,10 @@ const ALL_NAV_TITLES = [
     'Customers',
     'Users',
     'Coupons',
+    'Pages',
+    'Blog Posts',
+    'Media',
+    'Menus',
     'Shipping Methods',
     'Tax Zones',
     'Activity Log',

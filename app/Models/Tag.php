@@ -5,7 +5,7 @@ namespace App\Models;
 use Database\Factories\TagFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Str;
 
 class Tag extends Model
@@ -51,8 +51,13 @@ class Tag extends Model
         return 'slug';
     }
 
-    public function products(): BelongsToMany
+    public function products(): MorphToMany
     {
-        return $this->belongsToMany(Product::class);
+        return $this->morphedByMany(Product::class, 'taggable');
+    }
+
+    public function posts(): MorphToMany
+    {
+        return $this->morphedByMany(Post::class, 'taggable');
     }
 }

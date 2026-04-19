@@ -10,7 +10,6 @@ import {
 import QuickView from '@/components/storefront/QuickView.vue';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';
-import { effectivePrice } from '@/utils/pricing';
 import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 import type {
     StorefrontProduct,
@@ -18,6 +17,7 @@ import type {
     StorefrontTag,
     PaginatedProducts,
 } from '@/types/storefront';
+import { effectivePrice } from '@/utils/pricing';
 
 const props = defineProps<{
     products: PaginatedProducts;

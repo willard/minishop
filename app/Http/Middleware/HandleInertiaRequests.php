@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\MenuLocation;
+use App\Models\MenuItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ShippingMethod;
@@ -64,6 +66,7 @@ class HandleInertiaRequests extends Middleware
                 ->orderBy('sort_order')
                 ->orderBy('price')
                 ->get(['id', 'name', 'description', 'price', 'is_free']),
+            'menus' => fn () => $this->storefrontMenus(),
             'lowStockCount' => Inertia::optional(function () use ($request, $settings): ?int {
                 if (! $request->user()?->hasAnyRole(['super-admin', 'admin', 'manager'])) {
                     return null;
@@ -85,5 +88,32 @@ class HandleInertiaRequests extends Middleware
                 return $productCount + $variantCount;
             }),
         ];
+    }
+
+    /**
+     * @return array<string, array<int, array<string, mixed>>>
+     */
+    private function storefrontMenus(): array
+    {
+        $items = MenuItem::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get(['id', 'menu_location', 'label', 'url', 'target', 'sort_order']);
+
+        $grouped = [];
+        foreach (MenuLocation::cases() as $location) {
+            $grouped[$location->value] = $items
+                ->where('menu_location', $location)
+                ->values()
+                ->map(fn (MenuItem $item) => [
+                    'id' => $item->id,
+                    'label' => $item->label,
+                    'url' => $item->url,
+                    'target' => $item->target,
+                ])
+                ->all();
+        }
+
+        return $grouped;
     }
 }

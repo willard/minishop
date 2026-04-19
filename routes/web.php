@@ -10,8 +10,12 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\OrderBulkActionController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\ProductBulkActionController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductImageController;
@@ -25,10 +29,12 @@ use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\TaxZoneController;
 use App\Http\Controllers\Admin\TaxZoneRateController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Storefront\BlogController;
 use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\CheckoutShippingRatesController;
 use App\Http\Controllers\Storefront\HomeController;
+use App\Http\Controllers\Storefront\PageController as StorefrontPageController;
 use App\Http\Controllers\Storefront\PaymentController;
 use App\Http\Controllers\Storefront\ProductController as StorefrontProductController;
 use App\Http\Controllers\Storefront\SupportChatController;
@@ -46,6 +52,11 @@ Route::prefix('products')->name('storefront.products.')->group(function () {
     Route::get('/', [StorefrontProductController::class, 'index'])->name('index');
     Route::get('/{product:slug}', [StorefrontProductController::class, 'show'])->name('show');
 });
+
+Route::get('/blog', [BlogController::class, 'index'])->name('storefront.blog.index');
+Route::get('/blog/{post:slug}', [BlogController::class, 'show'])->name('storefront.blog.show');
+
+Route::get('/pages/{page:slug}', StorefrontPageController::class)->name('storefront.pages.show');
 
 Route::prefix('cart')->name('storefront.cart.')->group(function () {
     Route::get('/', [CartController::class, 'show'])->name('show');
@@ -106,6 +117,11 @@ Route::middleware(['auth', 'verified', 'role:super-admin|admin|manager'])->prefi
     Route::resource('customers', CustomerController::class)->only(['index', 'show']);
     Route::resource('users', UserController::class)->except(['show']);
     Route::resource('coupons', CouponController::class)->except(['show']);
+    Route::resource('pages', PageController::class)->except(['show']);
+    Route::resource('posts', PostController::class)->except(['show']);
+    Route::resource('media', MediaController::class)->except(['show', 'create', 'edit']);
+    Route::post('menus/reorder', [MenuController::class, 'reorder'])->name('menus.reorder');
+    Route::resource('menus', MenuController::class)->except(['show', 'create', 'edit']);
     Route::resource('shipping-methods', ShippingMethodController::class)->except(['show']);
     Route::resource('tax-zones', TaxZoneController::class)->except(['show']);
     Route::resource('tax-zones.rates', TaxZoneRateController::class)

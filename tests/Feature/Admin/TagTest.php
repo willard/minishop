@@ -201,7 +201,7 @@ class TagTest extends TestCase
         $this->actingAs($this->superAdmin())
             ->delete(route('admin.tags.destroy', $tag));
 
-        $this->assertDatabaseMissing('product_tag', ['tag_id' => $tag->id]);
+        $this->assertDatabaseMissing('taggables', ['tag_id' => $tag->id]);
         $this->assertDatabaseHas('products', ['id' => $product->id]);
     }
 
