@@ -7,17 +7,16 @@
 >
     <testsuites>
         <testsuite name="Default">
-            <directory>tests/Unit</directory>
             <directory>tests/Feature</directory>
-        </testsuite>
-        <testsuite name="Unit">
-            <directory>tests/Unit</directory>
         </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
         <testsuite name="Eval">
             <directory>tests/Eval</directory>
+        </testsuite>
+        <testsuite name="Package">
+            <directory suffix="Test.php">./packages/minishop/tests</directory>
         </testsuite>
     </testsuites>
     <source>
