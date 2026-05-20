@@ -176,11 +176,8 @@ class OrderEmailTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::factory()->superAdmin()->create();
         $order = $this->createOrderWithCustomer(OrderStatus::Processing);
-
-        $this->actingAs($admin)
-            ->put(route('admin.orders.update', $order), ['status' => 'shipped']);
+        $order->update(['status' => OrderStatus::Shipped]);
 
         Mail::assertQueued(OrderStatusChangedMail::class, function (OrderStatusChangedMail $mail) {
             return $mail->order->status === OrderStatus::Shipped;
@@ -191,11 +188,8 @@ class OrderEmailTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::factory()->superAdmin()->create();
         $order = $this->createOrderWithCustomer(OrderStatus::Shipped);
-
-        $this->actingAs($admin)
-            ->put(route('admin.orders.update', $order), ['status' => 'delivered']);
+        $order->update(['status' => OrderStatus::Delivered]);
 
         Mail::assertQueued(OrderStatusChangedMail::class, function (OrderStatusChangedMail $mail) {
             return $mail->order->status === OrderStatus::Delivered;
@@ -206,11 +200,8 @@ class OrderEmailTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::factory()->superAdmin()->create();
         $order = $this->createOrderWithCustomer();
-
-        $this->actingAs($admin)
-            ->put(route('admin.orders.update', $order), ['status' => 'cancelled']);
+        $order->update(['status' => OrderStatus::Cancelled]);
 
         Mail::assertQueued(OrderStatusChangedMail::class, function (OrderStatusChangedMail $mail) {
             return $mail->order->status === OrderStatus::Cancelled;
@@ -221,11 +212,8 @@ class OrderEmailTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::factory()->superAdmin()->create();
         $order = $this->createOrderWithCustomer();
-
-        $this->actingAs($admin)
-            ->put(route('admin.orders.update', $order), ['status' => 'processing']);
+        $order->update(['status' => OrderStatus::Processing]);
 
         Mail::assertNotQueued(OrderStatusChangedMail::class);
     }
@@ -234,14 +222,8 @@ class OrderEmailTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::factory()->superAdmin()->create();
         $order = $this->createOrderWithCustomer();
-
-        $this->actingAs($admin)
-            ->put(route('admin.orders.update', $order), [
-                'status' => $order->status->value,
-                'notes' => 'Internal note only.',
-            ]);
+        $order->update(['notes' => 'Internal note only.']);
 
         Mail::assertNotQueued(OrderStatusChangedMail::class);
     }
@@ -250,7 +232,6 @@ class OrderEmailTest extends TestCase
     {
         Mail::fake();
 
-        $admin = User::factory()->superAdmin()->create();
         $user = User::factory()->create(['email' => 'customer@example.com']);
         $customer = Customer::factory()->create(['user_id' => $user->id]);
         $order = Order::factory()->create([
@@ -259,9 +240,7 @@ class OrderEmailTest extends TestCase
             'shipping_method_id' => $this->shippingMethod->id,
         ]);
         OrderItem::factory()->create(['order_id' => $order->id]);
-
-        $this->actingAs($admin)
-            ->put(route('admin.orders.update', $order), ['status' => 'shipped']);
+        $order->update(['status' => OrderStatus::Shipped]);
 
         Mail::assertQueued(OrderStatusChangedMail::class, function (OrderStatusChangedMail $mail) {
             return $mail->hasTo('customer@example.com');

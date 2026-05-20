@@ -59,7 +59,7 @@ class AccountDashboardTest extends TestCase
         $customer = User::factory()->customer()->create();
 
         $this->actingAs($customer)
-            ->get(route('dashboard'))
+            ->get('/dashboard')
             ->assertForbidden();
     }
 }

@@ -4,27 +4,6 @@ use App\Http\Controllers\Account\AddressController;
 use App\Http\Controllers\Account\DashboardController as AccountDashboardController;
 use App\Http\Controllers\Account\OrdersController as AccountOrdersController;
 use App\Http\Controllers\Account\PaymentController as AccountPaymentController;
-use App\Http\Controllers\Admin\ActivityLogController;
-use App\Http\Controllers\Admin\BundleItemController;
-use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\CouponController;
-use App\Http\Controllers\Admin\CustomerController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\OrderBulkActionController;
-use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\Admin\ProductBulkActionController;
-use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Admin\ProductImageController;
-use App\Http\Controllers\Admin\ProductOptionController;
-use App\Http\Controllers\Admin\ProductRelatedController;
-use App\Http\Controllers\Admin\ProductVariantController;
-use App\Http\Controllers\Admin\ReturnController;
-use App\Http\Controllers\Admin\ShippingMethodController;
-use App\Http\Controllers\Admin\StoreSettingsController;
-use App\Http\Controllers\Admin\TagController;
-use App\Http\Controllers\Admin\TaxZoneController;
-use App\Http\Controllers\Admin\TaxZoneRateController;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\CheckoutShippingRatesController;
@@ -76,44 +55,6 @@ Route::post('/webhooks/paymongo', PayMongoWebhookController::class)->name('webho
 
 Route::get('/order-confirmation/{order}', [CheckoutController::class, 'confirmation'])
     ->name('storefront.order.confirmation');
-
-Route::get('dashboard', DashboardController::class)
-    ->middleware(['auth', 'verified', 'role:super-admin|admin|manager'])
-    ->name('dashboard');
-
-Route::middleware(['auth', 'verified', 'role:super-admin|admin|manager'])->prefix('dashboard')->name('admin.')->group(function () {
-    Route::get('products/export', [ProductController::class, 'export'])->name('products.export');
-    Route::post('products/bulk', ProductBulkActionController::class)->name('products.bulk');
-    Route::resource('products', ProductController::class);
-    Route::resource('products.bundle-items', BundleItemController::class)->only(['store', 'update', 'destroy'])->scoped();
-    Route::resource('products.variants', ProductVariantController::class)->except(['index', 'show'])->scoped();
-    Route::resource('products.options', ProductOptionController::class)->only(['create', 'store', 'destroy'])->scoped();
-    Route::post('products/{product}/related', [ProductRelatedController::class, 'store'])->name('products.related.store');
-    Route::delete('products/{product}/related/{related}', [ProductRelatedController::class, 'destroy'])->name('products.related.destroy');
-    Route::post('products/{product}/images', [ProductImageController::class, 'store'])->name('products.images.store');
-    Route::put('products/{product}/images/reorder', [ProductImageController::class, 'reorder'])->name('products.images.reorder');
-    Route::delete('products/{product}/images/{image}', [ProductImageController::class, 'destroy'])->name('products.images.destroy');
-    Route::resource('categories', CategoryController::class)->except(['show']);
-    Route::resource('tags', TagController::class)->except(['show']);
-    Route::post('orders/bulk', OrderBulkActionController::class)->name('orders.bulk');
-    Route::resource('orders', OrderController::class)->except(['edit']);
-    Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
-    Route::resource('returns', ReturnController::class)->only(['index', 'create', 'store', 'show', 'update']);
-    Route::post('returns/{return}/approve', [ReturnController::class, 'approve'])->name('returns.approve');
-    Route::post('returns/{return}/reject', [ReturnController::class, 'reject'])->name('returns.reject');
-    Route::post('returns/{return}/receive', [ReturnController::class, 'receive'])->name('returns.receive');
-    Route::post('returns/{return}/refund', [ReturnController::class, 'refund'])->name('returns.refund');
-    Route::resource('customers', CustomerController::class)->only(['index', 'show']);
-    Route::resource('users', UserController::class)->except(['show']);
-    Route::resource('coupons', CouponController::class)->except(['show']);
-    Route::resource('shipping-methods', ShippingMethodController::class)->except(['show']);
-    Route::resource('tax-zones', TaxZoneController::class)->except(['show']);
-    Route::resource('tax-zones.rates', TaxZoneRateController::class)
-        ->scoped()->except(['index', 'show', 'create', 'edit']);
-    Route::get('settings', [StoreSettingsController::class, 'edit'])->name('settings.edit');
-    Route::put('settings', [StoreSettingsController::class, 'update'])->name('settings.update');
-    Route::get('activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
-});
 
 // Storefront registration page (separate from admin /register)
 Route::get('/register/customer', fn () => Inertia::render('storefront/auth/Register'))
