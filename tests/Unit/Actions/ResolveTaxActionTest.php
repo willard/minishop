@@ -2,14 +2,14 @@
 
 namespace Tests\Unit\Actions;
 
-use App\Actions\ResolveTaxAction;
-use App\Data\TaxResolution;
-use App\Enums\TaxMode;
-use App\Models\StoreSettings;
-use App\Models\TaxZone;
-use App\Models\TaxZoneRate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Minishop\Actions\ResolveTaxAction;
+use Minishop\Data\TaxResolution;
+use Minishop\Enums\TaxMode;
+use Minishop\Models\StoreSettings;
+use Minishop\Models\TaxZone;
+use Minishop\Models\TaxZoneRate;
 use Tests\TestCase;
 
 class ResolveTaxActionTest extends TestCase

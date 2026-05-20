@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7293c6dcd82d1ebfc30260de15a49fe0",
+    "content-hash": "d27bbc5883f45137fcd5863842e09e9a",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2753,6 +2753,59 @@
                 "source": "https://github.com/Masterminds/html5-php/tree/2.10.0"
             },
             "time": "2025-07-25T09:04:22+00:00"
+        },
+        {
+            "name": "minishop/minishop",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "packages/minishop",
+                "reference": "05513c0c17ac9e35560608a6458556d46f7d38bf"
+            },
+            "require": {
+                "barryvdh/laravel-dompdf": "^3.1",
+                "inertiajs/inertia-laravel": "^3.0",
+                "laravel/ai": "^0.2.8",
+                "laravel/framework": "^13.0",
+                "laravel/sanctum": "^4.0",
+                "php": "^8.2",
+                "spatie/laravel-permission": "^7.2",
+                "stripe/stripe-php": "^19.3"
+            },
+            "require-dev": {
+                "fakerphp/faker": "^1.23",
+                "laravel/pint": "^1.24",
+                "orchestra/testbench": "^10.0",
+                "phpunit/phpunit": "^12.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Minishop\\MinishopServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Minishop\\": "src/",
+                    "Minishop\\Database\\Factories\\": "database/factories/",
+                    "Minishop\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Minishop\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Minishop ecommerce engine with Filament v5 admin panel",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "monolog/monolog",
@@ -9776,7 +9829,7 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,

@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Storefront;
 
-use App\Enums\OrderStatus;
-use App\Models\Order;
-use App\Models\ShippingMethod;
-use App\Models\StoreSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Minishop\Enums\OrderStatus;
+use Minishop\Models\Order;
+use Minishop\Models\ShippingMethod;
+use Minishop\Models\StoreSettings;
 use Tests\TestCase;
 
 class PaymentTest extends TestCase

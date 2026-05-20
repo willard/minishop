@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\TaxZone;
-use App\Models\TaxZoneRate;
-use App\Models\User;
-use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Database\Seeders\RoleAndPermissionSeeder;
+use Minishop\Models\TaxZone;
+use Minishop\Models\TaxZoneRate;
+use Minishop\Models\User;
 use Tests\TestCase;
 
 class TaxZoneTest extends TestCase

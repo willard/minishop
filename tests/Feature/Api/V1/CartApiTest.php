@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Api\V1;
 
-use App\Models\Cart;
-use App\Models\CartItem;
-use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Models\Cart;
+use Minishop\Models\CartItem;
+use Minishop\Models\Product;
 use Tests\TestCase;
 
 class CartApiTest extends TestCase

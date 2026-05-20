@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\DTOs;
 
-use App\Data\TaxResolution;
-use App\Enums\TaxMode;
+use Minishop\Data\TaxResolution;
+use Minishop\Enums\TaxMode;
 use Tests\TestCase;
 
 class TaxResolutionTest extends TestCase

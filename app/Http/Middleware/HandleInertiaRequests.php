@@ -2,13 +2,13 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\ShippingMethod;
-use App\Models\StoreSettings;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Middleware;
+use Minishop\Models\Product;
+use Minishop\Models\ProductVariant;
+use Minishop\Models\ShippingMethod;
+use Minishop\Models\StoreSettings;
 
 class HandleInertiaRequests extends Middleware
 {

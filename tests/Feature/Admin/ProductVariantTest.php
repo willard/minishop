@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\Product;
-use App\Models\ProductOption;
-use App\Models\ProductOptionValue;
-use App\Models\ProductVariant;
-use App\Models\User;
-use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Database\Seeders\RoleAndPermissionSeeder;
+use Minishop\Models\Product;
+use Minishop\Models\ProductOption;
+use Minishop\Models\ProductOptionValue;
+use Minishop\Models\ProductVariant;
+use Minishop\Models\User;
 use Tests\TestCase;
 
 class ProductVariantTest extends TestCase

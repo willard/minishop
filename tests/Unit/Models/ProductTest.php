@@ -2,10 +2,10 @@
 
 namespace Tests\Unit\Models;
 
-use App\Enums\ProductType;
-use App\Models\Product;
-use App\Models\ProductVariant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Enums\ProductType;
+use Minishop\Models\Product;
+use Minishop\Models\ProductVariant;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 

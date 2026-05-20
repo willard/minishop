@@ -2,14 +2,14 @@
 
 namespace Tests\Feature\Storefront;
 
-use App\Models\Product;
-use App\Models\ShippingMethod;
-use App\Models\StoreSettings;
-use App\Services\Shipping\CanadaPostCarrier;
-use App\Services\Shipping\ShippingRateService;
-use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Minishop\Database\Seeders\RoleAndPermissionSeeder;
+use Minishop\Models\Product;
+use Minishop\Models\ShippingMethod;
+use Minishop\Models\StoreSettings;
+use Minishop\Services\Shipping\CanadaPostCarrier;
+use Minishop\Services\Shipping\ShippingRateService;
 use Tests\TestCase;
 
 class CheckoutShippingRatesTest extends TestCase

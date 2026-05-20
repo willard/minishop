@@ -2,9 +2,9 @@
 
 namespace Tests\Eval\Storefront;
 
-use App\Ai\Agents\SupportAgent;
-use App\Models\Category;
-use App\Models\Product;
+use Minishop\Ai\Agents\SupportAgent;
+use Minishop\Models\Category;
+use Minishop\Models\Product;
 use Tests\Eval\EvalTestCase;
 
 /**

@@ -2,14 +2,14 @@
 
 namespace Tests\Feature\Webhooks;
 
-use App\Enums\OrderStatus;
-use App\Mail\OrderConfirmationMail;
-use App\Models\Order;
-use App\Models\ShippingMethod;
-use App\Models\StoreSettings;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Minishop\Enums\OrderStatus;
+use Minishop\Mail\OrderConfirmationMail;
+use Minishop\Models\Order;
+use Minishop\Models\ShippingMethod;
+use Minishop\Models\StoreSettings;
+use Minishop\Models\User;
 use Tests\TestCase;
 
 class PayMongoWebhookTest extends TestCase

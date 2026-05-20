@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Storefront;
 
-use App\Models\Category;
-use App\Models\Product;
-use App\Models\ProductImage;
-use App\Models\ProductVariant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Models\Category;
+use Minishop\Models\Product;
+use Minishop\Models\ProductImage;
+use Minishop\Models\ProductVariant;
 use Tests\TestCase;
 
 class ProductTest extends TestCase

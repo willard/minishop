@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Api\V1;
 
-use App\Models\Coupon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Models\Coupon;
 use Tests\TestCase;
 
 class CouponValidateTest extends TestCase

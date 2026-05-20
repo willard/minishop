@@ -2,16 +2,16 @@
 
 namespace Tests\Unit\Services\Shipping;
 
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\ShippingMethod;
-use App\Services\Shipping\ShipmentData;
-use App\Services\Shipping\ShippingCarrierContract;
-use App\Services\Shipping\ShippingRateData;
-use App\Services\Shipping\ShippingRateService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Minishop\Models\Product;
+use Minishop\Models\ProductVariant;
+use Minishop\Models\ShippingMethod;
+use Minishop\Services\Shipping\ShipmentData;
+use Minishop\Services\Shipping\ShippingCarrierContract;
+use Minishop\Services\Shipping\ShippingRateData;
+use Minishop\Services\Shipping\ShippingRateService;
 use Tests\TestCase;
 
 class ShippingRateServiceTest extends TestCase

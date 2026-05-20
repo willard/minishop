@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\Product;
-use App\Models\ProductOption;
-use App\Models\User;
-use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Database\Seeders\RoleAndPermissionSeeder;
+use Minishop\Models\Product;
+use Minishop\Models\ProductOption;
+use Minishop\Models\User;
 use Tests\TestCase;
 
 class ProductOptionTest extends TestCase

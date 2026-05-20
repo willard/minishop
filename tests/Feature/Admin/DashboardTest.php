@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Enums\OrderStatus;
-use App\Models\Order;
-use App\Models\User;
-use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Database\Seeders\RoleAndPermissionSeeder;
+use Minishop\Enums\OrderStatus;
+use Minishop\Models\Order;
+use Minishop\Models\User;
 use Tests\TestCase;
 
 class DashboardTest extends TestCase

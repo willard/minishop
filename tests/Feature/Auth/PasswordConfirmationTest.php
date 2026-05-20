@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use Minishop\Models\User;
 use Tests\TestCase;
 
 class PasswordConfirmationTest extends TestCase

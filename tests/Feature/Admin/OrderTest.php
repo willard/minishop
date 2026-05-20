@@ -2,19 +2,19 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Enums\OrderStatus;
-use App\Enums\ShippingMethodType;
-use App\Models\Coupon;
-use App\Models\Customer;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\ShippingMethod;
-use App\Models\User;
-use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Minishop\Database\Seeders\RoleAndPermissionSeeder;
+use Minishop\Enums\OrderStatus;
+use Minishop\Enums\ShippingMethodType;
+use Minishop\Models\Coupon;
+use Minishop\Models\Customer;
+use Minishop\Models\Order;
+use Minishop\Models\OrderItem;
+use Minishop\Models\Product;
+use Minishop\Models\ProductVariant;
+use Minishop\Models\ShippingMethod;
+use Minishop\Models\User;
 use Tests\TestCase;
 
 class OrderTest extends TestCase

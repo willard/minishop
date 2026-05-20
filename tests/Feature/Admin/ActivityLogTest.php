@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\ActivityLog;
-use App\Models\Coupon;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\User;
-use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Database\Seeders\RoleAndPermissionSeeder;
+use Minishop\Models\ActivityLog;
+use Minishop\Models\Coupon;
+use Minishop\Models\Order;
+use Minishop\Models\Product;
+use Minishop\Models\User;
 use Tests\TestCase;
 
 class ActivityLogTest extends TestCase

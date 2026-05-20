@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Storefront;
 
-use App\Models\Cart;
-use App\Models\CartItem;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Models\Cart;
+use Minishop\Models\CartItem;
+use Minishop\Models\Product;
+use Minishop\Models\ProductVariant;
+use Minishop\Models\User;
 use Tests\TestCase;
 
 class CartControllerTest extends TestCase

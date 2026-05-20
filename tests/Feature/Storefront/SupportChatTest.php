@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Storefront;
 
-use App\Ai\Agents\SupportAgent;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Ai\Agents\SupportAgent;
+use Minishop\Models\User;
 use Tests\TestCase;
 
 class SupportChatTest extends TestCase

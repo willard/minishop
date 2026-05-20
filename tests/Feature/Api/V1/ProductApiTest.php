@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Api\V1;
 
-use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Models\Product;
 use Tests\TestCase;
 
 class ProductApiTest extends TestCase

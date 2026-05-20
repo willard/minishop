@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Models;
 
-use App\Models\Product;
-use App\Models\ProductVariant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Models\Product;
+use Minishop\Models\ProductVariant;
 use Tests\TestCase;
 
 class BundleItemTest extends TestCase

@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Storefront;
 
-use App\Models\StoreSettings;
-use App\Models\TaxZone;
-use App\Models\TaxZoneRate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Minishop\Models\StoreSettings;
+use Minishop\Models\TaxZone;
+use Minishop\Models\TaxZoneRate;
 use Tests\TestCase;
 
 class TaxPreviewTest extends TestCase

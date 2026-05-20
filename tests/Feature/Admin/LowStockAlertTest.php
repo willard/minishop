@@ -2,21 +2,21 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Actions\CreateOrderAction;
-use App\Actions\ProcessReturnAction;
-use App\Data\LowStockSubject;
-use App\Models\Customer;
-use App\Models\Order;
-use App\Models\OrderReturn;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\ReturnItem;
-use App\Models\StoreSettings;
-use App\Models\User;
-use App\Notifications\LowStockAlert;
-use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Minishop\Actions\CreateOrderAction;
+use Minishop\Actions\ProcessReturnAction;
+use Minishop\Data\LowStockSubject;
+use Minishop\Database\Seeders\RoleAndPermissionSeeder;
+use Minishop\Models\Customer;
+use Minishop\Models\Order;
+use Minishop\Models\OrderReturn;
+use Minishop\Models\Product;
+use Minishop\Models\ProductVariant;
+use Minishop\Models\ReturnItem;
+use Minishop\Models\StoreSettings;
+use Minishop\Models\User;
+use Minishop\Notifications\LowStockAlert;
 use Tests\TestCase;
 
 class LowStockAlertTest extends TestCase

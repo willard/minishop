@@ -2,16 +2,16 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Actions\ProcessReturnAction;
-use App\Enums\ReturnReason;
-use App\Enums\ReturnStatus;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\OrderReturn;
-use App\Models\ReturnItem;
-use App\Models\User;
-use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Actions\ProcessReturnAction;
+use Minishop\Database\Seeders\RoleAndPermissionSeeder;
+use Minishop\Enums\ReturnReason;
+use Minishop\Enums\ReturnStatus;
+use Minishop\Models\Order;
+use Minishop\Models\OrderItem;
+use Minishop\Models\OrderReturn;
+use Minishop\Models\ReturnItem;
+use Minishop\Models\User;
 use Mockery;
 use Tests\TestCase;
 

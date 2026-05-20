@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Storefront;
 
-use App\Models\Category;
-use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Models\Category;
+use Minishop\Models\Product;
 use Tests\TestCase;
 
 class HomeTest extends TestCase

@@ -19,7 +19,8 @@
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.9",
         "spatie/laravel-permission": "^7.2",
-        "stripe/stripe-php": "^19.3"
+        "stripe/stripe-php": "^19.3",
+        "minishop/minishop": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -105,6 +106,15 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "stable",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "packages/minishop",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
+    "minimum-stability": "dev",
     "prefer-stable": true
 }

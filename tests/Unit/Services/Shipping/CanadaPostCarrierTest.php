@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Services\Shipping;
 
-use App\Services\Shipping\CanadaPostCarrier;
-use App\Services\Shipping\ShipmentData;
+use Minishop\Services\Shipping\CanadaPostCarrier;
+use Minishop\Services\Shipping\ShipmentData;
 use PHPUnit\Framework\TestCase;
 
 class CanadaPostCarrierTest extends TestCase

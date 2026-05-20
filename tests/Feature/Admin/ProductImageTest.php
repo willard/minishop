@@ -2,14 +2,14 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\Product;
-use App\Models\ProductImage;
-use App\Models\ProductVariant;
-use App\Models\User;
-use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Minishop\Database\Seeders\RoleAndPermissionSeeder;
+use Minishop\Models\Product;
+use Minishop\Models\ProductImage;
+use Minishop\Models\ProductVariant;
+use Minishop\Models\User;
 use Tests\TestCase;
 
 class ProductImageTest extends TestCase

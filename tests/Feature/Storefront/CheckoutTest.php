@@ -2,17 +2,17 @@
 
 namespace Tests\Feature\Storefront;
 
-use App\Models\Coupon;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use App\Models\ShippingMethod;
-use App\Models\StoreSettings;
-use App\Models\TaxZone;
-use App\Models\TaxZoneRate;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Minishop\Models\Coupon;
+use Minishop\Models\Order;
+use Minishop\Models\Product;
+use Minishop\Models\ProductVariant;
+use Minishop\Models\ShippingMethod;
+use Minishop\Models\StoreSettings;
+use Minishop\Models\TaxZone;
+use Minishop\Models\TaxZoneRate;
+use Minishop\Models\User;
 use Tests\TestCase;
 
 class CheckoutTest extends TestCase
