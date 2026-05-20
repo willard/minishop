@@ -18,18 +18,6 @@ import {
     Percent,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { index as activityLogIndex } from '@/actions/App/Http/Controllers/Admin/ActivityLogController';
-import { index as categoriesIndex } from '@/actions/App/Http/Controllers/Admin/CategoryController';
-import { index as couponsIndex } from '@/actions/App/Http/Controllers/Admin/CouponController';
-import { index as customersIndex } from '@/actions/App/Http/Controllers/Admin/CustomerController';
-import { index as ordersIndex } from '@/actions/App/Http/Controllers/Admin/OrderController';
-import { index as productsIndex } from '@/actions/App/Http/Controllers/Admin/ProductController';
-import { index as returnsIndex } from '@/actions/App/Http/Controllers/Admin/ReturnController';
-import { index as shippingMethodsIndex } from '@/actions/App/Http/Controllers/Admin/ShippingMethodController';
-import { edit as settingsEdit } from '@/actions/App/Http/Controllers/Admin/StoreSettingsController';
-import { index as tagsIndex } from '@/actions/App/Http/Controllers/Admin/TagController';
-import { index as taxZonesIndex } from '@/actions/App/Http/Controllers/Admin/TaxZoneController';
-import { index as usersIndex } from '@/actions/App/Http/Controllers/Admin/UserController';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -60,73 +48,73 @@ const allNavItems: PermissionNavItem[] = [
     },
     {
         title: 'Products',
-        href: productsIndex().url,
+        href: '/dashboard/products',
         icon: Package,
         permission: 'products.view',
     },
     {
         title: 'Categories',
-        href: categoriesIndex().url,
+        href: '/dashboard/categories',
         icon: Tag,
         permission: 'categories.view',
     },
     {
         title: 'Tags',
-        href: tagsIndex().url,
+        href: '/dashboard/tags',
         icon: Tags,
         permission: 'tags.view',
     },
     {
         title: 'Orders',
-        href: ordersIndex().url,
+        href: '/dashboard/orders',
         icon: ShoppingCart,
         permission: 'orders.view',
     },
     {
         title: 'Returns',
-        href: returnsIndex().url,
+        href: '/dashboard/order-returns',
         icon: RotateCcw,
         permission: 'returns.view',
     },
     {
         title: 'Customers',
-        href: customersIndex().url,
+        href: '/dashboard/customers',
         icon: Users,
         permission: 'customers.view',
     },
     {
         title: 'Users',
-        href: usersIndex().url,
+        href: '/dashboard/users',
         icon: UserCog,
         permission: 'users.view',
     },
     {
         title: 'Coupons',
-        href: couponsIndex().url,
+        href: '/dashboard/coupons',
         icon: Ticket,
         permission: 'coupons.view',
     },
     {
         title: 'Shipping Methods',
-        href: shippingMethodsIndex().url,
+        href: '/dashboard/shipping-methods',
         icon: Truck,
         permission: 'shipping-methods.view',
     },
     {
         title: 'Tax Zones',
-        href: taxZonesIndex().url,
+        href: '/dashboard/tax-zones',
         icon: Percent,
         permission: 'tax-zones.view',
     },
     {
         title: 'Activity Log',
-        href: activityLogIndex().url,
+        href: '/dashboard/activity-logs',
         icon: ClipboardList,
         permission: 'activity-log.view',
     },
     {
         title: 'Settings',
-        href: settingsEdit().url,
+        href: dashboard(),
         icon: Settings,
         permission: 'settings.view',
     },

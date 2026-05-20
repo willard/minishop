@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { store } from '@/actions/App/Http/Controllers/Storefront/SupportChatController';
+import { store } from '@/actions/Minishop/Http/Controllers/Storefront/SupportChatController';
 import { getCsrfToken } from '@/lib/csrf';
 
 export interface ChatMessage {

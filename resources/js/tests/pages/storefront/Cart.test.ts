@@ -23,11 +23,11 @@ vi.mock('@/layouts/StorefrontLayout.vue', () => ({
     default: { name: 'StorefrontLayout', template: '<div><slot /></div>', props: ['categories'] },
 }));
 
-vi.mock('@/actions/App/Http/Controllers/Storefront/CheckoutController', () => ({
+vi.mock('@/actions/Minishop/Http/Controllers/Storefront/CheckoutController', () => ({
     create: vi.fn(() => ({ url: '/checkout' })),
 }));
 
-vi.mock('@/actions/App/Http/Controllers/Storefront/ProductController', () => ({
+vi.mock('@/actions/Minishop/Http/Controllers/Storefront/ProductController', () => ({
     index: vi.fn(() => ({ url: '/products' })),
 }));
 

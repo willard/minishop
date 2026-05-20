@@ -2,7 +2,6 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { Bell } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { index } from '@/actions/App/Http/Controllers/Admin/ProductController';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItem } from '@/types';
@@ -34,7 +33,7 @@ const lowStockCount = computed(() => (page.props.lowStockCount as number | null 
         <div class="ml-auto flex items-center pr-2">
             <Link
                 v-if="lowStockCount !== null"
-                :href="index.url({ query: { stock: 'low_stock' } })"
+                href="/dashboard/products?tableFilters[stock_status][value]=low_stock"
                 class="relative inline-flex items-center rounded-md p-2 hover:bg-accent"
             >
                 <Bell class="size-4" />

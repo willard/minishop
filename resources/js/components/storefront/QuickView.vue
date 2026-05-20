@@ -8,7 +8,7 @@ import {
     ArrowUpRight,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
-import { show as productShow } from '@/actions/App/Http/Controllers/Storefront/ProductController';
+import { show as productShow } from '@/actions/Minishop/Http/Controllers/Storefront/ProductController';
 import { Dialog, DialogContent, DialogDescription, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';

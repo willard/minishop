@@ -13,7 +13,7 @@ import { ref, watch } from 'vue';
 import {
     index as productsIndex,
     show as productShow,
-} from '@/actions/App/Http/Controllers/Storefront/ProductController';
+} from '@/actions/Minishop/Http/Controllers/Storefront/ProductController';
 import CartDrawer from '@/components/storefront/CartDrawer.vue';
 import ChatWidget from '@/components/storefront/ChatWidget.vue';
 import { useCart } from '@/composables/useCart';

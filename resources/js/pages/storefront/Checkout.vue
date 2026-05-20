@@ -14,8 +14,8 @@ import {
     X,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
-import { store } from '@/actions/App/Http/Controllers/Storefront/CheckoutController';
-import { index as productsIndex } from '@/actions/App/Http/Controllers/Storefront/ProductController';
+import { store } from '@/actions/Minishop/Http/Controllers/Storefront/CheckoutController';
+import { index as productsIndex } from '@/actions/Minishop/Http/Controllers/Storefront/ProductController';
 import InputError from '@/components/InputError.vue';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';

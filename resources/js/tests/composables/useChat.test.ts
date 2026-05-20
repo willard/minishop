@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/actions/App/Http/Controllers/Storefront/SupportChatController', () => ({
+vi.mock('@/actions/Minishop/Http/Controllers/Storefront/SupportChatController', () => ({
     store: Object.assign(vi.fn(() => ({ url: '/chat', method: 'post' })), {
         url: vi.fn(() => '/chat'),
         definition: { methods: ['post'], url: '/chat' },

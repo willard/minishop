@@ -3,7 +3,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import { useWindowScroll } from '@vueuse/core';
 import { ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
-import { index as productsIndex, show as showProduct } from '@/actions/App/Http/Controllers/Storefront/ProductController';
+import { index as productsIndex, show as showProduct } from '@/actions/Minishop/Http/Controllers/Storefront/ProductController';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';
 import StorefrontLayout from '@/layouts/StorefrontLayout.vue';

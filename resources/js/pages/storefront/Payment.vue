@@ -4,11 +4,11 @@ import { loadStripe } from '@stripe/stripe-js';
 import type { Stripe, StripeCardElement } from '@stripe/stripe-js';
 import { AlertCircle, Loader2, Lock } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
-import { confirmation } from '@/actions/App/Http/Controllers/Storefront/CheckoutController';
+import { confirmation } from '@/actions/Minishop/Http/Controllers/Storefront/CheckoutController';
 import {
     stripeIntent,
     paymongoCheckout,
-} from '@/actions/App/Http/Controllers/Storefront/PaymentController';
+} from '@/actions/Minishop/Http/Controllers/Storefront/PaymentController';
 import { usePrice } from '@/composables/usePrice';
 import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 
