@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Mail;
+namespace Minishop\Tests\Feature\Mail;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -15,7 +15,7 @@ use Minishop\Models\Product;
 use Minishop\Models\ShippingMethod;
 use Minishop\Models\StoreSettings;
 use Minishop\Models\User;
-use Tests\TestCase;
+use Minishop\Tests\TestCase;
 
 class OrderEmailTest extends TestCase
 {
