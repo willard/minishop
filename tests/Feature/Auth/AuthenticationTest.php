@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
-use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
+use Minishop\Database\Seeders\RoleAndPermissionSeeder;
+use Minishop\Models\User;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
@@ -36,7 +36,7 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect('/dashboard');
     }
 
     public function test_users_with_two_factor_enabled_are_redirected_to_two_factor_challenge()
@@ -115,7 +115,7 @@ class AuthenticationTest extends TestCase
         $response = $this->actingAs($user)->post(route('logout'));
 
         $this->assertGuest();
-        $response->assertRedirect(route('home'));
+        $response->assertRedirect('/');
     }
 
     public function test_users_are_rate_limited()

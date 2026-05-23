@@ -2,8 +2,8 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft, ArrowRight, Lock, Minus, Package, Plus, ShoppingBag, X } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { create as checkoutCreate } from '@/actions/App/Http/Controllers/Storefront/CheckoutController';
-import { index as productsIndex } from '@/actions/App/Http/Controllers/Storefront/ProductController';
+import { create as checkoutCreate } from '@/actions/Minishop/Http/Controllers/Storefront/CheckoutController';
+import { index as productsIndex } from '@/actions/Minishop/Http/Controllers/Storefront/ProductController';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';
 import StorefrontLayout from '@/layouts/StorefrontLayout.vue';

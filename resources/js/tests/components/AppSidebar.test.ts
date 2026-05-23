@@ -25,46 +25,6 @@ vi.mock('@/routes', () => ({
     dashboard: vi.fn(() => '/dashboard'),
 }));
 
-vi.mock('@/actions/App/Http/Controllers/Admin/ProductController', () => ({
-    index: vi.fn(() => ({ url: '/dashboard/products' })),
-}));
-vi.mock('@/actions/App/Http/Controllers/Admin/CategoryController', () => ({
-    index: vi.fn(() => ({ url: '/dashboard/categories' })),
-}));
-vi.mock('@/actions/App/Http/Controllers/Admin/OrderController', () => ({
-    index: vi.fn(() => ({ url: '/dashboard/orders' })),
-}));
-vi.mock('@/actions/App/Http/Controllers/Admin/ReturnController', () => ({
-    index: vi.fn(() => ({ url: '/dashboard/returns' })),
-}));
-vi.mock('@/actions/App/Http/Controllers/Admin/CustomerController', () => ({
-    index: vi.fn(() => ({ url: '/dashboard/customers' })),
-}));
-vi.mock('@/actions/App/Http/Controllers/Admin/CouponController', () => ({
-    index: vi.fn(() => ({ url: '/dashboard/coupons' })),
-}));
-vi.mock(
-    '@/actions/App/Http/Controllers/Admin/ShippingMethodController',
-    () => ({
-        index: vi.fn(() => ({ url: '/dashboard/shipping-methods' })),
-    }),
-);
-vi.mock('@/actions/App/Http/Controllers/Admin/StoreSettingsController', () => ({
-    edit: vi.fn(() => ({ url: '/dashboard/settings' })),
-}));
-vi.mock('@/actions/App/Http/Controllers/Admin/ActivityLogController', () => ({
-    index: vi.fn(() => ({ url: '/dashboard/activity-log' })),
-}));
-vi.mock('@/actions/App/Http/Controllers/Admin/UserController', () => ({
-    index: vi.fn(() => ({ url: '/dashboard/users' })),
-}));
-vi.mock('@/actions/App/Http/Controllers/Admin/TagController', () => ({
-    index: vi.fn(() => ({ url: '/dashboard/tags' })),
-}));
-vi.mock('@/actions/App/Http/Controllers/Admin/TaxZoneController', () => ({
-    index: vi.fn(() => ({ url: '/dashboard/tax-zones' })),
-}));
-
 vi.mock('@/components/ui/sidebar', () => ({
     Sidebar: {
         name: 'Sidebar',

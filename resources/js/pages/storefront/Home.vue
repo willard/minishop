@@ -5,7 +5,7 @@ import { ref } from 'vue';
 import {
     index as productsIndex,
     show as productShow,
-} from '@/actions/App/Http/Controllers/Storefront/ProductController';
+} from '@/actions/Minishop/Http/Controllers/Storefront/ProductController';
 import QuickView from '@/components/storefront/QuickView.vue';
 import { useCart } from '@/composables/useCart';
 import { usePrice } from '@/composables/usePrice';

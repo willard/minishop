@@ -1,6 +1,6 @@
 import { onUnmounted, ref, watch } from 'vue';
 import type { ComputedRef, Ref } from 'vue';
-import TaxPreviewController from '@/actions/App/Http/Controllers/Storefront/TaxPreviewController';
+import TaxPreviewController from '@/actions/Minishop/Http/Controllers/Storefront/TaxPreviewController';
 import { getCsrfToken } from '@/lib/csrf';
 
 export interface TaxBreakdownLine {

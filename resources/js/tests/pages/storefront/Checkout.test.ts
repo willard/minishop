@@ -74,13 +74,13 @@ vi.mock('@/routes/register', () => ({
 }));
 
 vi.mock(
-    '@/actions/App/Http/Controllers/Storefront/CheckoutController',
+    '@/actions/Minishop/Http/Controllers/Storefront/CheckoutController',
     () => ({
         store: vi.fn(() => ({ url: '/checkout/store', method: 'post' })),
     }),
 );
 
-vi.mock('@/actions/App/Http/Controllers/Storefront/ProductController', () => ({
+vi.mock('@/actions/Minishop/Http/Controllers/Storefront/ProductController', () => ({
     index: vi.fn(() => ({ url: '/products' })),
 }));
 

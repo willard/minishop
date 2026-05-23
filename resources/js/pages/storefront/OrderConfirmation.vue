@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { CheckCircle, ArrowRight } from 'lucide-vue-next';
-import { index as productsIndex } from '@/actions/App/Http/Controllers/Storefront/ProductController';
+import { index as productsIndex } from '@/actions/Minishop/Http/Controllers/Storefront/ProductController';
 import { usePrice } from '@/composables/usePrice';
 import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 

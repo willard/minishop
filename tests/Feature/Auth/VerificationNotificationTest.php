@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Minishop\Models\User;
 use Tests\TestCase;
 
 class VerificationNotificationTest extends TestCase
@@ -20,7 +20,7 @@ class VerificationNotificationTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('verification.send'))
-            ->assertRedirect(route('home'));
+            ->assertRedirect('/');
 
         Notification::assertSentTo($user, VerifyEmail::class);
     }
@@ -33,7 +33,7 @@ class VerificationNotificationTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('verification.send'))
-            ->assertRedirect(route('dashboard', absolute: false));
+            ->assertRedirect('/dashboard');
 
         Notification::assertNothingSent();
     }

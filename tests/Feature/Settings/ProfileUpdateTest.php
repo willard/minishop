@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Settings;
 
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Models\User;
 use Tests\TestCase;
 
 class ProfileUpdateTest extends TestCase
@@ -73,7 +73,7 @@ class ProfileUpdateTest extends TestCase
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect(route('home'));
+            ->assertRedirect('/');
 
         $this->assertGuest();
         $this->assertNull($user->fresh());

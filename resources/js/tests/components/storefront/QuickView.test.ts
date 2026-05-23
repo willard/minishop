@@ -19,7 +19,7 @@ vi.mock('@inertiajs/vue3', async (importOriginal) => {
 });
 
 // Mock Actions
-vi.mock('@/actions/App/Http/Controllers/Storefront/ProductController', () => ({
+vi.mock('@/actions/Minishop/Http/Controllers/Storefront/ProductController', () => ({
     show: vi.fn(() => ({ url: '/products/test' })),
 }));
 

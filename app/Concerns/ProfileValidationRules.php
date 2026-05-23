@@ -2,8 +2,8 @@
 
 namespace App\Concerns;
 
-use App\Models\User;
 use Illuminate\Validation\Rule;
+use Minishop\Models\User;
 
 trait ProfileValidationRules
 {

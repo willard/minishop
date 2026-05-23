@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Auth;
 
-use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Minishop\Database\Seeders\RoleAndPermissionSeeder;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
