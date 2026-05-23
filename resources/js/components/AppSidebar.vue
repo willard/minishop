@@ -31,7 +31,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useCan } from '@/composables/useCan';
-import { dashboard } from '@/routes';
+
 import { type NavItem } from '@/types';
 import AppLogo from './AppLogo.vue';
 
@@ -42,7 +42,7 @@ type PermissionNavItem = NavItem & { permission?: string };
 const allNavItems: PermissionNavItem[] = [
     {
         title: 'Dashboard',
-        href: dashboard(),
+        href: '/dashboard',
         icon: LayoutGrid,
         permission: 'dashboard.view',
     },
@@ -114,7 +114,7 @@ const allNavItems: PermissionNavItem[] = [
     },
     {
         title: 'Settings',
-        href: dashboard(),
+        href: '/dashboard',
         icon: Settings,
         permission: 'settings.view',
     },
@@ -144,7 +144,7 @@ const footerNavItems: NavItem[] = [
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
-                        <Link :href="dashboard()">
+                        <Link href="/dashboard">
                             <AppLogo />
                         </Link>
                     </SidebarMenuButton>

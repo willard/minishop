@@ -5,10 +5,7 @@ import type { Stripe, StripeCardElement } from '@stripe/stripe-js';
 import { AlertCircle, Loader2, Lock } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
 import { confirmation } from '@/actions/Minishop/Http/Controllers/Storefront/CheckoutController';
-import {
-    stripeIntent,
-    paymongoCheckout,
-} from '@/actions/Minishop/Http/Controllers/Storefront/PaymentController';
+import { stripeIntent } from '@/actions/Minishop/Http/Controllers/Storefront/PaymentController';
 import { usePrice } from '@/composables/usePrice';
 import StorefrontLayout from '@/layouts/StorefrontLayout.vue';
 
@@ -127,42 +124,9 @@ async function initStripe(): Promise<void> {
     }
 }
 
-async function initPayMongo(): Promise<void> {
-    try {
-        const response = await fetch(paymongoCheckout(props.order).url, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN':
-                    (
-                        document.querySelector(
-                            'meta[name="csrf-token"]',
-                        ) as HTMLMetaElement
-                    )?.content ?? '',
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error('Could not create PayMongo checkout session.');
-        }
-
-        const data = await response.json();
-        window.location.href = data.checkoutUrl;
-    } catch (e: unknown) {
-        paymentError.value =
-            e instanceof Error
-                ? e.message
-                : 'Failed to create checkout session.';
-        isLoading.value = false;
-    }
-}
-
 onMounted(() => {
     if (gateway === 'stripe') {
         initStripe();
-    } else if (gateway === 'paymongo') {
-        initPayMongo();
     } else {
         isLoading.value = false;
     }
@@ -304,37 +268,6 @@ async function submitStripePayment(): Promise<void> {
                             Secured by Stripe · Your card details are never
                             stored
                         </p>
-                    </template>
-
-                    <!-- PayMongo redirecting -->
-                    <template v-else-if="gateway === 'paymongo'">
-                        <div
-                            class="rounded-2xl border p-10 text-center"
-                            style="border-color: rgba(28, 26, 23, 0.12)"
-                        >
-                            <Loader2
-                                v-if="isLoading"
-                                class="mx-auto mb-4 size-8 animate-spin"
-                                style="color: rgba(28, 26, 23, 0.4)"
-                            />
-                            <p
-                                class="text-sm font-medium"
-                                style="color: #1c1a17"
-                            >
-                                {{
-                                    isLoading
-                                        ? 'Redirecting to PayMongo…'
-                                        : 'Ready to pay'
-                                }}
-                            </p>
-                            <p
-                                class="mt-1 text-xs"
-                                style="color: rgba(28, 26, 23, 0.45)"
-                            >
-                                You will be redirected to a secure checkout
-                                page.
-                            </p>
-                        </div>
                     </template>
                 </div>
 
