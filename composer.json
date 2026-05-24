@@ -20,7 +20,7 @@
         "laravel/wayfinder": "^0.1.9",
         "spatie/laravel-permission": "^7.2",
         "stripe/stripe-php": "^19.3",
-        "minishop/minishop": "*"
+        "minishop/minishop": "^1.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -110,11 +110,8 @@
     },
     "repositories": [
         {
-            "type": "path",
-            "url": "packages/minishop",
-            "options": {
-                "symlink": true
-            }
+            "type": "vcs",
+            "url": "https://github.com/toadfix/minishop"
         }
     ],
     "minimum-stability": "dev",
