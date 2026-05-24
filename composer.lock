@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ec5b4f9b077f1a0eeff532d933c700cf",
+    "content-hash": "5f033beb1ce4afaa11e53a2899535b35",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -8975,34 +8975,30 @@
             "type": "library",
             "extra": {
                 "laravel": {
+                    "aliases": {
+                        "MinishopPayment": "Minishop\\Payments\\Facades\\Payment"
+                    },
                     "providers": [
                         "Minishop\\MinishopServiceProvider",
                         "Minishop\\MinishopPanelProvider"
-                    ],
-                    "aliases": {
-                        "MinishopPayment": "Minishop\\Payments\\Facades\\Payment"
-                    }
+                    ]
                 }
             },
             "autoload": {
                 "psr-4": {
                     "Minishop\\": "src/",
-                    "Minishop\\Database\\Factories\\": "database/factories/",
-                    "Minishop\\Database\\Seeders\\": "database/seeders/"
+                    "Minishop\\Database\\Seeders\\": "database/seeders/",
+                    "Minishop\\Database\\Factories\\": "database/factories/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Minishop\\Tests\\": "tests/"
-                }
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
             "description": "Drop-in ecommerce package for Laravel with Filament v5 admin panel and Sanctum API",
             "support": {
-                "source": "https://github.com/toadfix/minishop/tree/v1.0.1",
-                "issues": "https://github.com/toadfix/minishop/issues"
+                "issues": "https://github.com/toadfix/minishop/issues",
+                "source": "https://github.com/toadfix/minishop/tree/v1.0.1"
             },
             "time": "2026-05-24T15:43:12+00:00"
         },

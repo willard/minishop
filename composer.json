@@ -42,8 +42,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/",
-            "Minishop\\Tests\\": "packages/minishop/tests/"
+            "Tests\\": "tests/"
         }
     },
     "scripts": {
@@ -108,12 +107,6 @@
             "php-http/discovery": true
         }
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/toadfix/minishop"
-        }
-    ],
     "minimum-stability": "dev",
     "prefer-stable": true
 }
