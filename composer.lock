@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a6249dddd458ad136646ea7b4fdecd2f",
+    "content-hash": "ec5b4f9b077f1a0eeff532d933c700cf",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3970,74 +3970,6 @@
                 "source": "https://github.com/Masterminds/html5-php/tree/2.10.0"
             },
             "time": "2025-07-25T09:04:22+00:00"
-        },
-        {
-            "name": "minishop/minishop",
-            "version": "v1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/toadfix/minishop.git",
-                "reference": "a9d9ae7b4440af701812bae9e36ed525b01fd998"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/toadfix/minishop/zipball/a9d9ae7b4440af701812bae9e36ed525b01fd998",
-                "reference": "a9d9ae7b4440af701812bae9e36ed525b01fd998",
-                "shasum": ""
-            },
-            "require": {
-                "barryvdh/laravel-dompdf": "^3.1",
-                "filament/filament": "^5.0",
-                "laravel/ai": "^0.2.8",
-                "laravel/framework": "^13.0",
-                "laravel/sanctum": "^4.0",
-                "php": "^8.2",
-                "spatie/laravel-permission": "^7.2",
-                "stripe/stripe-php": "^19.3"
-            },
-            "require-dev": {
-                "fakerphp/faker": "^1.23",
-                "laravel/pint": "^1.24",
-                "orchestra/testbench": "^11.0",
-                "phpunit/phpunit": "^12.0"
-            },
-            "suggest": {
-                "inertiajs/inertia-laravel": "Required only if enabling the built-in Inertia storefront (MINISHOP_STOREFRONT=true)",
-                "laravel/fortify": "Recommended for web authentication (register/login flows)"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Minishop\\MinishopServiceProvider",
-                        "Minishop\\MinishopPanelProvider"
-                    ],
-                    "aliases": {
-                        "MinishopPayment": "Minishop\\Payments\\Facades\\Payment"
-                    }
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Minishop\\": "src/",
-                    "Minishop\\Database\\Factories\\": "database/factories/",
-                    "Minishop\\Database\\Seeders\\": "database/seeders/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Minishop\\Tests\\": "tests/"
-                }
-            },
-            "license": [
-                "MIT"
-            ],
-            "description": "Drop-in ecommerce package for Laravel with Filament v5 admin panel and Sanctum API",
-            "support": {
-                "source": "https://github.com/toadfix/minishop/tree/v1.0.0",
-                "issues": "https://github.com/toadfix/minishop/issues"
-            },
-            "time": "2026-05-23T23:44:59+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -9005,6 +8937,74 @@
                 "source": "https://github.com/tijsverkoyen/CssToInlineStyles/tree/v2.4.0"
             },
             "time": "2025-12-02T11:56:42+00:00"
+        },
+        {
+            "name": "toadfix/minishop",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/toadfix/minishop.git",
+                "reference": "9fb62350face563340681f332296ad876f987137"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/toadfix/minishop/zipball/9fb62350face563340681f332296ad876f987137",
+                "reference": "9fb62350face563340681f332296ad876f987137",
+                "shasum": ""
+            },
+            "require": {
+                "barryvdh/laravel-dompdf": "^3.1",
+                "filament/filament": "^5.0",
+                "laravel/ai": "^0.2.8",
+                "laravel/framework": "^13.0",
+                "laravel/sanctum": "^4.0",
+                "php": "^8.2",
+                "spatie/laravel-permission": "^7.2",
+                "stripe/stripe-php": "^19.3"
+            },
+            "require-dev": {
+                "fakerphp/faker": "^1.23",
+                "laravel/pint": "^1.24",
+                "orchestra/testbench": "^11.0",
+                "phpunit/phpunit": "^12.0"
+            },
+            "suggest": {
+                "inertiajs/inertia-laravel": "Required only if enabling the built-in Inertia storefront (MINISHOP_STOREFRONT=true)",
+                "laravel/fortify": "Recommended for web authentication (register/login flows)"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Minishop\\MinishopServiceProvider",
+                        "Minishop\\MinishopPanelProvider"
+                    ],
+                    "aliases": {
+                        "MinishopPayment": "Minishop\\Payments\\Facades\\Payment"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Minishop\\": "src/",
+                    "Minishop\\Database\\Factories\\": "database/factories/",
+                    "Minishop\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Minishop\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Drop-in ecommerce package for Laravel with Filament v5 admin panel and Sanctum API",
+            "support": {
+                "source": "https://github.com/toadfix/minishop/tree/v1.0.1",
+                "issues": "https://github.com/toadfix/minishop/issues"
+            },
+            "time": "2026-05-24T15:43:12+00:00"
         },
         {
             "name": "ueberdosis/tiptap-php",
